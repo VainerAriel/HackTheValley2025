@@ -1,0 +1,52 @@
+.dyslexia-friendly-story {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif;
+}
+
+.story-content {
+  color: #2d2d2d;
+  font-size: 20px;
+  line-height: 2.0;
+  letter-spacing: 0.05em;
+  word-spacing: 0.16em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.story-content p {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+/* Enhanced readability for dyslexic readers */
+.story-content p::first-letter {
+  font-size: 1.3em;
+  font-weight: bold;
+}
+
+/* Responsive font sizes */
+@media (max-width: 768px) {
+  .story-content {
+    font-size: 18px;
+    line-height: 1.9;
+  }
+}
+
+@media (min-width: 1024px) {
+  .story-content {
+    font-size: 20px;
+    line-height: 2.0;
+  }
+}
+
+/* Print styles for better accessibility */
+@media print {
+  .dyslexia-friendly-story {
+    background: white !important;
+    box-shadow: none !important;
+  }
+  
+  button {
+    display: none;
+  }
+}
+
