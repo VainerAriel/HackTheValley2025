@@ -83,15 +83,21 @@ async function executeQuery(sqlText) {
 app.post('/api/stories', async (req, res) => {
   try {
     console.log('📝 Saving story...');
-    const { userId, storyText, audioUrl, interests, vocabWords } = req.body;
+    console.log('Request body:', req.body);
+    const { userId, storyText, audioUrl, interests, vocabWords, childName, age, vocabDefinitions } = req.body;
     
     const escapedStory = storyText.replace(/'/g, "''");
     const escapedAudioUrl = (audioUrl || '').replace(/'/g, "''");
+    const escapedChildName = (childName || '').replace(/'/g, "''");
+    const escapedVocabDefinitions = vocabDefinitions ? JSON.stringify(vocabDefinitions).replace(/'/g, "''") : '';
     
     const sql = `
-      INSERT INTO stories (user_id, story_text, audio_url, interests, vocab_words) 
-      VALUES ('${userId}', '${escapedStory}', '${escapedAudioUrl}', '${interests.join(',')}', '${vocabWords.join(',')}')
+      INSERT INTO stories (USER_ID, STORY_TEXT, AUDIO_URL, INTERESTS, VOCAB_WORDS, VOCAB_DEFINITIONS, CREATED_AT) 
+      VALUES ('${userId}', '${escapedStory}', '${escapedAudioUrl}', '${interests.join(',')}', '${vocabWords.join(',')}', '${escapedVocabDefinitions}', CURRENT_TIMESTAMP)
     `;
+    
+    console.log('SQL Query:', sql);
+    console.log('Data being saved:', { userId, storyText: storyText.substring(0, 100) + '...', interests, vocabWords, childName, age });
     
     await executeQuery(sql);
     console.log('✅ Story saved!\n');
@@ -109,8 +115,8 @@ app.get('/api/stories/:userId', async (req, res) => {
     
     const sql = `
       SELECT * FROM stories 
-      WHERE user_id = '${req.params.userId}' 
-      ORDER BY created_at DESC
+      WHERE USER_ID = '${req.params.userId}' 
+      ORDER BY CREATED_AT DESC
     `;
     
     const rows = await executeQuery(sql);
@@ -125,7 +131,7 @@ app.get('/api/stories/:userId', async (req, res) => {
 
 app.get('/api/story/:storyId', async (req, res) => {
   try {
-    const sql = `SELECT * FROM stories WHERE story_id = '${req.params.storyId}'`;
+    const sql = `SELECT * FROM stories WHERE STORY_ID = '${req.params.storyId}'`;
     const rows = await executeQuery(sql);
     res.json({ success: true, data: rows[0] || null });
   } catch (error) {

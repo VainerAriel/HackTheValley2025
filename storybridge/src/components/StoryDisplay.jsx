@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
-import { getWordDefinition } from '../services/gemini';
+import { getBatchWordDefinitions } from '../services/gemini';
+import { convertTextToSpeech, playAudioFromBlob } from '../services/elevenLabsService';
 import './StoryDisplay.css';
 
-function StoryDisplay({ story, onGenerateNew, vocabularyWords = [], age }) {
+function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords = [], age, isFromHistory = false, storedVocabDefinitions = {} }) {
   const [wordDefinitions, setWordDefinitions] = useState({});
   const [hoveredWord, setHoveredWord] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [loadingDefinitions, setLoadingDefinitions] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playError, setPlayError] = useState(null);
 
   // Load OpenDyslexic font
   useEffect(() => {
@@ -19,38 +22,40 @@ function StoryDisplay({ story, onGenerateNew, vocabularyWords = [], age }) {
     }
   }, []);
 
-  // Fetch definitions for vocabulary words
+  // Load vocabulary definitions (either from storage or fetch them)
   useEffect(() => {
-    const fetchDefinitions = async () => {
+    const loadDefinitions = async () => {
+      console.log('Loading definitions for vocabulary words:', vocabularyWords);
+      console.log('Stored vocab definitions:', storedVocabDefinitions);
+      
       setLoadingDefinitions(true);
       try {
-        // Fetch all definitions in parallel
-        const definitionPromises = vocabularyWords.map(word => 
-          getWordDefinition(word, age)
-        );
-        const definitions = await Promise.all(definitionPromises);
-        
-        // Create a map of word -> definition
-        const definitionsMap = {};
-        definitions.forEach(def => {
-          if (def && def.word) {
-            definitionsMap[def.word.toLowerCase()] = def;
-          }
-        });
-        
-        setWordDefinitions(definitionsMap);
+        // If we have stored definitions, use them
+        if (Object.keys(storedVocabDefinitions).length > 0) {
+          console.log('Using stored vocabulary definitions');
+          setWordDefinitions(storedVocabDefinitions);
+        } else if (vocabularyWords.length > 0 && age) {
+          // Otherwise, fetch definitions from API in a single batch call
+          console.log('Fetching definitions from API in batch...');
+          const definitionsMap = await getBatchWordDefinitions(vocabularyWords, age);
+          console.log('Word definitions loaded from API:', definitionsMap);
+          setWordDefinitions(definitionsMap);
+        } else {
+          console.log('No vocabulary words, age, or stored definitions provided:', { vocabularyWords, age, storedVocabDefinitions });
+        }
       } catch (error) {
-        console.error('Error fetching word definitions:', error);
+        console.error('Error loading word definitions:', error);
       } finally {
         setLoadingDefinitions(false);
       }
     };
 
-    if (vocabularyWords.length > 0 && age) {
-      fetchDefinitions();
+    // Only load if we haven't already loaded definitions
+    if (Object.keys(wordDefinitions).length === 0) {
+      loadDefinitions();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vocabularyWords, age]);
+  }, [vocabularyWords, age, storedVocabDefinitions]);
 
   const handleWordHover = (word, event) => {
     const definition = wordDefinitions[word.toLowerCase()];
@@ -72,13 +77,32 @@ function StoryDisplay({ story, onGenerateNew, vocabularyWords = [], age }) {
     setHoveredWord(null);
   };
 
+  const handlePlayStory = async () => {
+    if (!story) return;
+    
+    setIsPlaying(true);
+    setPlayError(null);
+    
+    try {
+      const audioBlob = await convertTextToSpeech(story);
+      await playAudioFromBlob(audioBlob);
+    } catch (error) {
+      console.error('Error playing story:', error);
+      setPlayError('Failed to play audio. Please check your ElevenLabs API key.');
+    } finally {
+      setIsPlaying(false);
+    }
+  };
+
   // Parse story and wrap vocabulary words
   const renderStoryWithVocabulary = () => {
     if (!story) return null;
 
+    console.log('Rendering story with vocabulary words:', vocabularyWords);
     const paragraphs = story.split('\n').filter(p => p.trim() !== '');
     
     if (vocabularyWords.length === 0) {
+      console.log('No vocabulary words to highlight');
       // No vocabulary words, render plain paragraphs
       return paragraphs.map((paragraph, index) => (
         <p key={index} className="mb-6 last:mb-0">
@@ -223,8 +247,44 @@ function StoryDisplay({ story, onGenerateNew, vocabularyWords = [], age }) {
           </div>
         )}
 
-        {/* Generate New Story Button */}
-        <div className="mt-12 flex justify-center">
+        {/* Action Buttons */}
+        <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center items-center">
+          {/* Play Button */}
+          <button
+            onClick={handlePlayStory}
+            disabled={isPlaying}
+            className={`px-8 py-4 min-h-[48px] text-lg font-bold rounded-lg transition-all transform ${
+              isPlaying
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl'
+            } text-white focus:outline-none focus:ring-4 focus:ring-green-300`}
+            aria-label={isPlaying ? "Playing story..." : "Play story audio"}
+          >
+            {isPlaying ? (
+              <span className="flex items-center">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Playing...
+              </span>
+            ) : (
+              '🔊 Play Story'
+            )}
+          </button>
+
+          {/* Back to History Button (only if viewing from history) */}
+          {isFromHistory && onBackToHistory && (
+            <button
+              onClick={onBackToHistory}
+              className="px-8 py-4 min-h-[48px] text-lg font-bold rounded-lg bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-gray-300"
+              aria-label="Back to story history"
+            >
+              ← Back to History
+            </button>
+          )}
+
+          {/* Generate New Story Button */}
           <button
             onClick={onGenerateNew}
             className="px-8 py-4 min-h-[48px] text-lg font-bold rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-purple-300"
@@ -233,6 +293,13 @@ function StoryDisplay({ story, onGenerateNew, vocabularyWords = [], age }) {
             ✨ Generate New Story
           </button>
         </div>
+
+        {/* Play Error Message */}
+        {playError && (
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-center">
+            <p className="text-red-700 text-sm">{playError}</p>
+          </div>
+        )}
       </article>
     </div>
   );

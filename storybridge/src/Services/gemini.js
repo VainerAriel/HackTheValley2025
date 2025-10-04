@@ -288,3 +288,94 @@ Provide valid JSON only.`;
   }
 }
 
+/**
+ * Get batch vocabulary definitions in a single API call
+ * @param {Array<string>} words - Array of words to define
+ * @param {string} age - Age of the child (for age-appropriate definitions)
+ * @returns {Promise<Object>} Object with word keys and definition values
+ */
+export async function getBatchWordDefinitions(words, age) {
+  try {
+    const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
+    
+    if (!apiKey) {
+      throw new Error('API key not found. Please set REACT_APP_GEMINI_API_KEY in your .env file');
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
+    const wordsList = words.join('", "');
+
+    const prompt = `Provide child-friendly definitions for these words suitable for a ${age}-year-old: "${wordsList}"
+
+**OUTPUT FORMAT (JSON only, no other text):**
+{
+  "definitions": [
+    {
+      "word": "word1",
+      "pronunciation": "phonetic pronunciation",
+      "simple_definition": "easy definition for a ${age}-year-old",
+      "example_sentence": "example sentence using the word",
+      "synonyms": ["synonym1", "synonym2"]
+    },
+    {
+      "word": "word2", 
+      "pronunciation": "phonetic pronunciation",
+      "simple_definition": "easy definition for a ${age}-year-old",
+      "example_sentence": "example sentence using the word",
+      "synonyms": ["synonym1", "synonym2"]
+    }
+  ]
+}
+
+Provide valid JSON only.`;
+
+    const result = await ai.models.generateContent({
+      model: 'gemini-2.0-flash-exp',
+      contents: prompt,
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 800,
+      },
+    });
+
+    if (!result || !result.text) {
+      throw new Error('No batch definitions were generated.');
+    }
+
+    // Parse the JSON response
+    let responseText = result.text.trim();
+    
+    // Remove markdown code blocks if present
+    responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    
+    const batchResult = JSON.parse(responseText);
+
+    // Convert to the format expected by the app
+    const definitionsMap = {};
+    if (batchResult.definitions && Array.isArray(batchResult.definitions)) {
+      batchResult.definitions.forEach(def => {
+        if (def && def.word) {
+          definitionsMap[def.word.toLowerCase()] = def;
+        }
+      });
+    }
+
+    return definitionsMap;
+
+  } catch (error) {
+    console.error(`Error getting batch definitions for words:`, error);
+    // Return fallback definitions
+    const fallbackDefinitions = {};
+    words.forEach(word => {
+      fallbackDefinitions[word.toLowerCase()] = {
+        word: word,
+        pronunciation: '',
+        simple_definition: word,
+        example_sentence: '',
+        synonyms: []
+      };
+    });
+    return fallbackDefinitions;
+  }
+}
+
