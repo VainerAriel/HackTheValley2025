@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@auth0/auth0-react": "^2.5.0",
+    "@google/genai": "^1.22.0",
     "axios": "^1.12.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
