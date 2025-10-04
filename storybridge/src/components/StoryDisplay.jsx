@@ -21,35 +21,36 @@ function StoryDisplay({ story, onGenerateNew, vocabularyWords = [], age }) {
 
   // Fetch definitions for vocabulary words
   useEffect(() => {
+    const fetchDefinitions = async () => {
+      setLoadingDefinitions(true);
+      try {
+        // Fetch all definitions in parallel
+        const definitionPromises = vocabularyWords.map(word => 
+          getWordDefinition(word, age)
+        );
+        const definitions = await Promise.all(definitionPromises);
+        
+        // Create a map of word -> definition
+        const definitionsMap = {};
+        definitions.forEach(def => {
+          if (def && def.word) {
+            definitionsMap[def.word.toLowerCase()] = def;
+          }
+        });
+        
+        setWordDefinitions(definitionsMap);
+      } catch (error) {
+        console.error('Error fetching word definitions:', error);
+      } finally {
+        setLoadingDefinitions(false);
+      }
+    };
+
     if (vocabularyWords.length > 0 && age) {
       fetchDefinitions();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vocabularyWords, age]);
-
-  const fetchDefinitions = async () => {
-    setLoadingDefinitions(true);
-    try {
-      // Fetch all definitions in parallel
-      const definitionPromises = vocabularyWords.map(word => 
-        getWordDefinition(word, age)
-      );
-      const definitions = await Promise.all(definitionPromises);
-      
-      // Create a map of word -> definition
-      const definitionsMap = {};
-      definitions.forEach(def => {
-        if (def && def.word) {
-          definitionsMap[def.word.toLowerCase()] = def;
-        }
-      });
-      
-      setWordDefinitions(definitionsMap);
-    } catch (error) {
-      console.error('Error fetching word definitions:', error);
-    } finally {
-      setLoadingDefinitions(false);
-    }
-  };
 
   const handleWordHover = (word, event) => {
     const definition = wordDefinitions[word.toLowerCase()];
