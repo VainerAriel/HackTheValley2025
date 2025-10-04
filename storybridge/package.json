@@ -6,7 +6,9 @@
     "@auth0/auth0-react": "^2.5.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-scripts": "5.0.1"
+    "react-scripts": "5.0.1",
+    "snowflake-sdk": "^2.3.0",
+    "axios": "^1.12.2"
   },
   "scripts": {
     "start": "react-scripts start",
