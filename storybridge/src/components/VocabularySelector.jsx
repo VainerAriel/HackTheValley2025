@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { suggestVocabularyWords } from '../Services/gemini';
+import { suggestVocabularyWords } from '../services/gemini';
 
 function VocabularySelector({ childName, age, interests, onBack, onGenerate, loading }) {
   const [suggestedWords, setSuggestedWords] = useState([]);

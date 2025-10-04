@@ -4,6 +4,7 @@
 /node_modules
 /server/node_modules
 /server/snowflake.log
+../node_modules
 /.pnp
 .pnp.js
 

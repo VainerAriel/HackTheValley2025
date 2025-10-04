@@ -7,12 +7,12 @@ import Profile from './components/Profile';
 import StoryForm from './components/StoryForm';
 import VocabularySelector from './components/VocabularySelector';
 import StoryDisplay from './components/StoryDisplay';
-import { generateStory } from './Services/gemini';
+import { generateStory } from './services/gemini';
 
 function App() {
   const { isAuthenticated, isLoading } = useAuth0();
   const [step, setStep] = useState('form');
-  const [formData, setFormData] = useState(null);
+  const [formData,  setFormData] = useState(null);
   const [story, setStory] = useState(null);
   const [vocabularyWords, setVocabularyWords] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -30,7 +30,10 @@ function App() {
     setVocabularyWords(words);
     setLoading(true);
     try {
-      const generatedStory = await generateStory(formData, words);
+      const generatedStory = await generateStory({ 
+        ...formData, 
+        vocabularyWords: words 
+      });
       setStory(generatedStory);
       setStep('story');
     } catch (error) {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getWordDefinition } from '../Services/gemini';
+import { getWordDefinition } from '../services/gemini';
 import './StoryDisplay.css';
 
 function StoryDisplay({ story, onGenerateNew, vocabularyWords = [], age }) {
