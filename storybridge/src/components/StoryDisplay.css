@@ -23,6 +23,78 @@
   font-weight: bold;
 }
 
+/* Vocabulary word highlighting */
+.vocabulary-word {
+  border-bottom: 2px dotted #4A90E2;
+  cursor: help;
+  position: relative;
+  color: #2C5282;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.vocabulary-word:hover {
+  background-color: rgba(74, 144, 226, 0.1);
+  border-bottom-color: #2C5282;
+}
+
+.vocabulary-word:focus {
+  outline: 2px solid #4A90E2;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Vocabulary tooltip */
+.vocabulary-tooltip {
+  pointer-events: none;
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -100%) translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%) translateY(0);
+  }
+}
+
+.tooltip-content {
+  background: white;
+  border-radius: 8px;
+  padding: 12px 16px;
+  max-width: 300px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  border: 1px solid #e5e7eb;
+  position: relative;
+}
+
+.tooltip-arrow {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid white;
+}
+
+.tooltip-arrow::before {
+  content: '';
+  position: absolute;
+  bottom: 1px;
+  left: -8px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #e5e7eb;
+}
+
 /* Responsive font sizes */
 @media (max-width: 768px) {
   .story-content {
