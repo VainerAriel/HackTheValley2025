@@ -11,7 +11,7 @@ const optimizeTextForTTS = (text) => {
     .substring(0, 5000); // Limit to 5000 characters to reduce costs
 };
 
-export const convertTextToSpeech = async (text) => {
+const convertTextToSpeech = async (text) => {
   if (!ELEVENLABS_API_KEY) {
     throw new Error('ElevenLabs API key is not configured');
   }
@@ -22,8 +22,7 @@ export const convertTextToSpeech = async (text) => {
 
   // Optimize text for TTS
   const optimizedText = optimizeTextForTTS(text);
-
-  console.log('🎵 Generating new audio for text (length:', optimizedText.length, 'chars) using Flash model for cost savings');
+  console.log('🎵 Generating audio for text (length:', optimizedText.length, 'chars) using Flash model for cost savings');
   console.log('💰 Estimated credits needed:', Math.ceil(optimizedText.length * 0.5), 'credits (Flash model: 0.5 per character)');
 
   const response = await fetch(
@@ -51,29 +50,7 @@ export const convertTextToSpeech = async (text) => {
     throw new Error(`API error: ${response.status} ${response.statusText}`);
   }
 
-  const audioBlob = await response.blob();
-  
-  console.log('✅ Audio generated successfully');
-  return audioBlob;
+  return response.blob();
 };
 
-export const playAudioFromBlob = (audioBlob) => {
-  return new Promise((resolve, reject) => {
-    const audioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(audioUrl);
-
-    audio.onended = () => {
-      URL.revokeObjectURL(audioUrl);
-      resolve();
-    };
-
-    audio.onerror = () => {
-      URL.revokeObjectURL(audioUrl);
-      reject(new Error('Failed to play audio'));
-    };
-
-    audio.play().catch(reject);
-  });
-};
-
-// Note: Browser caching removed - all audio now comes from database
+module.exports = { convertTextToSpeech };

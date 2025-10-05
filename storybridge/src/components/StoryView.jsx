@@ -120,19 +120,20 @@ const StoryView = () => {
   console.log('StoryView - vocabulary words:', story.VOCAB_WORDS);
   console.log('StoryView - processed vocab words:', story.VOCAB_WORDS ? story.VOCAB_WORDS.split(',').filter(word => word.trim()) : []);
 
-  return (
-    <div className="min-h-screen bg-gray-100">
-      <StoryDisplay 
-        story={story.STORY_TEXT}
-        onGenerateNew={handleGenerateNew}
-        onBackToHistory={handleBackToHistory}
-        vocabularyWords={story.VOCAB_WORDS ? story.VOCAB_WORDS.split(',').filter(word => word.trim()) : []}
-        age={story.age || '8'}
-        isFromHistory={true}
-        storedVocabDefinitions={story.VOCAB_DEFINITIONS ? JSON.parse(story.VOCAB_DEFINITIONS) : {}}
-      />
-    </div>
-  );
+      return (
+        <div className="min-h-screen bg-gray-100">
+          <StoryDisplay 
+            story={story.STORY_TEXT}
+            onGenerateNew={handleGenerateNew}
+            onBackToHistory={handleBackToHistory}
+            vocabularyWords={story.VOCAB_WORDS ? story.VOCAB_WORDS.split(',').filter(word => word.trim()) : []}
+            age={story.age || '8'}
+            isFromHistory={true}
+            storedVocabDefinitions={story.VOCAB_DEFINITIONS ? JSON.parse(story.VOCAB_DEFINITIONS) : {}}
+            storyId={story.STORY_ID}
+          />
+        </div>
+      );
 };
 
 export default StoryView;

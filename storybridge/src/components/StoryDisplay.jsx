@@ -3,13 +3,15 @@ import { getBatchWordDefinitions } from '../services/gemini';
 import { convertTextToSpeech, playAudioFromBlob } from '../services/elevenLabsService';
 import './StoryDisplay.css';
 
-function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords = [], age, isFromHistory = false, storedVocabDefinitions = {} }) {
+function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords = [], age, isFromHistory = false, storedVocabDefinitions = {}, storyId = null }) {
   const [wordDefinitions, setWordDefinitions] = useState({});
   const [hoveredWord, setHoveredWord] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [loadingDefinitions, setLoadingDefinitions] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playError, setPlayError] = useState(null);
+  const [audioStatus, setAudioStatus] = useState(null); // 'cached', 'generating', 'ready'
+  const [audioSource, setAudioSource] = useState(null); // 'stored', 'generated'
 
   // Load OpenDyslexic font
   useEffect(() => {
@@ -82,13 +84,83 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
     
     setIsPlaying(true);
     setPlayError(null);
+    setAudioStatus('generating');
     
     try {
+      // If we have a storyId, try to get stored audio first
+      if (storyId) {
+        try {
+          console.log('Attempting to load stored audio for story ID:', storyId);
+          const response = await fetch(`http://localhost:5000/api/story/${storyId}/audio?t=${Date.now()}`, {
+            cache: 'no-cache',
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
+            }
+          });
+          if (response.ok) {
+            const audioBlob = await response.blob();
+            console.log('✅ Stored audio loaded from database - NO API CREDITS USED!');
+            setAudioStatus('ready');
+            setAudioSource('stored');
+            await playAudioFromBlob(audioBlob);
+            return;
+          } else {
+            console.log('Stored audio not found (404), will generate and store audio');
+          }
+        } catch (error) {
+          console.log('Error loading stored audio:', error.message);
+          console.log('Will generate and store audio as fallback');
+        }
+        
+        // Try to generate and store audio in database
+        try {
+          console.log('🎵 Generating and storing audio in database - THIS WILL USE API CREDITS');
+          console.log('💰 Using Flash model for cost savings (0.5 credits per character)');
+          
+          const generateResponse = await fetch(`http://localhost:5000/api/story/${storyId}/generate-audio`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          if (generateResponse.ok) {
+            console.log('✅ Audio generated and stored in database');
+            
+            // Now try to get the stored audio
+            const audioResponse = await fetch(`http://localhost:5000/api/story/${storyId}/audio?t=${Date.now()}`, {
+              cache: 'no-cache',
+              headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+              }
+            });
+            if (audioResponse.ok) {
+              const audioBlob = await audioResponse.blob();
+              console.log('✅ Stored audio loaded from database after generation - NO ADDITIONAL CREDITS USED!');
+              setAudioStatus('ready');
+              setAudioSource('stored');
+              await playAudioFromBlob(audioBlob);
+              return;
+            }
+          }
+        } catch (error) {
+          console.error('Error generating/storing audio:', error);
+        }
+      }
+      
+      // Fallback: Generate audio locally (for new stories without storyId)
+      console.log('🎵 Generating audio locally - THIS WILL USE API CREDITS');
+      console.log('💰 Using Flash model for cost savings (0.5 credits per character)');
       const audioBlob = await convertTextToSpeech(story);
+      setAudioStatus('ready');
+      setAudioSource('generated');
       await playAudioFromBlob(audioBlob);
     } catch (error) {
       console.error('Error playing story:', error);
       setPlayError('Failed to play audio. Please check your ElevenLabs API key.');
+      setAudioStatus(null);
     } finally {
       setIsPlaying(false);
     }
@@ -249,29 +321,37 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
 
         {/* Action Buttons */}
         <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center items-center">
-          {/* Play Button */}
-          <button
-            onClick={handlePlayStory}
-            disabled={isPlaying}
-            className={`px-8 py-4 min-h-[48px] text-lg font-bold rounded-lg transition-all transform ${
-              isPlaying
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl'
-            } text-white focus:outline-none focus:ring-4 focus:ring-green-300`}
-            aria-label={isPlaying ? "Playing story..." : "Play story audio"}
-          >
-            {isPlaying ? (
-              <span className="flex items-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Playing...
-              </span>
-            ) : (
-              '🔊 Play Story'
-            )}
-          </button>
+              {/* Play Button */}
+              <button
+                onClick={handlePlayStory}
+                disabled={isPlaying}
+                className={`px-8 py-4 min-h-[48px] text-lg font-bold rounded-lg transition-all transform ${
+                  isPlaying
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl'
+                } text-white focus:outline-none focus:ring-4 focus:ring-green-300`}
+                aria-label={isPlaying ? "Playing story..." : "Play story audio"}
+              >
+                {isPlaying ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    {audioStatus === 'generating' ? 'Generating Audio...' : 'Playing...'}
+                  </span>
+                ) : (
+                  <span className="flex items-center">
+                    🔊 Play Story
+                    {audioStatus === 'ready' && audioSource === 'stored' && (
+                      <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded">(Stored - No Credits)</span>
+                    )}
+                    {audioStatus === 'ready' && audioSource === 'generated' && (
+                      <span className="ml-2 text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">(Generated - Credits Used)</span>
+                    )}
+                  </span>
+                )}
+              </button>
 
           {/* Back to History Button (only if viewing from history) */}
           {isFromHistory && onBackToHistory && (

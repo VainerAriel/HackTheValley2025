@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { generateStory } from '../services/gemini';
 import { getBatchWordDefinitions } from '../services/gemini';
+import { convertTextToSpeech } from '../services/elevenLabsService';
 import { saveStory } from '../services/storyService';
 
 export const useStoryFlow = () => {
@@ -9,6 +10,7 @@ export const useStoryFlow = () => {
   const [story, setStory] = useState(null);
   const [vocabularyWords, setVocabularyWords] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [storyId, setStoryId] = useState(null);
 
   const handleFormSubmit = (data) => {
     setFormData(data);
@@ -40,7 +42,9 @@ export const useStoryFlow = () => {
           const vocabDefinitions = await getBatchWordDefinitions(words, formData.age);
           console.log('Vocabulary definitions fetched:', vocabDefinitions);
           
-          await saveStory({
+          // Save story first to get storyId
+          console.log('💾 Saving story to database...');
+          const saveResult = await saveStory({
             userId: userId,
             storyText: generatedStory,
             interests: [formData.interest1, formData.interest2, formData.interest3],
@@ -49,9 +53,35 @@ export const useStoryFlow = () => {
             age: formData.age,
             vocabDefinitions: vocabDefinitions
           });
-          console.log('Story auto-saved successfully with vocabulary definitions!');
+          console.log('✅ Story auto-saved successfully with vocabulary definitions!', saveResult);
+          
+          // Store storyId for use in StoryDisplay
+          if (saveResult && saveResult.storyId) {
+            setStoryId(saveResult.storyId);
+            console.log('🎵 Generating and storing audio immediately for storyId:', saveResult.storyId);
+            try {
+              const audioResponse = await fetch(`http://localhost:5000/api/story/${saveResult.storyId}/generate-audio`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
+              
+              if (audioResponse.ok) {
+                console.log('✅ Audio generated and stored immediately - ready for instant playback!');
+              } else {
+                console.log('⚠️ Audio generation failed, will generate on-demand');
+              }
+            } catch (error) {
+              console.error('Error generating audio immediately:', error);
+              console.log('⚠️ Will generate on-demand when user clicks play');
+            }
+          } else {
+            console.log('⚠️ No storyId returned, audio will be generated on-demand');
+          }
         } catch (error) {
-          console.error('Error auto-saving story:', error);
+          console.error('❌ Error auto-saving story:', error);
+          console.error('Error details:', error.message);
           // Don't throw error here, just log it
         }
       }
@@ -67,6 +97,7 @@ export const useStoryFlow = () => {
     setFormData(null);
     setStory(null);
     setVocabularyWords([]);
+    setStoryId(null);
   };
 
   return {
@@ -75,6 +106,7 @@ export const useStoryFlow = () => {
     story,
     vocabularyWords,
     loading,
+    storyId,
     handleFormSubmit,
     handleVocabularyBack,
     handleVocabularyGenerate,

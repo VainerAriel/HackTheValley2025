@@ -18,6 +18,7 @@ const Dashboard = () => {
     story,
     vocabularyWords,
     loading,
+    storyId,
     handleFormSubmit,
     handleVocabularyBack,
     handleVocabularyGenerate,
@@ -63,6 +64,7 @@ const Dashboard = () => {
             vocabularyWords={vocabularyWords}
             age={formData?.age}
             isFromHistory={false}
+            storyId={storyId}
           />
         );
       

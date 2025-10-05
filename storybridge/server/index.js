@@ -11,7 +11,9 @@ app.use(cors({
   origin: 'http://localhost:3000',
   credentials: true
 }));
-app.use(express.json());
+// Increase body parser limit for large audio files
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Remove quotes from env variables
 const cleanEnv = (str) => str ? str.replace(/^["']|["']$/g, '') : str;
@@ -91,6 +93,9 @@ app.post('/api/stories', async (req, res) => {
     const escapedChildName = (childName || '').replace(/'/g, "''");
     const escapedVocabDefinitions = vocabDefinitions ? JSON.stringify(vocabDefinitions).replace(/'/g, "''") : '';
     
+    // Audio will be generated on-demand to avoid payload size issues
+    console.log('📝 Saving story without audio (audio will be generated on-demand)');
+    
     const sql = `
       INSERT INTO stories (USER_ID, STORY_TEXT, AUDIO_URL, INTERESTS, VOCAB_WORDS, VOCAB_DEFINITIONS, CREATED_AT) 
       VALUES ('${userId}', '${escapedStory}', '${escapedAudioUrl}', '${interests.join(',')}', '${vocabWords.join(',')}', '${escapedVocabDefinitions}', CURRENT_TIMESTAMP)
@@ -99,10 +104,26 @@ app.post('/api/stories', async (req, res) => {
     console.log('SQL Query:', sql);
     console.log('Data being saved:', { userId, storyText: storyText.substring(0, 100) + '...', interests, vocabWords, childName, age });
     
-    await executeQuery(sql);
-    console.log('✅ Story saved!\n');
-    
-    res.json({ success: true });
+    try {
+      await executeQuery(sql);
+      console.log('✅ Story saved successfully!\n');
+      
+      // Get the storyId of the newly created story
+      const getStoryIdSql = `SELECT STORY_ID FROM stories WHERE USER_ID = '${userId}' ORDER BY CREATED_AT DESC LIMIT 1`;
+      const storyRows = await executeQuery(getStoryIdSql);
+      const storyId = storyRows[0]?.STORY_ID;
+      
+      res.json({ 
+        success: true, 
+        message: 'Story saved successfully',
+        storyId: storyId
+      });
+    } catch (sqlError) {
+      console.error('❌ SQL Error:', sqlError.message);
+      console.error('SQL Query that failed:', sql);
+      res.status(500).json({ error: `Database error: ${sqlError.message}` });
+      return;
+    }
   } catch (error) {
     console.error('❌ Error:', error.message);
     res.status(500).json({ error: error.message });
@@ -135,6 +156,82 @@ app.get('/api/story/:storyId', async (req, res) => {
     const rows = await executeQuery(sql);
     res.json({ success: true, data: rows[0] || null });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Generate and store audio for a story
+app.post('/api/story/:storyId/generate-audio', async (req, res) => {
+  try {
+    console.log('🎵 Generating audio for story:', req.params.storyId);
+    
+    // Get story text from database
+    const storySql = `SELECT STORY_TEXT FROM stories WHERE STORY_ID = '${req.params.storyId}'`;
+    const storyRows = await executeQuery(storySql);
+    
+    if (!storyRows[0] || !storyRows[0].STORY_TEXT) {
+      return res.status(404).json({ error: 'Story not found' });
+    }
+    
+    const storyText = storyRows[0].STORY_TEXT;
+    console.log('Story text length:', storyText.length, 'characters');
+    
+    // Check if audio already exists
+    const audioCheckSql = `SELECT AUDIO_DATA FROM stories WHERE STORY_ID = '${req.params.storyId}' AND AUDIO_DATA IS NOT NULL`;
+    const audioRows = await executeQuery(audioCheckSql);
+    
+    if (audioRows[0] && audioRows[0].AUDIO_DATA) {
+      console.log('✅ Audio already exists for this story');
+      return res.json({ success: true, message: 'Audio already exists' });
+    }
+    
+    // Generate audio using ElevenLabs (this will use credits)
+    const { convertTextToSpeech } = require('./elevenLabsService');
+    const audioBlob = await convertTextToSpeech(storyText);
+    
+    // Convert blob to base64 for storage (safer approach)
+    const audioBuffer = Buffer.from(await audioBlob.arrayBuffer());
+    const base64Audio = audioBuffer.toString('base64');
+    
+    // Store audio as base64 string in database (avoiding binary issues)
+    const escapedAudio = base64Audio.replace(/'/g, "''");
+    const updateSql = `UPDATE stories SET AUDIO_DATA = '${escapedAudio}' WHERE STORY_ID = '${req.params.storyId}'`;
+    await executeQuery(updateSql);
+    
+    console.log('✅ Audio generated and stored successfully, size:', audioBuffer.length, 'bytes, base64 length:', base64Audio.length, 'characters');
+    res.json({ success: true, message: 'Audio generated and stored successfully' });
+    
+  } catch (error) {
+    console.error('❌ Error generating audio:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get audio data for a story
+app.get('/api/story/:storyId/audio', async (req, res) => {
+  try {
+    const sql = `SELECT AUDIO_DATA FROM stories WHERE STORY_ID = '${req.params.storyId}'`;
+    const rows = await executeQuery(sql);
+    
+    if (!rows[0] || !rows[0].AUDIO_DATA) {
+      return res.status(404).json({ error: 'Audio not found' });
+    }
+    
+    // Convert base64 string back to buffer
+    const base64Audio = rows[0].AUDIO_DATA;
+    const audioBuffer = Buffer.from(base64Audio, 'base64');
+    
+    res.set({
+      'Content-Type': 'audio/mpeg',
+      'Content-Length': audioBuffer.length,
+      'Cache-Control': 'no-cache, no-store, must-revalidate', // Always fetch from database
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+    
+    res.send(audioBuffer);
+  } catch (error) {
+    console.error('Error retrieving audio:', error);
     res.status(500).json({ error: error.message });
   }
 });
