@@ -33,7 +33,7 @@ export const saveStory = async (storyData) => {
 
 export const getUserStories = async (userId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/stories/${userId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/stories/${encodeURIComponent(userId)}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

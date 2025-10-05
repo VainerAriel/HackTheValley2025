@@ -187,11 +187,12 @@ app.post('/api/stories', async (req, res) => {
 
 app.get('/api/stories/:userId', async (req, res) => {
   try {
+    const userId = decodeURIComponent(req.params.userId);
     console.log('📖 Loading stories...');
     
     const sql = `
       SELECT * FROM stories 
-      WHERE USER_ID = '${req.params.userId}' 
+      WHERE USER_ID = '${userId}' 
       ORDER BY CREATED_AT DESC
     `;
     
@@ -571,7 +572,7 @@ app.post('/api/migrate-database', async (req, res) => {
 // Get user's used vocabulary words
 app.get('/api/user/:userId/vocabulary', async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const userId = decodeURIComponent(req.params.userId);
     console.log('📚 Getting used vocabulary for user:', userId);
     
     const sql = `
@@ -595,7 +596,7 @@ app.get('/api/user/:userId/vocabulary', async (req, res) => {
 // Add vocabulary words for a story
 app.post('/api/user/:userId/vocabulary', async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const userId = decodeURIComponent(req.params.userId);
     const { words, storyId } = req.body;
     
     console.log('📝 Adding vocabulary words for user:', userId, 'story:', storyId);
@@ -627,7 +628,7 @@ app.post('/api/user/:userId/vocabulary', async (req, res) => {
 // Remove vocabulary words for a story
 app.delete('/api/user/:userId/vocabulary/story/:storyId', async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const userId = decodeURIComponent(req.params.userId);
     const storyId = req.params.storyId;
     
     console.log('🗑️ Removing vocabulary words for user:', userId, 'story:', storyId);
@@ -643,6 +644,94 @@ app.delete('/api/user/:userId/vocabulary/story/:storyId', async (req, res) => {
     res.json({ success: true, message: 'Vocabulary words removed successfully' });
   } catch (error) {
     console.error('❌ Error removing vocabulary words:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get user stats (word count and story count)
+app.get('/api/user/:userId/stats', async (req, res) => {
+  try {
+    const userId = decodeURIComponent(req.params.userId);
+    console.log('📊 Getting user stats for:', userId);
+    
+    // Get vocabulary words list
+    const vocabSql = `
+      SELECT DISTINCT WORD 
+      FROM user_vocabulary 
+      WHERE USER_ID = '${userId}'
+      ORDER BY WORD
+    `;
+    
+    // Get stories list
+    const storySql = `
+      SELECT * FROM stories 
+      WHERE USER_ID = '${userId}'
+      ORDER BY CREATED_AT DESC
+    `;
+    
+    const [vocabResult, storyResult] = await Promise.all([
+      executeQuery(vocabSql),
+      executeQuery(storySql)
+    ]);
+    
+    const stats = {
+      wordsLearned: vocabResult.length,
+      storiesGenerated: storyResult.length
+    };
+    
+    console.log('✅ User stats:', stats);
+    res.json({ success: true, data: stats });
+  } catch (error) {
+    console.error('❌ Error getting user stats:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get user's vocabulary words with definitions
+app.get('/api/user/:userId/vocabulary-with-definitions', async (req, res) => {
+  try {
+    const userId = decodeURIComponent(req.params.userId);
+    console.log('📚 Getting vocabulary with definitions for user:', userId);
+    
+    // Get vocabulary words and their associated story data
+    const sql = `
+      SELECT DISTINCT uv.WORD, s.VOCAB_DEFINITIONS, s.CREATED_AT
+      FROM user_vocabulary uv
+      LEFT JOIN stories s ON uv.STORY_ID = s.STORY_ID
+      WHERE uv.USER_ID = '${userId}'
+      ORDER BY s.CREATED_AT DESC, uv.WORD
+    `;
+    
+    const rows = await executeQuery(sql);
+    console.log('✅ Found', rows.length, 'vocabulary words with definitions');
+    
+    // Process the results to extract definitions
+    const vocabularyWithDefinitions = rows.map(row => {
+      let definitions = {};
+      try {
+        if (row.VOCAB_DEFINITIONS) {
+          definitions = JSON.parse(row.VOCAB_DEFINITIONS);
+        }
+      } catch (error) {
+        console.error('Error parsing definitions for word:', row.WORD, error);
+      }
+      
+      return {
+        word: row.WORD,
+        definitions: definitions[row.WORD?.toLowerCase()] || {
+          word: row.WORD,
+          pronunciation: '',
+          simple_definition: row.WORD,
+          example_sentence: '',
+          synonyms: []
+        },
+        learnedDate: row.CREATED_AT
+      };
+    });
+    
+    res.json({ success: true, data: vocabularyWithDefinitions });
+  } catch (error) {
+    console.error('❌ Error getting vocabulary with definitions:', error);
     res.status(500).json({ error: error.message });
   }
 });

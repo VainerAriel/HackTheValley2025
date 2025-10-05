@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useAuth0 } from '@auth0/auth0-react';
 import LoadingSpinner from './components/LoadingSpinner.jsx';
 import LoginPage from './components/LoginPage.jsx';
+import HomePage from './components/HomePage.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import StoryView from './components/StoryView.jsx';
 import StoryHistory from './components/StoryHistory.jsx';
@@ -74,7 +75,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/create" element={<Dashboard />} />
         <Route path="/history" element={<StoryHistory />} />
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/story/:storyId" element={<StoryView />} />
