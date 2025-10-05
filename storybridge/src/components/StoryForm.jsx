@@ -110,7 +110,7 @@ function StoryForm({ onGenerateStory, loading }) {
   if (profileLoading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
         <span className="ml-3 text-gray-600">Loading your child's profile...</span>
       </div>
     );
@@ -128,7 +128,7 @@ function StoryForm({ onGenerateStory, loading }) {
       <form onSubmit={handleSubmit} className="space-y-8">
 
         {/* Child Info Display */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+        <div className="bg-gradient-to-r from-orange-50 to-orange-50 rounded-xl p-6 border border-orange-100">
           <div className="text-center">
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               {profileData.childName} ({profileData.childAge})
@@ -160,7 +160,7 @@ function StoryForm({ onGenerateStory, loading }) {
                     key={interest}
                     className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                       selectedTopics.includes(interest)
-                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
+                        ? 'border-orange-500 bg-orange-50 text-orange-700 shadow-md'
                         : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                     }`}
                   >
@@ -168,7 +168,7 @@ function StoryForm({ onGenerateStory, loading }) {
                       type="checkbox"
                       checked={selectedTopics.includes(interest)}
                       onChange={() => handleTopicToggle(interest)}
-                      className="mr-3 text-blue-600 focus:ring-blue-500"
+                      className="mr-3 text-orange-600 focus:ring-orange-500"
                     />
                     <span className="font-medium">{interest}</span>
                   </label>
@@ -189,7 +189,7 @@ function StoryForm({ onGenerateStory, loading }) {
                 onChange={(e) => setCustomTopic(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCustomTopic())}
                 disabled={loading}
-                className={`flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                className={`flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 ${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 placeholder="e.g., space adventure, underwater mystery, magical forest"
               />
               <button
@@ -199,7 +199,7 @@ function StoryForm({ onGenerateStory, loading }) {
                 className={`px-6 py-3 font-medium rounded-xl transition-all duration-200 ${
                   !customTopic.trim() || loading
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg'
+                    : 'bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg'
                 }`}
               >
                 Add
@@ -217,13 +217,13 @@ function StoryForm({ onGenerateStory, loading }) {
                 {selectedTopics.map((topic, index) => (
                   <span
                     key={index}
-                    className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+                    className="inline-flex items-center px-4 py-2 bg-orange-100 text-orange-800 rounded-full text-sm font-medium"
                   >
                     {topic}
                     <button
                       type="button"
                       onClick={() => handleRemoveTopic(topic)}
-                      className="ml-2 text-blue-600 hover:text-blue-800 font-bold text-lg"
+                      className="ml-2 text-orange-600 hover:text-orange-800 font-bold text-lg"
                     >
                       ×
                     </button>
@@ -247,7 +247,7 @@ function StoryForm({ onGenerateStory, loading }) {
           className={`w-full py-4 text-lg font-bold rounded-xl transition-all duration-200 transform ${
             loading || selectedTopics.length === 0
               ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl'
+              : 'bg-orange-600 hover:bg-orange-700 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl'
           } text-white`}
           aria-busy={loading}
         >

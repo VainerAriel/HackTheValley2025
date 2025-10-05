@@ -134,7 +134,7 @@ const StoriesModal = ({ isOpen, onClose }) => {
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-amber-600 hover:text-amber-800 transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -151,7 +151,7 @@ const StoriesModal = ({ isOpen, onClose }) => {
                 placeholder="Search stories by title, content, or interests..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               />
             </div>
             <div className="flex gap-2">
@@ -159,7 +159,7 @@ const StoriesModal = ({ isOpen, onClose }) => {
                 onClick={() => setSortBy('recent')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   sortBy === 'recent'
-                    ? 'bg-green-600 text-white'
+                    ? 'bg-gradient-to-r from-yellow-700 to-amber-800 text-white'
                     : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 }`}
               >
@@ -169,7 +169,7 @@ const StoriesModal = ({ isOpen, onClose }) => {
                 onClick={() => setSortBy('alphabetical')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   sortBy === 'alphabetical'
-                    ? 'bg-green-600 text-white'
+                    ? 'bg-gradient-to-r from-yellow-700 to-amber-800 text-white'
                     : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 }`}
               >
@@ -183,7 +183,7 @@ const StoriesModal = ({ isOpen, onClose }) => {
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-700"></div>
               <span className="ml-3 text-gray-600">Loading your stories...</span>
             </div>
           ) : filteredAndSortedStories().length === 0 ? (
@@ -204,7 +204,7 @@ const StoriesModal = ({ isOpen, onClose }) => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {filteredAndSortedStories().map((story, index) => (
-                <div key={`${story.STORY_ID}-${index}`} className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100 hover:shadow-md transition-shadow">
+                <div key={`${story.STORY_ID}-${index}`} className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-200 hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
@@ -216,7 +216,7 @@ const StoriesModal = ({ isOpen, onClose }) => {
                     </div>
                     <button
                       onClick={() => handleViewStory(story.STORY_ID)}
-                      className="ml-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                      className="ml-4 px-4 py-2 bg-gradient-to-r from-yellow-700 to-amber-800 text-white rounded-lg hover:from-yellow-800 hover:to-amber-900 transition-colors text-sm font-medium"
                     >
                       Read
                     </button>
@@ -237,7 +237,7 @@ const StoriesModal = ({ isOpen, onClose }) => {
                           {getStoryInterests(story.INTERESTS).map((interest, idx) => (
                             <span
                               key={idx}
-                              className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full"
+                              className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full"
                             >
                               {interest.trim()}
                             </span>
@@ -253,7 +253,7 @@ const StoriesModal = ({ isOpen, onClose }) => {
                           {getStoryVocabWords(story.VOCAB_WORDS).map((word, idx) => (
                             <span
                               key={idx}
-                              className="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded-full"
+                              className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full"
                             >
                               {word.trim()}
                             </span>
@@ -267,7 +267,7 @@ const StoriesModal = ({ isOpen, onClose }) => {
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between pt-3 border-t border-green-200">
+                    <div className="flex items-center justify-between pt-3 border-t border-amber-200">
                       <div className="text-xs text-gray-500">
                         ID: {story.STORY_ID?.substring(0, 8)}...
                       </div>
@@ -295,13 +295,13 @@ const StoriesModal = ({ isOpen, onClose }) => {
             <div className="flex gap-3">
               <button
                 onClick={() => navigate('/create')}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium text-sm"
               >
                 Create New Story
               </button>
               <button
                 onClick={onClose}
-                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                className="px-6 py-2 bg-gradient-to-r from-yellow-700 to-amber-800 text-white rounded-lg hover:from-yellow-800 hover:to-amber-900 transition-colors font-medium"
               >
                 Close
               </button>

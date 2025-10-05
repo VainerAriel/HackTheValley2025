@@ -741,9 +741,9 @@ const StoryReader = ({
                       ? 'vocabulary-word' 
                       : `transition-colors duration-100 ${
                           isWordActive 
-                            ? 'bg-blue-500' 
+                            ? 'bg-orange-500' 
                             : isSentenceActive 
-                            ? 'bg-blue-100' 
+                            ? 'bg-orange-100' 
                             : ''
                         }`
                   }`}
@@ -828,6 +828,7 @@ const StoryReader = ({
               onClick={toggleFullscreen}
               className="control-button"
               title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+              style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)' }}
             >
               <span style={{ fontSize: '1.5em' }}>
                 {isFullscreen ? '\uF3DE' : '⛶'}
@@ -837,6 +838,7 @@ const StoryReader = ({
               onClick={() => setFontSize(fontSize === 'xlarge' ? 'large' : fontSize === 'large' ? 'medium' : fontSize === 'medium' ? 'small' : 'small')}
               className="control-button"
               title="Decrease font size"
+              style={{ background: 'linear-gradient(135deg, #c4a57b, #d4b896)' }}
             >
               a
             </button>
@@ -845,6 +847,7 @@ const StoryReader = ({
               onClick={() => setFontSize(fontSize === 'small' ? 'medium' : fontSize === 'medium' ? 'large' : fontSize === 'large' ? 'xlarge' : 'xlarge')}
               className="control-button"
               title="Increase font size"
+              style={{ background: 'linear-gradient(135deg, #a88f6c, #b89968)' }}
             >
               A
             </button>
@@ -855,7 +858,7 @@ const StoryReader = ({
               onClick={() => setShowFontSelector(!showFontSelector)}
               className="control-button"
               title="Change font"
-              style={{ fontFamily: getFontFamily() }}
+              style={{ fontFamily: getFontFamily(), background: 'linear-gradient(135deg, #8b7355, #6b543e)' }}
             >
               Font: {selectedFont}
             </button>

@@ -8,23 +8,23 @@ module.exports = {
       },
       colors: {
         cream: {
-          50: '#fdfcfa',
-          100: '#faf8f4',
-          200: '#f5f1e8',
-          300: '#f0e9dc',
-          400: '#ebe2d0',
-          500: '#e6dac4',
+          50: '#fdfbf7',
+          100: '#faf6ef',
+          200: '#f5ece0',
+          300: '#ede0ca',
+          400: '#e4d4b4',
+          500: '#d6c5a0',
         },
         brand: {
           brown: {
-            light: '#8B7355',
-            DEFAULT: '#6B5744',
-            dark: '#4A3C2E',
+            light: '#c4a57b',
+            DEFAULT: '#a88f6c',
+            dark: '#8b7355',
           },
-          blue: {
-            light: '#5B9BD5',
-            DEFAULT: '#4A7FB8',
-            dark: '#2E5A8A',
+          accent: {
+            light: '#d4b896',
+            DEFAULT: '#b89968',
+            dark: '#9d7f4f',
           }
         }
       }

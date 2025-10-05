@@ -184,18 +184,18 @@ const UserProfile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
         {/* Header */}
-        <div className="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div className="bg-gradient-to-r from-amber-100 to-orange-100 shadow-sm border-b border-amber-300 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center p-1">
+                <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center p-1">
                   <img src={storybitesLogo} alt="StoryBites Logo" className="w-full h-full object-contain" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">StoryBites</h1>
-                  <p className="text-sm text-gray-600">User Profile</p>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-yellow-700 to-amber-800 bg-clip-text text-transparent">StoryBites</h1>
+                  <p className="text-sm text-amber-800">User Profile</p>
                 </div>
               </div>
               <div className="flex items-center space-x-4">
@@ -209,7 +209,7 @@ const UserProfile = () => {
         
         <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
           <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mx-auto mb-4"></div>
             <span className="text-gray-600">Loading profile...</span>
           </div>
         </div>
@@ -218,18 +218,18 @@ const UserProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b sticky top-0 z-50">
+      <div className="bg-gradient-to-r from-amber-100 to-orange-100 shadow-sm border-b border-amber-300 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center p-1">
+              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center p-1">
                 <img src={storybitesLogo} alt="StoryBites Logo" className="w-full h-full object-contain" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">StoryBites</h1>
-                <p className="text-sm text-gray-600">User Profile</p>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-yellow-700 to-amber-800 bg-clip-text text-transparent">StoryBites</h1>
+                <p className="text-sm text-amber-800">User Profile</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -246,26 +246,26 @@ const UserProfile = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 sticky top-24 z-40">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Navigation</h3>
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-amber-200 sticky top-24 z-40">
+              <h3 className="text-lg font-semibold text-amber-900 mb-4">Navigation</h3>
               <nav className="space-y-2">
                 <button
                   onClick={() => navigate('/')}
-                  className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                  className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 text-amber-800 hover:bg-amber-50 hover:text-amber-900"
                 >
                   🏠 Home
                 </button>
                 
                 <button
                   onClick={() => navigate('/create')}
-                  className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                  className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 text-amber-800 hover:bg-amber-50 hover:text-amber-900"
                 >
                   ✨ Generate a Story
                 </button>
                 
                 <button
                   onClick={() => navigate('/profile')}
-                  className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 bg-blue-600 text-white font-semibold shadow-md"
+                  className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 bg-gradient-to-r from-yellow-700 to-yellow-800 text-white font-semibold shadow-md"
                 >
                   👤 User Info
                 </button>
@@ -275,7 +275,7 @@ const UserProfile = () => {
 
           {/* Main Content Area */}
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+            <div className="bg-white rounded-2xl shadow-xl p-8 border border-amber-200">
               <div className="mb-8">
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">User Profile</h2>
                 <p className="text-gray-600">Manage your child's information and preferences</p>
@@ -291,7 +291,7 @@ const UserProfile = () => {
               type="text"
               value={profileData.childName}
               onChange={(e) => handleInputChange('childName', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200"
               placeholder="Enter your child's name"
             />
           </div>
@@ -304,7 +304,7 @@ const UserProfile = () => {
             <select
               value={profileData.childAge}
               onChange={(e) => handleInputChange('childAge', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200"
             >
               <option value="">Select age group</option>
               <option value="2-3">2-3 years (Toddler)</option>
@@ -323,11 +323,11 @@ const UserProfile = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Child's Pronouns
             </label>
-            <div className="grid grid-cols-2 gap-3">
-              {['he/him', 'she/her'].map((option) => (
+            <div className="grid grid-cols-3 gap-3">
+              {['he/him', 'she/her', 'they/them'].map((option) => (
                 <label key={option} className={`flex items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                   profileData.childPronouns === option
-                    ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
+                    ? 'border-yellow-700 bg-gradient-to-r from-yellow-700 to-amber-800 text-white shadow-md'
                     : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                 }`}>
                   <input
@@ -336,28 +336,11 @@ const UserProfile = () => {
                     value={option}
                     checked={profileData.childPronouns === option}
                     onChange={(e) => handleInputChange('childPronouns', e.target.value)}
-                    className="mr-2 text-brand-blue focus:ring-brand-blue"
+                    className="mr-2 text-yellow-700 focus:ring-yellow-700"
                   />
                   <span className="font-medium">{option}</span>
                 </label>
               ))}
-              <div className="col-span-2">
-                <label className={`flex items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 w-full ${
-                  profileData.childPronouns === 'they/them'
-                    ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
-                    : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
-                }`}>
-                  <input
-                    type="radio"
-                    name="childPronouns"
-                    value="they/them"
-                    checked={profileData.childPronouns === 'they/them'}
-                    onChange={(e) => handleInputChange('childPronouns', e.target.value)}
-                    className="mr-2 text-brand-blue focus:ring-brand-blue"
-                  />
-                  <span className="font-medium">they/them</span>
-                </label>
-              </div>
             </div>
           </div>
 
@@ -374,7 +357,7 @@ const UserProfile = () => {
                   key={interest}
                   className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                     profileData.interests.includes(interest)
-                      ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
+                      ? 'border-yellow-700 bg-gradient-to-r from-yellow-700 to-amber-800 text-white shadow-md'
                       : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                   }`}
                 >
@@ -382,7 +365,7 @@ const UserProfile = () => {
                     type="checkbox"
                     checked={profileData.interests.includes(interest)}
                     onChange={() => handleInterestToggle(interest)}
-                    className="mr-2 text-brand-blue focus:ring-brand-blue"
+                    className="mr-2 text-yellow-700 focus:ring-yellow-700"
                   />
                   <span className="text-sm font-medium">{interest}</span>
                 </label>
@@ -401,14 +384,14 @@ const UserProfile = () => {
                   onChange={(e) => setNewCustomInterest(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleAddCustomInterest()}
                   placeholder="Enter custom interest"
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200"
                   disabled={customInterests.length >= 10}
                 />
                 <button
                   type="button"
                   onClick={handleAddCustomInterest}
                   disabled={!newCustomInterest.trim() || customInterests.length >= 10 || customInterests.some(interest => interest.toLowerCase() === newCustomInterest.trim().toLowerCase()) || commonInterests.some(interest => interest.toLowerCase() === newCustomInterest.trim().toLowerCase())}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200 font-medium"
+                  className="px-6 py-3 bg-gradient-to-r from-yellow-700 to-amber-800 text-white rounded-xl hover:from-yellow-800 hover:to-amber-900 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200 font-medium"
                 >
                   Add
                 </button>
@@ -420,13 +403,13 @@ const UserProfile = () => {
                   {customInterests.map((interest, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+                      className="inline-flex items-center px-4 py-2 bg-amber-100 text-amber-900 rounded-full text-sm font-medium"
                     >
                       {interest}
                       <button
                         type="button"
                         onClick={() => handleRemoveCustomInterest(interest)}
-                        className="ml-2 text-blue-600 hover:text-blue-800 font-bold text-lg"
+                        className="ml-2 text-amber-700 hover:text-amber-900 font-bold text-lg"
                       >
                         ×
                       </button>
@@ -445,7 +428,7 @@ const UserProfile = () => {
               className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-200 ${
                 saving || !profileData.childName.trim()
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+                  : 'bg-gradient-to-r from-yellow-700 to-amber-800 hover:from-yellow-800 hover:to-amber-900 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
               }`}
             >
               {saving ? 'Saving...' : 'Save Profile'}

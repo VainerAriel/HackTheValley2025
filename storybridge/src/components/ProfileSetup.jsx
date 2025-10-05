@@ -200,28 +200,28 @@ const ProfileSetup = ({ onComplete }) => {
   };
 
   return (
-    <div className="min-h-screen bg-cream-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full">
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-white rounded-lg shadow-lg p-8 border border-amber-200">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-brand-blue rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-yellow-700 to-amber-800 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-white text-2xl font-bold">👤</span>
             </div>
-            <h1 className="text-3xl font-bold text-brand-brown-dark mb-2">Welcome to StoryBites!</h1>
-            <p className="text-gray-600">Let's set up your child's profile to create personalized stories</p>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-700 to-amber-800 bg-clip-text text-transparent mb-2">Welcome to StoryBites!</h1>
+            <p className="text-amber-800">Let's set up your child's profile to create personalized stories</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Child Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-amber-900 mb-2">
                 What's your child's name? *
               </label>
               <input
                 type="text"
                 value={profileData.childName}
                 onChange={(e) => handleInputChange('childName', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent text-lg"
+                className="w-full px-4 py-3 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:border-transparent text-lg"
                 placeholder="Enter your child's name"
                 required
               />
@@ -229,13 +229,13 @@ const ProfileSetup = ({ onComplete }) => {
 
             {/* Child Age */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-amber-900 mb-2">
                 What's your child's age group? *
               </label>
               <select
                 value={profileData.childAge}
                 onChange={(e) => handleInputChange('childAge', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent text-lg"
+                className="w-full px-4 py-3 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:border-transparent text-lg"
                 required
               >
                 <option value="">Select age group</option>
@@ -252,15 +252,15 @@ const ProfileSetup = ({ onComplete }) => {
 
             {/* Child Pronouns */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-amber-900 mb-3">
                 What are your child's pronouns? *
               </label>
               <div className="grid grid-cols-2 gap-3">
                 {['he/him', 'she/her'].map((option) => (
                   <label key={option} className={`flex items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all ${
                     profileData.childPronouns === option
-                      ? 'border-brand-blue bg-blue-50 text-brand-blue'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-yellow-700 bg-amber-50 text-amber-900'
+                      : 'border-amber-200 hover:border-amber-300'
                   }`}>
                     <input
                       type="radio"
@@ -268,7 +268,7 @@ const ProfileSetup = ({ onComplete }) => {
                       value={option}
                       checked={profileData.childPronouns === option}
                       onChange={(e) => handleInputChange('childPronouns', e.target.value)}
-                      className="mr-2 text-brand-blue focus:ring-brand-blue"
+                      className="mr-2 text-yellow-700 focus:ring-yellow-700"
                     />
                     <span className="font-medium">{option}</span>
                   </label>
@@ -276,8 +276,8 @@ const ProfileSetup = ({ onComplete }) => {
                 <div className="col-span-2">
                   <label className={`flex items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all w-full ${
                     profileData.childPronouns === 'they/them'
-                      ? 'border-brand-blue bg-blue-50 text-brand-blue'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-yellow-700 bg-amber-50 text-amber-900'
+                      : 'border-amber-200 hover:border-amber-300'
                   }`}>
                     <input
                       type="radio"
@@ -285,7 +285,7 @@ const ProfileSetup = ({ onComplete }) => {
                       value="they/them"
                       checked={profileData.childPronouns === 'they/them'}
                       onChange={(e) => handleInputChange('childPronouns', e.target.value)}
-                      className="mr-2 text-brand-blue focus:ring-brand-blue"
+                      className="mr-2 text-yellow-700 focus:ring-yellow-700"
                     />
                     <span className="font-medium">they/them</span>
                   </label>
@@ -295,7 +295,7 @@ const ProfileSetup = ({ onComplete }) => {
 
             {/* Interests */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-amber-900 mb-3">
                 What does your child like? (Select all that apply) *
               </label>
               
@@ -306,15 +306,15 @@ const ProfileSetup = ({ onComplete }) => {
                     key={interest}
                     className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all ${
                       profileData.interests.includes(interest)
-                        ? 'border-brand-blue bg-blue-50 text-brand-blue'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-yellow-700 bg-amber-50 text-amber-900'
+                        : 'border-amber-200 hover:border-amber-300'
                     }`}
                   >
                     <input
                       type="checkbox"
                       checked={profileData.interests.includes(interest)}
                       onChange={() => handleInterestToggle(interest)}
-                      className="mr-2 text-brand-blue focus:ring-brand-blue"
+                      className="mr-2 text-yellow-700 focus:ring-yellow-700"
                     />
                     <span className="text-sm font-medium">{interest}</span>
                   </label>
@@ -323,7 +323,7 @@ const ProfileSetup = ({ onComplete }) => {
 
               {/* Custom Interests */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-amber-900 mb-2">
                   Add custom interests (up to 5):
                 </label>
                 <div className="flex gap-2 mb-3">
@@ -333,14 +333,14 @@ const ProfileSetup = ({ onComplete }) => {
                     onChange={(e) => setNewCustomInterest(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleAddCustomInterest()}
                     placeholder="Enter custom interest"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent"
+                    className="flex-1 px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:border-transparent"
                     disabled={customInterests.length >= 5}
                   />
                   <button
                     type="button"
                     onClick={handleAddCustomInterest}
                      disabled={!newCustomInterest.trim() || customInterests.length >= 5 || customInterests.some(interest => interest.toLowerCase() === newCustomInterest.trim().toLowerCase()) || commonInterests.some(interest => interest.toLowerCase() === newCustomInterest.trim().toLowerCase())}
-                    className="px-4 py-2 bg-brand-blue text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-gradient-to-r from-yellow-700 to-amber-800 text-white rounded-lg hover:from-yellow-800 hover:to-amber-900 disabled:bg-gray-300 disabled:cursor-not-allowed"
                   >
                     Add
                   </button>
@@ -352,13 +352,13 @@ const ProfileSetup = ({ onComplete }) => {
                     {customInterests.map((interest, index) => (
                       <span
                         key={index}
-                        className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                        className="inline-flex items-center px-3 py-1 bg-amber-100 text-yellow-900 rounded-full text-sm"
                       >
                         {interest}
                         <button
                           type="button"
                           onClick={() => handleRemoveCustomInterest(interest)}
-                          className="ml-2 text-blue-600 hover:text-blue-800"
+                          className="ml-2 text-yellow-800 hover:text-yellow-900"
                         >
                           ×
                         </button>
@@ -384,7 +384,7 @@ const ProfileSetup = ({ onComplete }) => {
                 className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all ${
                   saving
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-brand-blue hover:bg-blue-700 text-white shadow-md hover:shadow-lg'
+                    : 'bg-gradient-to-r from-yellow-700 to-amber-800 hover:from-yellow-800 hover:to-amber-900 text-white shadow-md hover:shadow-lg'
                 }`}
               >
                 {saving ? 'Setting up profile...' : 'Complete Setup'}

@@ -133,15 +133,15 @@ function VocabularySelector({ childName, age, interests, onBack, onGenerate, loa
       <div className="bg-white rounded-2xl shadow-xl p-8 border border-cream-300">
         {/* Header */}
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-brand-brown-dark mb-2">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-yellow-700 to-amber-800 bg-clip-text text-transparent mb-2">
             Choose 3-5 Challenge Words for {childName}
           </h2>
           <p className="text-lg text-gray-600">
             These words will be woven into the story with definitions
           </p>
           {usedWords.length > 0 && (
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-700">
+            <div className="mt-4 p-3 bg-cream-100 border border-cream-400 rounded-lg shadow-sm">
+              <p className="text-sm text-brand-brown-dark">
                 📚 We've excluded {usedWords.length} previously used words to give you fresh vocabulary options!
               </p>
             </div>
@@ -150,14 +150,14 @@ function VocabularySelector({ childName, age, interests, onBack, onGenerate, loa
 
         {/* Toggle Between Suggested and Custom */}
         <div className="flex justify-center mb-8">
-          <div className="inline-flex rounded-lg border-2 border-brand-blue-light p-1 bg-cream-100">
+          <div className="inline-flex rounded-lg border-2 border-cream-400 p-1 bg-cream-100">
             <button
               onClick={() => setUseCustom(false)}
               disabled={loadingSuggestions || suggestedWords.length === 0}
               className={`px-6 py-2 rounded-md font-semibold transition-all ${
                 !useCustom
-                  ? 'bg-brand-blue text-white shadow-md'
-                  : 'text-brand-brown hover:bg-cream-200'
+                  ? 'bg-gradient-to-r from-yellow-700 to-amber-800 text-white shadow-md'
+                  : 'text-gray-700 hover:bg-cream-200'
               } ${(loadingSuggestions || suggestedWords.length === 0) ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               Use Suggested Words
@@ -166,8 +166,8 @@ function VocabularySelector({ childName, age, interests, onBack, onGenerate, loa
               onClick={() => setUseCustom(true)}
               className={`px-6 py-2 rounded-md font-semibold transition-all ${
                 useCustom
-                  ? 'bg-brand-blue text-white shadow-md'
-                  : 'text-brand-brown hover:bg-cream-200'
+                  ? 'bg-gradient-to-r from-yellow-700 to-amber-800 text-white shadow-md'
+                  : 'text-gray-700 hover:bg-cream-200'
               }`}
             >
               Use My Own Words
@@ -188,7 +188,7 @@ function VocabularySelector({ childName, age, interests, onBack, onGenerate, loa
             {loadingSuggestions ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <svg 
-                  className="animate-spin h-12 w-12 text-brand-blue mb-4" 
+                  className="animate-spin h-12 w-12 text-orange-600 mb-4" 
                   xmlns="http://www.w3.org/2000/svg" 
                   fill="none" 
                   viewBox="0 0 24 24"
@@ -214,11 +214,11 @@ function VocabularySelector({ childName, age, interests, onBack, onGenerate, loa
                 <div className="mb-4 flex justify-between items-center">
                   <p className="text-sm text-gray-600">
                     {selectedWords.length < 3 ? (
-                      <>Select <span className="font-bold text-brand-blue">{3 - selectedWords.length}</span> more word{3 - selectedWords.length !== 1 ? 's' : ''} (minimum)</>
+                      <>Select <span className="font-bold text-yellow-800">{3 - selectedWords.length}</span> more word{3 - selectedWords.length !== 1 ? 's' : ''} (minimum)</>
                     ) : selectedWords.length < 5 ? (
-                      <>Selected <span className="font-bold text-brand-blue">{selectedWords.length}</span> words (can add {5 - selectedWords.length} more)</>
+                      <>Selected <span className="font-bold text-yellow-800">{selectedWords.length}</span> words (can add {5 - selectedWords.length} more)</>
                     ) : (
-                      <>Selected <span className="font-bold text-brand-blue">{selectedWords.length}</span> words (maximum reached)</>
+                      <>Selected <span className="font-bold text-yellow-800">{selectedWords.length}</span> words (maximum reached)</>
                     )}
                   </p>
                   
@@ -226,7 +226,7 @@ function VocabularySelector({ childName, age, interests, onBack, onGenerate, loa
                   <button
                     onClick={handleGetNewSuggestions}
                     disabled={loadingSuggestions}
-                    className="px-4 py-2 text-sm font-semibold rounded-lg border-2 border-brand-blue-light text-brand-brown hover:bg-cream-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="px-4 py-2 text-sm font-semibold rounded-lg border-2 border-cream-400 text-gray-700 hover:bg-cream-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     title="Keep selected words and get new suggestions for the rest"
                   >
                     <svg 
@@ -255,8 +255,8 @@ function VocabularySelector({ childName, age, interests, onBack, onGenerate, loa
                         disabled={!isSelected && selectedWords.length >= 5}
                         className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 text-left ${
                           isSelected
-                            ? 'bg-brand-blue border-brand-blue text-white shadow-lg'
-                            : 'bg-white border-cream-300 hover:border-brand-blue-light text-gray-800'
+                            ? 'bg-gradient-to-r from-yellow-700 to-amber-800 border-yellow-700 text-white shadow-lg'
+                            : 'bg-white border-cream-300 hover:border-amber-300 text-gray-800'
                         } ${!isSelected && selectedWords.length >= 5 ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
                       >
                         <div className="flex items-start justify-between mb-2">
@@ -277,7 +277,7 @@ function VocabularySelector({ childName, age, interests, onBack, onGenerate, loa
                             </svg>
                           )}
                         </div>
-                        <p className={`text-sm ${isSelected ? 'text-blue-100' : 'text-gray-600'}`}>
+                        <p className={`text-sm ${isSelected ? 'text-amber-100' : 'text-gray-600'}`}>
                           {wordObj.simple_definition}
                         </p>
                       </button>
@@ -314,7 +314,7 @@ function VocabularySelector({ childName, age, interests, onBack, onGenerate, loa
                       value={word}
                       onChange={(e) => handleCustomWordChange(index, e.target.value)}
                       disabled={loading}
-                      className="w-full px-4 py-3 min-h-[48px] text-lg border-2 border-cream-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue transition-all"
+                      className="w-full px-4 py-3 min-h-[48px] text-lg border-2 border-cream-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-700 focus:border-yellow-700 transition-all"
                       placeholder={`e.g., ${['magnificent', 'curious', 'adventure', 'explore', 'vibrant'][index]}`}
                     />
                   </div>
@@ -351,7 +351,7 @@ function VocabularySelector({ childName, age, interests, onBack, onGenerate, loa
           <button
               onClick={onBack}
             disabled={loading}
-            className="flex-1 py-3 px-6 min-h-[48px] text-lg font-semibold rounded-lg border-2 border-cream-300 text-brand-brown hover:bg-cream-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 py-3 px-6 min-h-[48px] text-lg font-semibold rounded-lg border-2 border-cream-300 text-gray-700 hover:bg-cream-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             ← Back
           </button>
@@ -360,7 +360,7 @@ function VocabularySelector({ childName, age, interests, onBack, onGenerate, loa
             <button
               onClick={handleSkip}
               disabled={loading}
-              className="flex-1 py-3 px-6 min-h-[48px] text-lg font-semibold rounded-lg border-2 border-brand-blue-light text-brand-brown hover:bg-cream-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-3 px-6 min-h-[48px] text-lg font-semibold rounded-lg border-2 border-cream-400 text-gray-700 hover:bg-cream-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Skip Vocabulary
             </button>
@@ -372,7 +372,7 @@ function VocabularySelector({ childName, age, interests, onBack, onGenerate, loa
             className={`flex-1 py-3 px-6 min-h-[48px] text-lg font-bold rounded-lg transition-all transform ${
               !canGenerate || loading
                 ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-brand-blue hover:bg-brand-blue-dark hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl'
+                : 'bg-gradient-to-r from-yellow-700 to-amber-800 hover:from-yellow-800 hover:to-amber-900 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl'
             } text-white`}
           >
             {loading ? (

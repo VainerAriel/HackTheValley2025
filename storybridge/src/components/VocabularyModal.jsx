@@ -98,7 +98,7 @@ const VocabularyModal = ({ isOpen, onClose }) => {
                 placeholder="Search words or definitions..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
             </div>
             <div className="flex gap-2">
@@ -106,7 +106,7 @@ const VocabularyModal = ({ isOpen, onClose }) => {
                 onClick={() => setSortBy('recent')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   sortBy === 'recent'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-orange-600 text-white'
                     : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 }`}
               >
@@ -116,7 +116,7 @@ const VocabularyModal = ({ isOpen, onClose }) => {
                 onClick={() => setSortBy('alphabetical')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   sortBy === 'alphabetical'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-orange-600 text-white'
                     : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 }`}
               >
@@ -130,7 +130,7 @@ const VocabularyModal = ({ isOpen, onClose }) => {
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
               <span className="ml-3 text-gray-600">Loading your vocabulary...</span>
             </div>
           ) : filteredAndSortedVocabulary().length === 0 ? (
@@ -151,14 +151,14 @@ const VocabularyModal = ({ isOpen, onClose }) => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {filteredAndSortedVocabulary().map((item, index) => (
-                <div key={`${item.word}-${index}`} className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100 hover:shadow-md transition-shadow">
+                <div key={`${item.word}-${index}`} className="bg-gradient-to-br from-orange-50 to-orange-50 rounded-xl p-6 border border-orange-100 hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <h3 className="text-xl font-bold text-gray-900 mb-1">
                         {item.word}
                       </h3>
                       {item.definitions.pronunciation && (
-                        <p className="text-sm text-blue-600 font-medium mb-2">
+                        <p className="text-sm text-orange-600 font-medium mb-2">
                           {item.definitions.pronunciation}
                         </p>
                       )}
@@ -192,7 +192,7 @@ const VocabularyModal = ({ isOpen, onClose }) => {
                           {item.definitions.synonyms.map((synonym, idx) => (
                             <span
                               key={idx}
-                              className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
+                              className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full"
                             >
                               {synonym}
                             </span>
@@ -215,7 +215,7 @@ const VocabularyModal = ({ isOpen, onClose }) => {
             </p>
             <button
               onClick={onClose}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              className="px-6 py-2 bg-gradient-to-r from-yellow-700 to-amber-800 text-white rounded-lg hover:from-yellow-800 hover:to-amber-900 transition-colors font-medium"
             >
               Close
             </button>

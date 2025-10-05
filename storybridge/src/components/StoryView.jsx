@@ -109,7 +109,7 @@ const StoryView = () => {
             </button>
             <button
               onClick={() => navigate('/')}
-              className="px-6 py-3 bg-brand-blue text-white font-semibold rounded-lg hover:bg-brand-blue-dark transition-colors"
+              className="px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors"
             >
               Generate New Story
             </button>
@@ -135,7 +135,7 @@ const StoryView = () => {
             </button>
             <button
               onClick={() => navigate('/')}
-              className="px-6 py-3 bg-brand-blue text-white font-semibold rounded-lg hover:bg-brand-blue-dark transition-colors"
+              className="px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors"
             >
               Generate New Story
             </button>
