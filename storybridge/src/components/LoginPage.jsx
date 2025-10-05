@@ -5,7 +5,7 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen bg-cream-100">
       {/* Header */}
-      <header className="bg-white border-b border-cream-300 shadow-sm">
+      <header className="bg-cream-100 border-b border-cream-300 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
@@ -20,16 +20,16 @@ const LoginPage = () => {
       </header>
 
       {/* Hero Section */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="bg-white rounded-2xl shadow-xl border border-cream-300 overflow-hidden">
-          {/* Hero Content */}
-          <div className="px-8 py-16 text-center">
-            <h2 className="text-5xl md:text-6xl font-bold text-brand-brown-dark mb-6 leading-tight">
+      <main className="w-full">
+        {/* Hero Content - Full Width */}
+        <div className="bg-white px-8 py-36 text-center border-b border-cream-300">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-5xl md:text-6xl font-bold text-brand-brown-dark mb-8 leading-tight">
               Create a Story That Speaks<br />
               <span className="text-brand-blue">to Your Child's Heart</span>
             </h2>
             
-            <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-600 mb-14 max-w-2xl mx-auto leading-relaxed">
               Personalized audiobooks designed<br />
               for dyslexic learners
             </p>
@@ -45,32 +45,42 @@ const LoginPage = () => {
               <span className="text-2xl">→</span>
             </button>
           </div>
+        </div>
 
-          {/* Features Section */}
-          <div className="bg-cream-100 px-8 py-10 border-t border-cream-300">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-              <div className="flex items-start space-x-3">
-                <span className="text-brand-blue text-2xl flex-shrink-0">✓</span>
-                <span className="text-brand-brown text-lg">Dyslexia-friendly formatting</span>
+        {/* Features Section - Individual Bubbles */}
+        <div className="px-4 sm:px-6 lg:px-8 py-10">
+          <div className="max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Feature 1 */}
+              <div className="bg-white rounded-2xl shadow-lg border border-cream-300 p-8 text-center hover:shadow-xl transition-shadow">
+                <div className="text-brand-blue text-5xl mb-4">✓</div>
+                <h3 className="text-brand-brown-dark font-bold text-xl mb-3">Dyslexia-Friendly</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Specially formatted for easy reading with OpenDyslexic font
+                </p>
               </div>
-              <div className="flex items-start space-x-3">
-                <span className="text-brand-blue text-2xl flex-shrink-0">✓</span>
-                <span className="text-brand-brown text-lg">Audio narration included</span>
+
+              {/* Feature 2 */}
+              <div className="bg-white rounded-2xl shadow-lg border border-cream-300 p-8 text-center hover:shadow-xl transition-shadow">
+                <div className="text-brand-blue text-5xl mb-4">✓</div>
+                <h3 className="text-brand-brown-dark font-bold text-xl mb-3">Audio Narration</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Every story includes high-quality audio narration
+                </p>
               </div>
-              <div className="flex items-start space-x-3">
-                <span className="text-brand-blue text-2xl flex-shrink-0">✓</span>
-                <span className="text-brand-brown text-lg">Based on their interests</span>
+
+              {/* Feature 3 */}
+              <div className="bg-white rounded-2xl shadow-lg border border-cream-300 p-8 text-center hover:shadow-xl transition-shadow">
+                <div className="text-brand-blue text-5xl mb-4">✓</div>
+                <h3 className="text-brand-brown-dark font-bold text-xl mb-3">Personalized Themes</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Stories based on themes that engage your child
+                </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Additional Info */}
-        <div className="mt-12 text-center">
-          <p className="text-gray-500 text-sm">
-            Built with love for young readers and their families
-          </p>
-        </div>
       </main>
     </div>
   );

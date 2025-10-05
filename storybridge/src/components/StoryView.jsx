@@ -95,21 +95,21 @@ const StoryView = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-md">
+      <div className="min-h-screen bg-cream-100 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-md border border-cream-300">
           <div className="text-6xl mb-4">❌</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Error</h2>
+          <h2 className="text-2xl font-bold text-brand-brown-dark mb-4">Error</h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <div className="flex gap-4 justify-center">
             <button
               onClick={() => navigate('/history')}
-              className="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors"
+              className="px-6 py-3 bg-brand-brown text-white font-semibold rounded-lg hover:bg-brand-brown-dark transition-colors"
             >
               Back to History
             </button>
             <button
               onClick={() => navigate('/')}
-              className="px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors"
+              className="px-6 py-3 bg-brand-blue text-white font-semibold rounded-lg hover:bg-brand-blue-dark transition-colors"
             >
               Generate New Story
             </button>
@@ -121,21 +121,21 @@ const StoryView = () => {
 
   if (!story) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-md">
+      <div className="min-h-screen bg-cream-100 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-md border border-cream-300">
           <div className="text-6xl mb-4">📚</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Story Not Found</h2>
+          <h2 className="text-2xl font-bold text-brand-brown-dark mb-4">Story Not Found</h2>
           <p className="text-gray-600 mb-6">The story you're looking for doesn't exist.</p>
           <div className="flex gap-4 justify-center">
             <button
               onClick={() => navigate('/history')}
-              className="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors"
+              className="px-6 py-3 bg-brand-brown text-white font-semibold rounded-lg hover:bg-brand-brown-dark transition-colors"
             >
               Back to History
             </button>
             <button
               onClick={() => navigate('/')}
-              className="px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors"
+              className="px-6 py-3 bg-brand-blue text-white font-semibold rounded-lg hover:bg-brand-blue-dark transition-colors"
             >
               Generate New Story
             </button>
@@ -150,7 +150,7 @@ const StoryView = () => {
   console.log('StoryView - processed vocab words:', story.VOCAB_WORDS ? story.VOCAB_WORDS.split(',').filter(word => word.trim()) : []);
 
       return (
-        <div className="min-h-screen bg-gray-100">
+        <div className="min-h-screen bg-cream-100">
           <StoryDisplay 
             story={story.STORY_TEXT}
             onGenerateNew={handleGenerateNew}
