@@ -92,8 +92,7 @@ Begin the story directly with the narrative.`;
       throw new Error('No story was generated. Please try again.');
     }
 
-    // return result.text;
-    return "Hello Matthew my name is Gemini.";
+    return result.text;
 
   } catch (error) {
     // Enhanced error handling
