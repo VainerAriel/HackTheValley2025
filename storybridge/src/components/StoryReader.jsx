@@ -906,7 +906,7 @@ const StoryReader = ({
         try {
           console.log('Generating and storing sentence audio in database - THIS WILL USE API CREDITS');
           console.log('Using Flash model for cost savings (0.5 credits per character)');
-          
+          const API_BASE_URL = process.env.REACT_APP_API_URL || '';
           const generateResponse = await fetch(`${API_BASE_URL}/api/story/${storyId}/generate-audio`, {
             method: 'POST',
             headers: {

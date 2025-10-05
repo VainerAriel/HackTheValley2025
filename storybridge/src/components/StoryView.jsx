@@ -48,6 +48,7 @@ const StoryView = () => {
         console.log('Preloading audio for story...');
         setAudioPreloadStatus('loading');
         try {
+          const API_BASE_URL = process.env.REACT_APP_API_URL || '';
           const audioResponse = await fetch(`${API_BASE_URL}/api/story/${storyId}/audio?t=${Date.now()}`, {
             cache: 'no-cache',
             headers: {
