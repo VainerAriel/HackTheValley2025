@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { getBatchWordDefinitions } from '../services/gemini';
 import { convertTextToSpeech, playAudioFromBlob } from '../services/elevenLabsService';
 import './StoryDisplay.css';
 
-function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords = [], age, isFromHistory = false, storedVocabDefinitions = {}, storyId = null }) {
+function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords = [], age, isFromHistory = false, storedVocabDefinitions = {}, storyId = null, preloadedAudio = null, audioPreloadStatus = 'not-found' }) {
   const [wordDefinitions, setWordDefinitions] = useState({});
   const [hoveredWord, setHoveredWord] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
@@ -12,6 +12,10 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
   const [playError, setPlayError] = useState(null);
   const [audioStatus, setAudioStatus] = useState(null); // 'cached', 'generating', 'ready'
   const [audioSource, setAudioSource] = useState(null); // 'stored', 'generated'
+  const [highlightedWords, setHighlightedWords] = useState(new Set());
+  const [currentSentence, setCurrentSentence] = useState(-1);
+  const audioRef = useRef(null);
+  const timeoutsRef = useRef([]);
 
   // Load OpenDyslexic font
   useEffect(() => {
@@ -59,8 +63,10 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vocabularyWords, age, storedVocabDefinitions]);
 
-  const handleWordHover = (word, event) => {
-    const definition = wordDefinitions[word.toLowerCase()];
+
+  const handleWordHover = (cleanWord, event) => {
+    // Word is already cleaned, just look up definition
+    const definition = wordDefinitions[cleanWord];
     if (definition) {
       setHoveredWord(definition);
       
@@ -79,15 +85,145 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
     setHoveredWord(null);
   };
 
+  // Highlighting functions
+  const getSentences = (text) => {
+    const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
+    const lastMatch = sentences.join('');
+    const remaining = text.slice(lastMatch.length).trim();
+    if (remaining) {
+      sentences.push(remaining);
+    }
+    return sentences.length > 0 ? sentences : [text];
+  };
+
+  const estimateWordTimings = (sentence) => {
+    const words = sentence.trim().split(/\s+/);
+    const avgWordDuration = 300;
+    
+    return words.map((word, index) => ({
+      word,
+      startTime: index * avgWordDuration,
+      duration: avgWordDuration
+    }));
+  };
+
+  const clearAllTimeouts = () => {
+    timeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+    timeoutsRef.current = [];
+  };
+
+  const highlightText = () => {
+    const sentences = getSentences(story);
+    let cumulativeDelay = 0;
+
+    sentences.forEach((sentence, sentenceIndex) => {
+      const wordTimings = estimateWordTimings(sentence);
+      let sentenceStartDelay = cumulativeDelay;
+
+      const sentenceTimeout = setTimeout(() => {
+        setCurrentSentence(sentenceIndex);
+        setHighlightedWords(new Set());
+      }, sentenceStartDelay);
+      timeoutsRef.current.push(sentenceTimeout);
+
+      wordTimings.forEach((timing, wordIndex) => {
+        const addTimeout = setTimeout(() => {
+          setHighlightedWords(prev => {
+            const newSet = new Set(prev);
+            newSet.add(`${sentenceIndex}-${wordIndex}`);
+            return newSet;
+          });
+        }, sentenceStartDelay + timing.startTime);
+        timeoutsRef.current.push(addTimeout);
+
+        const removeTimeout = setTimeout(() => {
+          setHighlightedWords(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(`${sentenceIndex}-${wordIndex}`);
+            return newSet;
+          });
+        }, sentenceStartDelay + timing.startTime + timing.duration);
+        timeoutsRef.current.push(removeTimeout);
+      });
+
+      const sentenceDuration = wordTimings.length * 300 + 400;
+      cumulativeDelay += sentenceDuration;
+
+      // Clear everything after last sentence
+      if (sentenceIndex === sentences.length - 1) {
+        const clearTimeout = setTimeout(() => {
+          setCurrentSentence(-1);
+          setHighlightedWords(new Set());
+        }, cumulativeDelay);
+        timeoutsRef.current.push(clearTimeout);
+      }
+    });
+  };
+
+  const stopAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    setIsPlaying(false);
+    setHighlightedWords(new Set());
+    setCurrentSentence(-1);
+    clearAllTimeouts();
+  };
+
+  const playAudioWithHighlighting = async (audioBlob) => {
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+    audioRef.current = audio;
+
+    // Wait for audio to actually start playing before starting highlighting
+    audio.onplay = () => {
+      highlightText();
+    };
+
+    audio.onended = () => {
+      setIsPlaying(false);
+      setCurrentSentence(-1);
+      setHighlightedWords(new Set());
+      clearAllTimeouts();
+      URL.revokeObjectURL(audioUrl);
+    };
+
+    audio.onerror = (error) => {
+      console.error('Audio error:', error);
+      setPlayError('Failed to play audio');
+      setIsPlaying(false);
+      clearAllTimeouts();
+      URL.revokeObjectURL(audioUrl);
+    };
+
+    try {
+      await audio.play();
+    } catch (error) {
+      console.error('Error playing audio:', error);
+      setPlayError('Failed to play audio');
+      setIsPlaying(false);
+    }
+  };
+
   const handlePlayStory = async () => {
     if (!story) return;
     
     setIsPlaying(true);
     setPlayError(null);
-    setAudioStatus('generating');
     
     try {
-      // If we have a storyId, try to get stored audio first
+      // FIRST: Check if we have preloaded audio from StoryView
+      if (preloadedAudio && audioPreloadStatus === 'loaded') {
+        console.log('✅ Using preloaded audio - INSTANT PLAYBACK!');
+        setAudioStatus('ready');
+        setAudioSource('stored');
+        await playAudioWithHighlighting(preloadedAudio);
+        return;
+      }
+      
+      // SECOND: If we have a storyId but no preloaded audio, try to fetch it
+      setAudioStatus('generating');
       if (storyId) {
         try {
           console.log('Attempting to load stored audio for story ID:', storyId);
@@ -103,7 +239,7 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
             console.log('✅ Stored audio loaded from database - NO API CREDITS USED!');
             setAudioStatus('ready');
             setAudioSource('stored');
-            await playAudioFromBlob(audioBlob);
+            await playAudioWithHighlighting(audioBlob);
             return;
           } else {
             console.log('Stored audio not found (404), will generate and store audio');
@@ -141,7 +277,7 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
               console.log('✅ Stored audio loaded from database after generation - NO ADDITIONAL CREDITS USED!');
               setAudioStatus('ready');
               setAudioSource('stored');
-              await playAudioFromBlob(audioBlob);
+              await playAudioWithHighlighting(audioBlob);
               return;
             }
           }
@@ -150,18 +286,17 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
         }
       }
       
-      // Fallback: Generate audio locally (for new stories without storyId)
+      // FALLBACK: Generate audio locally (for new stories without storyId)
       console.log('🎵 Generating audio locally - THIS WILL USE API CREDITS');
       console.log('💰 Using Flash model for cost savings (0.5 credits per character)');
       const audioBlob = await convertTextToSpeech(story);
       setAudioStatus('ready');
       setAudioSource('generated');
-      await playAudioFromBlob(audioBlob);
+      await playAudioWithHighlighting(audioBlob);
     } catch (error) {
       console.error('Error playing story:', error);
       setPlayError('Failed to play audio. Please check your ElevenLabs API key.');
       setAudioStatus(null);
-    } finally {
       setIsPlaying(false);
     }
   };
@@ -170,68 +305,86 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
   const renderStoryWithVocabulary = () => {
     if (!story) return null;
 
-    console.log('Rendering story with vocabulary words:', vocabularyWords);
     const paragraphs = story.split('\n').filter(p => p.trim() !== '');
     
+    // Helper function to render text with both vocabulary and word highlighting
+    const renderTextWithHighlighting = (text, paragraphIndex) => {
+      const sentences = getSentences(text);
+      let globalSentenceIndex = 0;
+      
+      // Calculate the starting global sentence index for this paragraph
+      for (let i = 0; i < paragraphIndex; i++) {
+        const prevParagraph = paragraphs[i];
+        const prevSentences = getSentences(prevParagraph);
+        globalSentenceIndex += prevSentences.length;
+      }
+      
+      return sentences.map((sentence, sentenceIndex) => {
+        const words = sentence.trim().split(/\s+/);
+        const isSentenceActive = currentSentence === globalSentenceIndex;
+        
+        
+        const result = (
+          <span key={`p${paragraphIndex}-s${sentenceIndex}`}>
+            {words.map((word, wordIndex) => {
+              const isWordActive = highlightedWords.has(`${globalSentenceIndex}-${wordIndex}`);
+              
+              // Check if word is wrapped in **word**
+              const isVocabWord = word.includes('**');
+              
+              // Clean the word for display (remove asterisks and punctuation for matching)
+              const displayWord = word.replace(/\*\*/g, '');
+              const cleanWord = displayWord.replace(/[.,!?;:'"()[\]{}]/g, '').toLowerCase();
+              
+              const wordElement = (
+                <span
+                  key={`p${paragraphIndex}-s${sentenceIndex}-w${wordIndex}`}
+                  className={`${
+                    isVocabWord 
+                      ? 'vocabulary-word' 
+                      : `transition-colors duration-100 ${
+                          isWordActive 
+                            ? 'bg-blue-500' 
+                            : isSentenceActive 
+                            ? 'bg-blue-100' 
+                            : ''
+                        }`
+                  }`}
+                  onMouseEnter={isVocabWord ? (e) => handleWordHover(cleanWord, e) : undefined}
+                  onMouseLeave={isVocabWord ? handleWordLeave : undefined}
+                  role={isVocabWord ? "button" : undefined}
+                  tabIndex={isVocabWord ? 0 : undefined}
+                  aria-label={isVocabWord ? `Vocabulary word: ${displayWord}` : undefined}
+                >
+                  {displayWord}{' '}
+                </span>
+              );
+              
+              return wordElement;
+            })}
+          </span>
+        );
+        
+        globalSentenceIndex++;
+        return result;
+      });
+    };
+    
     if (vocabularyWords.length === 0) {
-      console.log('No vocabulary words to highlight');
-      // No vocabulary words, render plain paragraphs
+      // No vocabulary words, render plain paragraphs with word highlighting
       return paragraphs.map((paragraph, index) => (
         <p key={index} className="mb-6 last:mb-0">
-          {paragraph}
+          {renderTextWithHighlighting(paragraph, index)}
         </p>
       ));
     }
 
-    // Create a regex pattern for vocabulary words (case-insensitive)
-    const vocabPattern = new RegExp(
-      `\\b(${vocabularyWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`,
-      'gi'
-    );
-
-    return paragraphs.map((paragraph, pIndex) => {
-      const parts = [];
-      let lastIndex = 0;
-      let match;
-
-      // Find all vocabulary word matches
-      const regex = new RegExp(vocabPattern);
-      while ((match = regex.exec(paragraph)) !== null) {
-        // Add text before the match
-        if (match.index > lastIndex) {
-          parts.push(paragraph.slice(lastIndex, match.index));
-        }
-
-        // Add the vocabulary word with special span
-        const word = match[0];
-        parts.push(
-          <span
-            key={`${pIndex}-${match.index}`}
-            className="vocabulary-word"
-            onMouseEnter={(e) => handleWordHover(word, e)}
-            onMouseLeave={handleWordLeave}
-            role="button"
-            tabIndex={0}
-            aria-label={`Vocabulary word: ${word}`}
-          >
-            {word}
-          </span>
-        );
-
-        lastIndex = regex.lastIndex;
-      }
-
-      // Add remaining text
-      if (lastIndex < paragraph.length) {
-        parts.push(paragraph.slice(lastIndex));
-      }
-
-      return (
-        <p key={pIndex} className="mb-6 last:mb-0">
-          {parts.length > 0 ? parts : paragraph}
-        </p>
-      );
-    });
+    // With vocabulary words, render paragraphs with both vocabulary and word highlighting
+    return paragraphs.map((paragraph, index) => (
+      <p key={index} className="mb-6 last:mb-0">
+        {renderTextWithHighlighting(paragraph, index)}
+      </p>
+    ));
   };
 
   if (!story) {
@@ -343,15 +496,50 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
                 ) : (
                   <span className="flex items-center">
                     🔊 Play Story
-                    {audioStatus === 'ready' && audioSource === 'stored' && (
-                      <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded">(Stored - No Credits)</span>
-                    )}
-                    {audioStatus === 'ready' && audioSource === 'generated' && (
-                      <span className="ml-2 text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">(Generated - Credits Used)</span>
-                    )}
                   </span>
                 )}
               </button>
+
+              {/* Stop Button (only show when playing) */}
+              {isPlaying && (
+                <button
+                  onClick={stopAudio}
+                  className="px-8 py-4 min-h-[48px] text-lg font-bold rounded-lg bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-red-300"
+                  aria-label="Stop audio playback"
+                >
+                  ⏹️ Stop
+                </button>
+              )}
+
+          {/* Audio Status Indicators */}
+          {!isPlaying && audioPreloadStatus === 'loaded' && preloadedAudio && (
+            <div className="mt-4 text-center">
+              <span className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-full animate-pulse">
+                🎵 Audio preloaded - Ready for instant playback!
+              </span>
+            </div>
+          )}
+          {!isPlaying && audioPreloadStatus === 'loading' && (
+            <div className="mt-4 text-center">
+              <span className="text-sm bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
+                ⏳ Loading audio...
+              </span>
+            </div>
+          )}
+          {audioStatus === 'ready' && audioSource === 'stored' && (
+            <div className="mt-4 text-center">
+              <span className="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full">
+                ✅ Audio loaded from storage (No credits used)
+              </span>
+            </div>
+          )}
+          {audioStatus === 'ready' && audioSource === 'generated' && (
+            <div className="mt-4 text-center">
+              <span className="text-sm bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full">
+                ⚠️ Audio generated (Credits used)
+              </span>
+            </div>
+          )}
 
           {/* Back to History Button (only if viewing from history) */}
           {isFromHistory && onBackToHistory && (

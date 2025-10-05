@@ -12,6 +12,8 @@ const StoryView = () => {
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [preloadedAudio, setPreloadedAudio] = useState(null);
+  const [audioPreloadStatus, setAudioPreloadStatus] = useState('loading'); // 'loading', 'loaded', 'not-found'
 
   useEffect(() => {
     const loadStory = async () => {
@@ -41,6 +43,33 @@ const StoryView = () => {
         console.log('StoryView - INTERESTS field:', storyData.INTERESTS);
         console.log('StoryView - VOCAB_DEFINITIONS field:', storyData.VOCAB_DEFINITIONS);
         setStory(storyData);
+        
+        // Preload audio if it exists
+        console.log('🎵 Preloading audio for story...');
+        setAudioPreloadStatus('loading');
+        try {
+          const audioResponse = await fetch(`http://localhost:5000/api/story/${storyId}/audio?t=${Date.now()}`, {
+            cache: 'no-cache',
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
+            }
+          });
+          
+          if (audioResponse.ok) {
+            const audioBlob = await audioResponse.blob();
+            console.log('✅ Audio preloaded from database - ready for instant playback!');
+            console.log('Audio size:', audioBlob.size, 'bytes');
+            setPreloadedAudio(audioBlob);
+            setAudioPreloadStatus('loaded');
+          } else {
+            console.log('ℹ️ No audio found in database - will generate on-demand');
+            setAudioPreloadStatus('not-found');
+          }
+        } catch (audioError) {
+          console.log('ℹ️ Audio preload failed - will generate on-demand:', audioError.message);
+          setAudioPreloadStatus('not-found');
+        }
       } catch (error) {
         console.error('Error loading story:', error);
         setError('Failed to load story');
@@ -131,6 +160,8 @@ const StoryView = () => {
             isFromHistory={true}
             storedVocabDefinitions={story.VOCAB_DEFINITIONS ? JSON.parse(story.VOCAB_DEFINITIONS) : {}}
             storyId={story.STORY_ID}
+            preloadedAudio={preloadedAudio}
+            audioPreloadStatus={audioPreloadStatus}
           />
         </div>
       );
