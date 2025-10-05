@@ -47,7 +47,7 @@ export const useStoryFlow = () => {
           const saveResult = await saveStory({
             userId: userId,
             storyText: generatedStory,
-            interests: [formData.interest1, formData.interest2, formData.interest3],
+            interests: formData.interests || [],
             vocabWords: words,
             childName: formData.childName,
             age: formData.age,

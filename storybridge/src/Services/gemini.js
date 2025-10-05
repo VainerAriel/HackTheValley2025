@@ -5,13 +5,18 @@ import { GoogleGenAI } from '@google/genai';
  * @param {Object} params - Story generation parameters
  * @param {string} params.childName - Name of the child
  * @param {string} params.age - Age of the child (5-12)
- * @param {string} params.interest1 - First interest
- * @param {string} params.interest2 - Second interest
- * @param {string} params.interest3 - Third interest
+ * @param {string} params.childPronouns - Child's pronouns (he/him, she/her, they/them)
+ * @param {Array<string>} params.interests - Array of child's interests
  * @param {Array<string>} params.vocabularyWords - Optional array of vocabulary challenge words
  * @returns {Promise<string>} The generated story text
  */
-export async function generateStory({ childName, age, interest1, interest2, interest3, vocabularyWords = [] }) {
+export async function generateStory({ 
+  childName, 
+  age, 
+  childPronouns = '', 
+  interests = [], 
+  vocabularyWords = [] 
+}) {
   try {
     // Get API key from environment
     const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
@@ -28,13 +33,25 @@ export async function generateStory({ childName, age, interest1, interest2, inte
       ? `- Challenge vocabulary words to include naturally: ${vocabularyWords.join(', ')}`
       : '';
 
+    // Use the interests array directly
+    const interestsText = interests.length > 0 ? interests.join(', ') : 'general adventure';
+    
+    // Handle pronouns for character references
+    const pronounMap = {
+      'he/him': { subject: 'he', object: 'him', possessive: 'his', reflexive: 'himself' },
+      'she/her': { subject: 'she', object: 'her', possessive: 'her', reflexive: 'herself' },
+      'they/them': { subject: 'they', object: 'them', possessive: 'their', reflexive: 'themselves' }
+    };
+    const pronouns = pronounMap[childPronouns] || pronounMap['they/them'];
+
     const prompt = `You are a specialized children's story writer creating content for dyslexic learners aged 5-12.
 
 **STORY REQUIREMENTS:**
 - Target reader: ${childName}, age ${age}
+- Pronouns: Use ${childPronouns || 'they/them'} pronouns (${pronouns.subject}/${pronouns.object}/${pronouns.possessive})
 - Word count: Exactly 450-500 words
 - Reading level: Age-appropriate for ${age}-year-olds
-- Themes to weave naturally: ${interest1}, ${interest2}, ${interest3}
+- Themes to weave naturally: ${interestsText}
 ${vocabularySection}
 
 **CRITICAL FORMATTING FOR DYSLEXIA-FRIENDLY DISPLAY:**
@@ -46,12 +63,13 @@ ${vocabularySection}
 6. Use concrete, descriptive language
 
 **STORY STRUCTURE:**
-- **Beginning (100-120 words):** Introduce ${childName} as the protagonist in a relatable setting. Establish the first theme (${interest1}).
-- **Middle (200-250 words):** Present a gentle challenge or adventure that incorporates the second theme (${interest2}). Build excitement without fear or anxiety.
-- **End (150-180 words):** Resolve the adventure positively, weave in the third theme (${interest3}), and end with a confidence-building message.
+- **Beginning (100-120 words):** Introduce ${childName} as the protagonist in a relatable setting. Establish themes from: ${interestsText}.
+- **Middle (200-250 words):** Present a gentle challenge or adventure that incorporates multiple interests naturally. Build excitement without fear or anxiety.
+- **End (150-180 words):** Resolve the adventure positively, weave in remaining interests, and end with a confidence-building message.
 
 **CONTENT GUIDELINES:**
 - Make ${childName} brave, curious, and successful
+- Use ${pronouns.possessive} correct pronouns throughout: ${pronouns.subject}/${pronouns.object}/${pronouns.possessive}
 - Include sensory details (sounds, colors, textures)
 - Use repetition of key phrases for comprehension
 - Avoid idioms, sarcasm, or abstract concepts
@@ -65,6 +83,7 @@ For each challenge word (${vocabularyWords.join(', ')}):
 - Use each word exactly once
 - Make the usage feel natural, not forced
 - Ensure ${childName} or another character uses the word successfully
+- **CRITICAL: Wrap each vocabulary word with double asterisks like this: **word** so it can be highlighted for definitions**
 
 ` : ''}**OUTPUT FORMAT:**
 Provide ONLY the story text with proper paragraph breaks. Do not include:
@@ -113,7 +132,12 @@ Begin the story directly with the narrative.`;
  * @param {Object} params - Parameters to validate
  * @returns {Object} Validation result with isValid boolean and errors array
  */
-export function validateStoryParams({ childName, age, interest1, interest2, interest3 }) {
+export function validateStoryParams({ 
+  childName, 
+  age, 
+  childPronouns = '', 
+  interests = [] 
+}) {
   const errors = [];
 
   if (!childName || typeof childName !== 'string' || !childName.trim()) {
@@ -125,16 +149,9 @@ export function validateStoryParams({ childName, age, interest1, interest2, inte
     errors.push('Age must be between 5 and 12');
   }
 
-  if (!interest1 || typeof interest1 !== 'string' || !interest1.trim()) {
-    errors.push('Interest 1 is required');
-  }
-
-  if (!interest2 || typeof interest2 !== 'string' || !interest2.trim()) {
-    errors.push('Interest 2 is required');
-  }
-
-  if (!interest3 || typeof interest3 !== 'string' || !interest3.trim()) {
-    errors.push('Interest 3 is required');
+  // Check if we have any interests
+  if (interests.length === 0) {
+    errors.push('At least one interest is required');
   }
 
   return {
@@ -149,7 +166,7 @@ export function validateStoryParams({ childName, age, interest1, interest2, inte
  * @param {Array<string>} interests - Array of child's interests
  * @returns {Promise<Array<Object>>} Array of word objects with word, definition, and age_appropriate flag
  */
-export async function suggestVocabularyWords(age, interests) {
+export async function suggestVocabularyWords(age, interests = []) {
   try {
     const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
     
@@ -159,7 +176,9 @@ export async function suggestVocabularyWords(age, interests) {
 
     const ai = new GoogleGenAI({ apiKey });
 
-    const prompt = `You are an educational vocabulary specialist. Suggest 8 age-appropriate challenge words for a ${age}-year-old child interested in: ${interests.join(', ')}.
+    const interestsText = interests.length > 0 ? interests.join(', ') : 'general learning and adventure';
+    
+    const prompt = `You are an educational vocabulary specialist. Suggest 8 age-appropriate challenge words for a ${age}-year-old child interested in: ${interestsText}.
 
 **REQUIREMENTS:**
 - Words must be slightly above their current reading level (challenging but achievable)
@@ -171,11 +190,13 @@ export async function suggestVocabularyWords(age, interests) {
 [
   {
     "word": "magnificent",
+    "pronunciation": "mag-NIF-ih-sent",
     "simple_definition": "extremely beautiful or impressive",
     "age_appropriate": true
   },
   {
     "word": "explore",
+    "pronunciation": "ik-SPLOR",
     "simple_definition": "to travel and discover new places",
     "age_appropriate": true
   }
@@ -240,6 +261,12 @@ export async function getWordDefinition(word, age) {
     const ai = new GoogleGenAI({ apiKey });
 
     const prompt = `Provide a child-friendly definition for the word "${word}" suitable for a ${age}-year-old.
+
+**REQUIREMENTS:**
+- Pronunciation should be in simple phonetic spelling for kids (like "mag-NIF-ih-sent")
+- Definition should be simple and age-appropriate
+- Example sentence should use the word naturally
+- Provide 2-3 relevant synonyms
 
 **OUTPUT FORMAT (JSON only, no other text):**
 {
@@ -307,19 +334,26 @@ export async function getBatchWordDefinitions(words, age) {
 
     const prompt = `Provide child-friendly definitions for these words suitable for a ${age}-year-old: "${wordsList}"
 
+**REQUIREMENTS:**
+- Each word must have its own separate definition object
+- Pronunciation should be in simple phonetic spelling for kids (like "mag-NIF-ih-sent")
+- Definitions should be simple and age-appropriate
+- Example sentences should use the word naturally
+- Provide 2-3 relevant synonyms
+
 **OUTPUT FORMAT (JSON only, no other text):**
 {
   "definitions": [
     {
       "word": "word1",
-      "pronunciation": "phonetic pronunciation",
+      "pronunciation": "WURD",
       "simple_definition": "easy definition for a ${age}-year-old",
       "example_sentence": "example sentence using the word",
       "synonyms": ["synonym1", "synonym2"]
     },
     {
       "word": "word2", 
-      "pronunciation": "phonetic pronunciation",
+      "pronunciation": "WURD",
       "simple_definition": "easy definition for a ${age}-year-old",
       "example_sentence": "example sentence using the word",
       "synonyms": ["synonym1", "synonym2"]
@@ -327,7 +361,7 @@ export async function getBatchWordDefinitions(words, age) {
   ]
 }
 
-Provide valid JSON only.`;
+Provide ONLY valid JSON. No explanations, no markdown, no extra text.`;
 
     const result = await ai.models.generateContent({
       model: 'gemini-2.0-flash-exp',
@@ -348,14 +382,33 @@ Provide valid JSON only.`;
     // Remove markdown code blocks if present
     responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
     
-    const batchResult = JSON.parse(responseText);
+    console.log('Raw response from Gemini:', responseText);
+    
+    let batchResult;
+    try {
+      batchResult = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      console.error('Response text that failed to parse:', responseText);
+      throw new Error('Failed to parse vocabulary definitions JSON. Please try again.');
+    }
 
     // Convert to the format expected by the app
     const definitionsMap = {};
     if (batchResult.definitions && Array.isArray(batchResult.definitions)) {
       batchResult.definitions.forEach(def => {
         if (def && def.word) {
-          definitionsMap[def.word.toLowerCase()] = def;
+          // Clean and validate each definition
+          const cleanDef = {
+            word: def.word,
+            pronunciation: def.pronunciation || '',
+            simple_definition: def.simple_definition || def.word,
+            example_sentence: def.example_sentence || '',
+            synonyms: Array.isArray(def.synonyms) ? def.synonyms : []
+          };
+          
+          console.log('Processed definition:', cleanDef);
+          definitionsMap[def.word.toLowerCase()] = cleanDef;
         }
       });
     }

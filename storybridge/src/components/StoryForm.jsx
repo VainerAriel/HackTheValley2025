@@ -1,236 +1,251 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 
 function StoryForm({ onGenerateStory, loading }) {
-  const [childName, setChildName] = useState('');
-  const [age, setAge] = useState('');
-  const [theme1, setTheme1] = useState('');
-  const [theme2, setTheme2] = useState('');
-  const [theme3, setTheme3] = useState('');
+  const { user, getAccessTokenSilently } = useAuth0();
+  const [profileData, setProfileData] = useState({
+    childName: '',
+    childAge: '',
+    childPronouns: '',
+    interests: []
+  });
+  const [selectedTopics, setSelectedTopics] = useState([]);
+  const [customTopic, setCustomTopic] = useState('');
   const [errors, setErrors] = useState({});
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  // Load profile data on component mount
+  useEffect(() => {
+    if (user) {
+      loadProfileData();
+    }
+  }, [user]);
+
+  const loadProfileData = async () => {
+    if (!user) return;
+    
+    setProfileLoading(true);
+    try {
+      const token = await getAccessTokenSilently({
+        authorizationParams: {
+          audience: `https://${process.env.REACT_APP_AUTH0_DOMAIN}/api/v2/`,
+          scope: "openid profile email"
+        }
+      });
+
+      const response = await fetch('http://localhost:5000/api/user/profile', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('📋 StoryForm loaded profile data:', result.data);
+        
+        const newProfileData = {
+          childName: result.data.childName || '',
+          childAge: result.data.childAge || '',
+          childPronouns: result.data.childPronouns || '',
+          interests: result.data.interests || []
+        };
+        
+        setProfileData(newProfileData);
+      } else {
+        console.error('Failed to load profile data');
+      }
+    } catch (error) {
+      console.error('Error loading profile data:', error);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
   const validateForm = () => {
     const newErrors = {};
     
-    if (!childName.trim()) {
-      newErrors.childName = "Child's name is required";
-    }
-    
-    if (!age) {
-      newErrors.age = "Please select an age";
-    }
-    
-    if (!theme1.trim()) {
-      newErrors.theme1 = "At least one theme is required";
+    if (selectedTopics.length === 0) {
+      newErrors.topics = "Please select at least one story topic";
     }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleTopicToggle = (topic) => {
+    setSelectedTopics(prev => 
+      prev.includes(topic) 
+        ? prev.filter(t => t !== topic)
+        : [...prev, topic]
+    );
+  };
+
+  const handleAddCustomTopic = () => {
+    const trimmedTopic = customTopic.trim();
+    if (trimmedTopic && !selectedTopics.includes(trimmedTopic)) {
+      setSelectedTopics(prev => [...prev, trimmedTopic]);
+      setCustomTopic('');
+    }
+  };
+
+  const handleRemoveTopic = (topic) => {
+    setSelectedTopics(prev => prev.filter(t => t !== topic));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     
     if (validateForm()) {
-      const themes = [theme1.trim(), theme2.trim(), theme3.trim()].filter(t => t !== '');
-      
+      // Pass all available profile data to the story generation
       onGenerateStory({
-        childName: childName.trim(),
-        age,
-        interest1: themes[0] || '',
-        interest2: themes[1] || '',
-        interest3: themes[2] || '',
+        childName: profileData.childName,
+        age: profileData.childAge,
+        childPronouns: profileData.childPronouns,
+        interests: selectedTopics, // Use selected topics as the interests
       });
     }
   };
+
+  if (profileLoading) {
+    return (
+      <div className="w-full max-w-2xl mx-auto px-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 border border-cream-300">
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span className="ml-2 text-gray-600">Loading your child's profile...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-2xl mx-auto px-4">
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8 border border-cream-300">
         <h2 className="text-3xl font-bold text-center text-brand-brown-dark mb-8">
-          Create a Personalized Story
+          Create a Story for {profileData.childName}
         </h2>
 
-        {/* Child's Name */}
-        <div className="mb-6">
-          <label 
-            htmlFor="childName" 
-            className="block text-lg font-semibold text-gray-700 mb-2"
-          >
-            Child's Name *
-          </label>
-          <input
-            type="text"
-            id="childName"
-            name="childName"
-            value={childName}
-            onChange={(e) => setChildName(e.target.value)}
-            disabled={loading}
-            className={`w-full px-4 py-3 min-h-[48px] text-lg border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue transition-all ${
-              errors.childName 
-                ? 'border-red-400 bg-red-50' 
-                : 'border-cream-300 focus:border-brand-blue'
-            } ${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-            placeholder="Enter child's name"
-            aria-required="true"
-            aria-invalid={errors.childName ? 'true' : 'false'}
-            aria-describedby={errors.childName ? 'childName-error' : undefined}
-          />
-          {errors.childName && (
-            <p id="childName-error" className="mt-2 text-sm text-red-600" role="alert">
-              {errors.childName}
+        {/* Child Info Display */}
+        <div className="mb-8 p-4 bg-cream-50 rounded-lg border border-cream-200">
+          <div className="text-center">
+            <h3 className="text-lg font-semibold text-brand-brown-dark mb-2">
+              {profileData.childName} ({profileData.childAge})
+            </h3>
+            <p className="text-sm text-gray-600">
+              We'll create a personalized story based on {profileData.childName}'s interests
             </p>
-          )}
+          </div>
         </div>
 
-        {/* Age Dropdown */}
-        <div className="mb-6">
-          <label 
-            htmlFor="age" 
-            className="block text-lg font-semibold text-gray-700 mb-2"
-          >
-            Age *
-          </label>
-          <select
-            id="age"
-            name="age"
-            value={age}
-            onChange={(e) => setAge(e.target.value)}
-            disabled={loading}
-            className={`w-full px-4 py-3 min-h-[48px] text-lg border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue transition-all ${
-              errors.age 
-                ? 'border-red-400 bg-red-50' 
-                : 'border-cream-300 focus:border-brand-blue'
-            } ${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-            aria-required="true"
-            aria-invalid={errors.age ? 'true' : 'false'}
-            aria-describedby={errors.age ? 'age-error' : undefined}
-          >
-            <option value="">Select age...</option>
-            {[5, 6, 7, 8, 9, 10, 11, 12].map(ageValue => (
-              <option key={ageValue} value={ageValue}>
-                {ageValue} years old
-              </option>
-            ))}
-          </select>
-          {errors.age && (
-            <p id="age-error" className="mt-2 text-sm text-red-600" role="alert">
-              {errors.age}
-            </p>
-          )}
-        </div>
-
-        {/* Themes Section */}
+        {/* Story Topics Selection */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-700 mb-4">
-            Story Themes (1-3 themes) *
+            What would you like the story to be about? *
           </h3>
           <p className="text-sm text-gray-600 mb-4">
-            Choose themes that will shape the story's adventure and setting!
+            Choose from {profileData.childName}'s interests or add your own topics
           </p>
 
-          {/* Theme 1 */}
+          {/* Child's Interests as Suggestions */}
+          {profileData.interests.length > 0 && (
+            <div className="mb-6">
+              <h4 className="text-base font-medium text-gray-700 mb-3">
+                {profileData.childName}'s Interests:
+              </h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {profileData.interests.map((interest) => (
+                  <label
+                    key={interest}
+                    className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                      selectedTopics.includes(interest)
+                        ? 'border-brand-blue bg-blue-50 text-brand-blue'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedTopics.includes(interest)}
+                      onChange={() => handleTopicToggle(interest)}
+                      className="mr-2 text-brand-blue focus:ring-brand-blue"
+                    />
+                    <span className="text-sm font-medium">{interest}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Custom Topic Input */}
           <div className="mb-4">
-            <label 
-              htmlFor="theme1" 
-              className="block text-base font-medium text-gray-700 mb-2"
-            >
-              Theme 1 <span className="text-red-600">*</span>
+            <label className="block text-base font-medium text-gray-700 mb-2">
+              Add your own topic:
             </label>
-            <input
-              type="text"
-              id="theme1"
-              name="theme1"
-              value={theme1}
-              onChange={(e) => setTheme1(e.target.value)}
-              disabled={loading}
-              className={`w-full px-4 py-3 min-h-[48px] text-lg border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue transition-all ${
-                errors.theme1 
-                  ? 'border-red-400 bg-red-50' 
-                  : 'border-cream-300 focus:border-brand-blue'
-              } ${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-              placeholder="e.g., adventure, friendship, courage, exploration"
-              aria-required="true"
-              aria-invalid={errors.theme1 ? 'true' : 'false'}
-              aria-describedby={errors.theme1 ? 'theme1-error' : undefined}
-            />
-            {errors.theme1 && (
-              <p id="theme1-error" className="mt-2 text-sm text-red-600" role="alert">
-                {errors.theme1}
-              </p>
-            )}
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={customTopic}
+                onChange={(e) => setCustomTopic(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCustomTopic())}
+                disabled={loading}
+                className={`flex-1 px-4 py-3 min-h-[48px] text-lg border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue transition-all border-cream-300 focus:border-brand-blue ${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                placeholder="e.g., space adventure, underwater mystery, magical forest"
+              />
+              <button
+                type="button"
+                onClick={handleAddCustomTopic}
+                disabled={!customTopic.trim() || loading}
+                className={`px-6 py-3 min-h-[48px] text-lg font-semibold rounded-lg transition-all ${
+                  !customTopic.trim() || loading
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-brand-blue hover:bg-brand-blue-dark text-white'
+                }`}
+              >
+                Add
+              </button>
+            </div>
           </div>
 
-          {/* Theme 2 */}
-          <div className="mb-4">
-            <label 
-              htmlFor="theme2" 
-              className="block text-base font-medium text-gray-700 mb-2"
-            >
-              Theme 2 <span className="text-sm text-gray-500">(optional)</span>
-            </label>
-            <input
-              type="text"
-              id="theme2"
-              name="theme2"
-              value={theme2}
-              onChange={(e) => setTheme2(e.target.value)}
-              disabled={loading}
-              className={`w-full px-4 py-3 min-h-[48px] text-lg border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue transition-all ${
-                errors.theme2 
-                  ? 'border-red-400 bg-red-50' 
-                  : 'border-cream-300 focus:border-brand-blue'
-              } ${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-              placeholder="e.g., mystery, nature, teamwork, discovery"
-              aria-required="false"
-              aria-invalid={errors.theme2 ? 'true' : 'false'}
-              aria-describedby={errors.theme2 ? 'theme2-error' : undefined}
-            />
-            {errors.theme2 && (
-              <p id="theme2-error" className="mt-2 text-sm text-red-600" role="alert">
-                {errors.theme2}
-              </p>
-            )}
-          </div>
+          {/* Selected Topics Display */}
+          {selectedTopics.length > 0 && (
+            <div className="mb-4">
+              <h4 className="text-base font-medium text-gray-700 mb-3">
+                Selected Topics:
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {selectedTopics.map((topic, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                  >
+                    {topic}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTopic(topic)}
+                      className="ml-2 text-blue-600 hover:text-blue-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
-          {/* Theme 3 */}
-          <div className="mb-4">
-            <label 
-              htmlFor="theme3" 
-              className="block text-base font-medium text-gray-700 mb-2"
-            >
-              Theme 3 <span className="text-sm text-gray-500">(optional)</span>
-            </label>
-            <input
-              type="text"
-              id="theme3"
-              name="theme3"
-              value={theme3}
-              onChange={(e) => setTheme3(e.target.value)}
-              disabled={loading}
-              className={`w-full px-4 py-3 min-h-[48px] text-lg border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue transition-all ${
-                errors.theme3 
-                  ? 'border-red-400 bg-red-50' 
-                  : 'border-cream-300 focus:border-brand-blue'
-              } ${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-              placeholder="e.g., magic, science, creativity, kindness"
-              aria-required="false"
-              aria-invalid={errors.theme3 ? 'true' : 'false'}
-              aria-describedby={errors.theme3 ? 'theme3-error' : undefined}
-            />
-            {errors.theme3 && (
-              <p id="theme3-error" className="mt-2 text-sm text-red-600" role="alert">
-                {errors.theme3}
-              </p>
-            )}
-          </div>
+          {errors.topics && (
+            <p className="mt-2 text-sm text-red-600" role="alert">
+              {errors.topics}
+            </p>
+          )}
         </div>
 
         {/* Generate Button */}
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || selectedTopics.length === 0}
           className={`w-full py-4 min-h-[48px] text-lg font-bold rounded-lg transition-all transform ${
-            loading
+            loading || selectedTopics.length === 0
               ? 'bg-gray-400 cursor-not-allowed'
               : 'bg-brand-blue hover:bg-brand-blue-dark hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl'
           } text-white`}
@@ -262,7 +277,7 @@ function StoryForm({ onGenerateStory, loading }) {
               Generating Story...
             </span>
           ) : (
-            '✨ Generate Story'
+            `✨ Generate Story for ${profileData.childName}`
           )}
         </button>
       </form>

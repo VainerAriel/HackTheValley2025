@@ -49,7 +49,7 @@ const Dashboard = () => {
           <VocabularySelector
             childName={formData.childName}
             age={formData.age}
-            interests={[formData.interest1, formData.interest2, formData.interest3]}
+            interests={formData.interests || []}
             onBack={handleVocabularyBack}
             onGenerate={handleVocabularyGenerateWithSave}
             loading={loading}

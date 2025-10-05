@@ -65,9 +65,29 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
 
 
   const handleWordHover = (cleanWord, event) => {
-    // Word is already cleaned, just look up definition
-    const definition = wordDefinitions[cleanWord];
+    console.log('Hovering over word:', cleanWord);
+    console.log('Available definitions:', wordDefinitions);
+    
+    // Try to find definition with flexible matching
+    let definition = wordDefinitions[cleanWord];
+    
+    // If exact match not found, try to find base form or related forms
+    if (!definition) {
+      // Try to find the base form by checking if any vocabulary word is contained in the clean word
+      const vocabularyWords = Object.keys(wordDefinitions);
+      for (const vocabWord of vocabularyWords) {
+        if (cleanWord.includes(vocabWord) || vocabWord.includes(cleanWord)) {
+          console.log(`Found related word match: ${cleanWord} -> ${vocabWord}`);
+          definition = wordDefinitions[vocabWord];
+          break;
+        }
+      }
+    }
+    
+    console.log('Looking for definition:', definition);
+    
     if (definition) {
+      console.log('Found definition:', definition);
       setHoveredWord(definition);
       
       // Calculate tooltip position
@@ -78,6 +98,8 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
         top: rect.top + scrollTop - 10, // Position above the word
         left: rect.left + (rect.width / 2), // Center on the word
       });
+    } else {
+      console.log('No definition found for word:', cleanWord);
     }
   };
 
@@ -335,6 +357,11 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
               // Clean the word for display (remove asterisks and punctuation for matching)
               const displayWord = word.replace(/\*\*/g, '');
               const cleanWord = displayWord.replace(/[.,!?;:'"()[\]{}]/g, '').toLowerCase();
+              
+              // Debug logging
+              if (isVocabWord) {
+                console.log('Found vocabulary word:', { word, displayWord, cleanWord });
+              }
               
               const wordElement = (
                 <span
