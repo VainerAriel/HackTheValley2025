@@ -289,7 +289,8 @@ app.get('/api/user/profile', authenticateToken, async (req, res) => {
         success: true,
         data: {
           childName: profile.CHILD_NAME || '',
-          childGender: profile.CHILD_GENDER || '',
+          childAge: profile.CHILD_AGE || '',
+          childPronouns: profile.CHILD_PRONOUNS || '',
           interests: profile.INTERESTS ? profile.INTERESTS.split(',') : [],
           profileCompleted: profile.PROFILE_COMPLETED === 'true' || profile.PROFILE_COMPLETED === true
         }
@@ -300,7 +301,8 @@ app.get('/api/user/profile', authenticateToken, async (req, res) => {
         success: true,
         data: {
           childName: '',
-          childGender: '',
+          childAge: '',
+          childPronouns: '',
           interests: [],
           profileCompleted: false
         }
@@ -315,14 +317,15 @@ app.get('/api/user/profile', authenticateToken, async (req, res) => {
 app.put('/api/user/profile', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.sub;
-    const { childName, childGender, interests, profileCompleted } = req.body;
+    const { childName, childAge, childPronouns, interests, profileCompleted } = req.body;
     
     console.log('💾 Updating user profile for:', userId);
-    console.log('Profile data:', { childName, childGender, interests, profileCompleted });
+    console.log('Profile data:', { childName, childAge, childPronouns, interests, profileCompleted });
     
     // Escape data for SQL
     const escapedChildName = (childName || '').replace(/'/g, "''");
-    const escapedChildGender = (childGender || '').replace(/'/g, "''");
+    const escapedChildAge = (childAge || '').replace(/'/g, "''");
+    const escapedChildPronouns = (childPronouns || '').replace(/'/g, "''");
     const escapedInterests = (interests || []).join(',').replace(/'/g, "''");
     
     // Check if profile exists
@@ -334,7 +337,8 @@ app.put('/api/user/profile', authenticateToken, async (req, res) => {
       const updateSql = `
         UPDATE user_profiles 
         SET CHILD_NAME = '${escapedChildName}',
-            CHILD_GENDER = '${escapedChildGender}',
+            CHILD_AGE = '${escapedChildAge}',
+            CHILD_PRONOUNS = '${escapedChildPronouns}',
             INTERESTS = '${escapedInterests}',
             PROFILE_COMPLETED = '${profileCompleted || false}',
             UPDATED_AT = CURRENT_TIMESTAMP
@@ -344,8 +348,8 @@ app.put('/api/user/profile', authenticateToken, async (req, res) => {
     } else {
       // Create new profile
       const insertSql = `
-        INSERT INTO user_profiles (USER_ID, CHILD_NAME, CHILD_GENDER, INTERESTS, PROFILE_COMPLETED, CREATED_AT, UPDATED_AT)
-        VALUES ('${userId}', '${escapedChildName}', '${escapedChildGender}', '${escapedInterests}', '${profileCompleted || false}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        INSERT INTO user_profiles (USER_ID, CHILD_NAME, CHILD_AGE, CHILD_PRONOUNS, INTERESTS, PROFILE_COMPLETED, CREATED_AT, UPDATED_AT)
+        VALUES ('${userId}', '${escapedChildName}', '${escapedChildAge}', '${escapedChildPronouns}', '${escapedInterests}', '${profileCompleted || false}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       `;
       await executeQuery(insertSql);
     }
@@ -370,7 +374,8 @@ app.post('/api/setup-database', async (req, res) => {
       CREATE TABLE IF NOT EXISTS user_profiles (
         USER_ID VARCHAR(255) PRIMARY KEY,
         CHILD_NAME VARCHAR(255),
-        CHILD_GENDER VARCHAR(50),
+        CHILD_AGE VARCHAR(10),
+        CHILD_PRONOUNS VARCHAR(50),
         INTERESTS TEXT,
         PROFILE_COMPLETED BOOLEAN DEFAULT FALSE,
         CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -387,6 +392,70 @@ app.post('/api/setup-database', async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Error setting up database:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Migrate database from old schema to new schema
+app.post('/api/migrate-database', async (req, res) => {
+  try {
+    console.log('🔄 Migrating database schema...');
+    
+    // Check if CHILD_GENDER column exists
+    const checkColumnSql = `
+      SELECT COLUMN_NAME 
+      FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_NAME = 'USER_PROFILES' 
+      AND COLUMN_NAME = 'CHILD_GENDER'
+    `;
+    
+    const columnExists = await executeQuery(checkColumnSql);
+    
+    if (columnExists.length > 0) {
+      console.log('📋 Found CHILD_GENDER column, migrating...');
+      
+      // Add new columns if they don't exist
+      const addAgeColumnSql = `
+        ALTER TABLE user_profiles 
+        ADD COLUMN IF NOT EXISTS CHILD_AGE VARCHAR(10)
+      `;
+      
+      const addPronounsColumnSql = `
+        ALTER TABLE user_profiles 
+        ADD COLUMN IF NOT EXISTS CHILD_PRONOUNS VARCHAR(50)
+      `;
+      
+      await executeQuery(addAgeColumnSql);
+      await executeQuery(addPronounsColumnSql);
+      
+      // Migrate data from CHILD_GENDER to CHILD_PRONOUNS
+      const migrateDataSql = `
+        UPDATE user_profiles 
+        SET CHILD_PRONOUNS = CHILD_GENDER 
+        WHERE CHILD_GENDER IS NOT NULL AND CHILD_PRONOUNS IS NULL
+      `;
+      
+      await executeQuery(migrateDataSql);
+      
+      // Drop the old CHILD_GENDER column
+      const dropColumnSql = `
+        ALTER TABLE user_profiles 
+        DROP COLUMN CHILD_GENDER
+      `;
+      
+      await executeQuery(dropColumnSql);
+      
+      console.log('✅ Database migration completed successfully');
+    } else {
+      console.log('✅ No migration needed - database is already up to date');
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Database migration completed successfully' 
+    });
+  } catch (error) {
+    console.error('❌ Error migrating database:', error);
     res.status(500).json({ error: error.message });
   }
 });
