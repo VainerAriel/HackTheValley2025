@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useNavigate } from 'react-router-dom';
-import { deleteStory } from '../services';
+import { deleteStory } from '../services/storyService';
 
 const StoriesModal = ({ isOpen, onClose }) => {
   const { user, getAccessTokenSilently } = useAuth0();

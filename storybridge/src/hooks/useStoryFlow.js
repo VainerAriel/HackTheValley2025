@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { generateStory, generateStoryTitle, getBatchWordDefinitions, convertTextToSpeech, saveStory } from '../services';
+import { generateStory, generateStoryTitle } from '../services/gemini';
+import { getBatchWordDefinitions } from '../services/gemini';
+import { convertTextToSpeech } from '../services/elevenLabsService';
+import { saveStory } from '../services/storyService';
 
 export const useStoryFlow = () => {
   const [step, setStep] = useState('form');
