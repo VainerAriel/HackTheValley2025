@@ -54,6 +54,7 @@ const Dashboard = () => {
             onBack={handleVocabularyBack}
             onGenerate={handleVocabularyGenerateWithSave}
             loading={loading}
+            userId={user?.sub}
           />
         );
       

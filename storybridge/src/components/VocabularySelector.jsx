@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { suggestVocabularyWords } from '../services/gemini';
+import { getUserVocabulary } from '../services/vocabularyService';
 
-function VocabularySelector({ childName, age, interests, onBack, onGenerate, loading }) {
+function VocabularySelector({ childName, age, interests, onBack, onGenerate, loading, userId }) {
   // Note: 'interests' param name kept for backward compatibility with existing code
   const themes = interests;
   const [suggestedWords, setSuggestedWords] = useState([]);
@@ -11,13 +12,27 @@ function VocabularySelector({ childName, age, interests, onBack, onGenerate, loa
   const [loadingSuggestions, setLoadingSuggestions] = useState(true);
   const [error, setError] = useState('');
   const [showSkipOption, setShowSkipOption] = useState(false);
+  const [usedWords, setUsedWords] = useState([]);
 
   useEffect(() => {
     const fetchSuggestions = async () => {
       setLoadingSuggestions(true);
       setError('');
       try {
-        const words = await suggestVocabularyWords(age, themes);
+        // Fetch previously used vocabulary words if userId is provided
+        let excludeWords = [];
+        if (userId) {
+          try {
+            excludeWords = await getUserVocabulary(userId);
+            setUsedWords(excludeWords);
+            console.log('📚 Found previously used vocabulary words:', excludeWords);
+          } catch (vocabError) {
+            console.warn('Could not fetch used vocabulary words:', vocabError);
+            // Continue without excluding words if fetch fails
+          }
+        }
+        
+        const words = await suggestVocabularyWords(age, themes, excludeWords);
         setSuggestedWords(words);
         setShowSkipOption(false);
       } catch (err) {
@@ -32,14 +47,14 @@ function VocabularySelector({ childName, age, interests, onBack, onGenerate, loa
 
     fetchSuggestions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [age, themes]);
+  }, [age, themes, userId]);
 
   const handleGetNewSuggestions = async () => {
     setLoadingSuggestions(true);
     setError('');
     try {
-      // Get new suggestions
-      const newWords = await suggestVocabularyWords(age, themes);
+      // Get new suggestions with excluded words
+      const newWords = await suggestVocabularyWords(age, themes, usedWords);
       
       // Keep selected words and replace unselected ones
       const selectedWordStrings = selectedWords.map(w => w.toLowerCase());
@@ -124,6 +139,13 @@ function VocabularySelector({ childName, age, interests, onBack, onGenerate, loa
           <p className="text-lg text-gray-600">
             These words will be woven into the story with definitions
           </p>
+          {usedWords.length > 0 && (
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-700">
+                📚 We've excluded {usedWords.length} previously used words to give you fresh vocabulary options!
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Toggle Between Suggested and Custom */}

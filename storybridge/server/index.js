@@ -152,6 +152,22 @@ app.post('/api/stories', async (req, res) => {
       const storyRows = await executeQuery(getStoryIdSql);
       const storyId = storyRows[0]?.STORY_ID;
       
+      // Add vocabulary words to user vocabulary tracking table
+      if (vocabWords && vocabWords.length > 0 && storyId) {
+        console.log('📚 Adding vocabulary words to tracking table...');
+        const vocabInsertPromises = vocabWords.map(word => {
+          const escapedWord = word.replace(/'/g, "''");
+          const vocabSql = `
+            INSERT INTO user_vocabulary (USER_ID, WORD, STORY_ID) 
+            VALUES ('${userId}', '${escapedWord}', '${storyId}')
+          `;
+          return executeQuery(vocabSql);
+        });
+        
+        await Promise.all(vocabInsertPromises);
+        console.log('✅ Vocabulary words added to tracking table');
+      }
+      
       res.json({ 
         success: true, 
         message: 'Story saved successfully',
@@ -204,6 +220,26 @@ app.delete('/api/story/:storyId', async (req, res) => {
   try {
     console.log('🗑️ Deleting story:', req.params.storyId);
     
+    // First, get the story to find the user ID for vocabulary cleanup
+    const getStorySql = `SELECT USER_ID FROM stories WHERE STORY_ID = '${req.params.storyId}'`;
+    const storyRows = await executeQuery(getStorySql);
+    
+    if (storyRows.length === 0) {
+      return res.status(404).json({ error: 'Story not found' });
+    }
+    
+    const userId = storyRows[0].USER_ID;
+    
+    // Remove vocabulary words associated with this story
+    console.log('🗑️ Removing vocabulary words for story:', req.params.storyId);
+    const vocabDeleteSql = `
+      DELETE FROM user_vocabulary 
+      WHERE STORY_ID = '${req.params.storyId}'
+    `;
+    await executeQuery(vocabDeleteSql);
+    console.log('✅ Vocabulary words removed for story');
+    
+    // Delete the story
     const sql = `DELETE FROM stories WHERE STORY_ID = '${req.params.storyId}'`;
     await executeQuery(sql);
     
@@ -404,6 +440,20 @@ app.post('/api/setup-database', async (req, res) => {
     await executeQuery(createTableSql);
     console.log('✅ user_profiles table created successfully');
     
+    // Create user_vocabulary table for tracking used vocabulary words
+    const createVocabTableSql = `
+      CREATE TABLE IF NOT EXISTS user_vocabulary (
+        VOCAB_ID VARCHAR(255) PRIMARY KEY DEFAULT UUID_STRING(),
+        USER_ID VARCHAR(255) NOT NULL,
+        WORD VARCHAR(255) NOT NULL,
+        STORY_ID VARCHAR(255),
+        CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    
+    await executeQuery(createVocabTableSql);
+    console.log('✅ user_vocabulary table created successfully');
+    
     res.json({ 
       success: true, 
       message: 'Database setup completed successfully' 
@@ -514,6 +564,85 @@ app.post('/api/migrate-database', async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Error migrating database:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get user's used vocabulary words
+app.get('/api/user/:userId/vocabulary', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    console.log('📚 Getting used vocabulary for user:', userId);
+    
+    const sql = `
+      SELECT DISTINCT WORD 
+      FROM user_vocabulary 
+      WHERE USER_ID = '${userId}'
+      ORDER BY WORD
+    `;
+    
+    const rows = await executeQuery(sql);
+    const usedWords = rows.map(row => row.WORD);
+    
+    console.log('✅ Found', usedWords.length, 'used vocabulary words');
+    res.json({ success: true, data: usedWords });
+  } catch (error) {
+    console.error('❌ Error getting user vocabulary:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add vocabulary words for a story
+app.post('/api/user/:userId/vocabulary', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const { words, storyId } = req.body;
+    
+    console.log('📝 Adding vocabulary words for user:', userId, 'story:', storyId);
+    
+    if (!words || !Array.isArray(words) || words.length === 0) {
+      return res.status(400).json({ error: 'Words array is required' });
+    }
+    
+    // Insert each word into the vocabulary table
+    const insertPromises = words.map(word => {
+      const escapedWord = word.replace(/'/g, "''");
+      const sql = `
+        INSERT INTO user_vocabulary (USER_ID, WORD, STORY_ID) 
+        VALUES ('${userId}', '${escapedWord}', '${storyId || null}')
+      `;
+      return executeQuery(sql);
+    });
+    
+    await Promise.all(insertPromises);
+    
+    console.log('✅ Added', words.length, 'vocabulary words');
+    res.json({ success: true, message: 'Vocabulary words added successfully' });
+  } catch (error) {
+    console.error('❌ Error adding vocabulary words:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Remove vocabulary words for a story
+app.delete('/api/user/:userId/vocabulary/story/:storyId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const storyId = req.params.storyId;
+    
+    console.log('🗑️ Removing vocabulary words for user:', userId, 'story:', storyId);
+    
+    const sql = `
+      DELETE FROM user_vocabulary 
+      WHERE USER_ID = '${userId}' AND STORY_ID = '${storyId}'
+    `;
+    
+    await executeQuery(sql);
+    
+    console.log('✅ Removed vocabulary words for story');
+    res.json({ success: true, message: 'Vocabulary words removed successfully' });
+  } catch (error) {
+    console.error('❌ Error removing vocabulary words:', error);
     res.status(500).json({ error: error.message });
   }
 });

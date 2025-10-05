@@ -164,9 +164,10 @@ export function validateStoryParams({
  * Suggest vocabulary words appropriate for the child's age and interests
  * @param {string} age - Age of the child (5-12)
  * @param {Array<string>} interests - Array of child's interests
+ * @param {Array<string>} excludeWords - Array of words to exclude from suggestions
  * @returns {Promise<Array<Object>>} Array of word objects with word, definition, and age_appropriate flag
  */
-export async function suggestVocabularyWords(age, interests = []) {
+export async function suggestVocabularyWords(age, interests = [], excludeWords = []) {
   try {
     const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
     
@@ -177,6 +178,7 @@ export async function suggestVocabularyWords(age, interests = []) {
     const ai = new GoogleGenAI({ apiKey });
 
     const interestsText = interests.length > 0 ? interests.join(', ') : 'general learning and adventure';
+    const excludeText = excludeWords.length > 0 ? `\n- DO NOT suggest any of these already used words: ${excludeWords.join(', ')}` : '';
     
     const prompt = `You are an educational vocabulary specialist. Suggest 8 age-appropriate challenge words for a ${age}-year-old child interested in: ${interestsText}.
 
@@ -184,7 +186,7 @@ export async function suggestVocabularyWords(age, interests = []) {
 - Words must be slightly above their current reading level (challenging but achievable)
 - Words should relate to their interests when possible
 - Include a mix of: adjectives, verbs, and nouns
-- Avoid words that are too complex or abstract for age ${age}
+- Avoid words that are too complex or abstract for age ${age}${excludeText}
 
 **OUTPUT FORMAT (JSON only, no other text):**
 [
