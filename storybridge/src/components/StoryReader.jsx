@@ -159,13 +159,43 @@ const StoryReader = ({
 
   const estimateWordTimings = (sentence) => {
     const words = sentence.trim().split(/\s+/);
-    const avgWordDuration = 300;
     
-    return words.map((word, index) => ({
-      word,
-      startTime: index * avgWordDuration,
-      duration: avgWordDuration
-    }));
+    return words.map((word, index) => {
+      // Base duration based on word length (20% slower than original)
+      const baseDuration = Math.max(242, word.length * 61); // Minimum 242ms, 61ms per character
+      
+      // Adjust for word complexity
+      let duration = baseDuration;
+      
+      // Longer words get slightly more time per character
+      if (word.length > 6) {
+        duration = Math.max(363, word.length * 61);
+      }
+      
+      // Shorter words get a bit more time for natural speech
+      if (word.length <= 3) {
+        duration = Math.max(303, duration);
+      }
+      
+      // Adjust for punctuation (words ending with punctuation get more time)
+      if (/[.!?]$/.test(word)) {
+        duration += 106; // Extra time for sentence endings
+      } else if (/[,;:]$/.test(word)) {
+        duration += 61; // Slight pause for commas/semicolons
+      }
+      
+      // Calculate start time based on previous words (20% slower than original)
+      const startTime = index === 0 ? 0 : words.slice(0, index).reduce((total, prevWord) => {
+        const prevDuration = Math.max(242, prevWord.length * 61);
+        return total + prevDuration;
+      }, 0);
+      
+      return {
+        word,
+        startTime,
+        duration: Math.round(duration)
+      };
+    });
   };
 
   const clearAllTimeouts = () => {
@@ -207,7 +237,9 @@ const StoryReader = ({
         timeoutsRef.current.push(removeTimeout);
       });
 
-      const sentenceDuration = wordTimings.length * 300 + 400;
+      // Calculate total sentence duration based on actual word timings
+      const totalWordDuration = wordTimings.reduce((total, timing) => total + timing.duration, 0);
+      const sentenceDuration = totalWordDuration + 300; // 300ms rest at end of sentence for natural pause
       cumulativeDelay += sentenceDuration;
 
       if (sentenceIndex === sentences.length - 1) {
