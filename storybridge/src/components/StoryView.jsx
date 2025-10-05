@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import StoryReader from './StoryReader';
-import { getStoryById } from '../services/storyService';
+import { getStoryById } from '../services/storyService.js';
 import LoadingSpinner from './LoadingSpinner';
 
 const StoryView = () => {
