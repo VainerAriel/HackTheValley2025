@@ -10,7 +10,11 @@ const PORT = 5000;
 
 // Enable CORS
 app.use(cors({
-  origin: ['https://www.storybites.vip', 'http://localhost:3000'],
+  origin: [
+    'https://www.storybites.vip',
+    'https://hack-the-valley2025-q8oq.vercel.app',
+    'http://localhost:3000'
+  ],
   credentials: true
 }));
 // Increase body parser limit for large audio files
