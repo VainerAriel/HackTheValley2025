@@ -3,7 +3,7 @@ import { getBatchWordDefinitions } from '../services/gemini';
 import { convertTextToSpeech, playAudioFromBlob } from '../services/elevenLabsService';
 import './StoryDisplay.css';
 
-function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords = [], age, isFromHistory = false, storedVocabDefinitions = {}, storyId = null, preloadedAudio = null, audioPreloadStatus = 'not-found' }) {
+function StoryDisplay({ story, storyTitle, onGenerateNew, onBackToHistory, vocabularyWords = [], age, isFromHistory = false, storedVocabDefinitions = {}, storyId = null, preloadedAudio = null, audioPreloadStatus = 'not-found' }) {
   const [wordDefinitions, setWordDefinitions] = useState({});
   const [hoveredWord, setHoveredWord] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
@@ -430,6 +430,16 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
             <p className="text-sm text-brand-brown">
               Loading vocabulary definitions...
             </p>
+          </div>
+        )}
+
+        {/* Story Title */}
+        {storyTitle && (
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-brand-brown-dark mb-2">
+              {storyTitle}
+            </h1>
+            <div className="w-24 h-1 bg-brand-blue mx-auto rounded-full"></div>
           </div>
         )}
 

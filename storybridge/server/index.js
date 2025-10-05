@@ -133,9 +133,11 @@ app.post('/api/stories', async (req, res) => {
     // Audio will be generated on-demand to avoid payload size issues
     console.log('📝 Saving story without audio (audio will be generated on-demand)');
     
+    const escapedTitle = (req.body.title || 'Adventure Story').replace(/'/g, "''");
+    
     const sql = `
-      INSERT INTO stories (USER_ID, STORY_TEXT, AUDIO_URL, INTERESTS, VOCAB_WORDS, VOCAB_DEFINITIONS, CREATED_AT) 
-      VALUES ('${userId}', '${escapedStory}', '${escapedAudioUrl}', '${interests.join(',')}', '${vocabWords.join(',')}', '${escapedVocabDefinitions}', CURRENT_TIMESTAMP)
+      INSERT INTO stories (USER_ID, STORY_TEXT, STORY_TITLE, AUDIO_URL, INTERESTS, VOCAB_WORDS, VOCAB_DEFINITIONS, CREATED_AT) 
+      VALUES ('${userId}', '${escapedStory}', '${escapedTitle}', '${escapedAudioUrl}', '${interests.join(',')}', '${vocabWords.join(',')}', '${escapedVocabDefinitions}', CURRENT_TIMESTAMP)
     `;
     
     console.log('SQL Query:', sql);
@@ -193,6 +195,22 @@ app.get('/api/story/:storyId', async (req, res) => {
     const rows = await executeQuery(sql);
     res.json({ success: true, data: rows[0] || null });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/story/:storyId', async (req, res) => {
+  console.log('🔥 DELETE route hit for storyId:', req.params.storyId);
+  try {
+    console.log('🗑️ Deleting story:', req.params.storyId);
+    
+    const sql = `DELETE FROM stories WHERE STORY_ID = '${req.params.storyId}'`;
+    await executeQuery(sql);
+    
+    console.log('✅ Story deleted successfully');
+    res.json({ success: true, message: 'Story deleted successfully' });
+  } catch (error) {
+    console.error('❌ Error deleting story:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -396,6 +414,46 @@ app.post('/api/setup-database', async (req, res) => {
   }
 });
 
+// Add STORY_TITLE column to stories table if it doesn't exist
+app.post('/api/migrate-stories-title', async (req, res) => {
+  try {
+    console.log('🔄 Adding STORY_TITLE column to stories table...');
+    
+    // Check if STORY_TITLE column exists
+    const checkColumnSql = `
+      SELECT COLUMN_NAME 
+      FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_NAME = 'STORIES' 
+      AND COLUMN_NAME = 'STORY_TITLE'
+    `;
+    
+    const columnExists = await executeQuery(checkColumnSql);
+    
+    if (columnExists.length === 0) {
+      console.log('📋 Adding STORY_TITLE column...');
+      
+      const addTitleColumnSql = `
+        ALTER TABLE stories 
+        ADD COLUMN STORY_TITLE VARCHAR(255) DEFAULT 'Adventure Story'
+      `;
+      
+      await executeQuery(addTitleColumnSql);
+      
+      console.log('✅ STORY_TITLE column added successfully');
+    } else {
+      console.log('✅ STORY_TITLE column already exists');
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Stories table migration completed successfully' 
+    });
+  } catch (error) {
+    console.error('❌ Error migrating stories table:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Migrate database from old schema to new schema
 app.post('/api/migrate-database', async (req, res) => {
   try {
@@ -469,6 +527,10 @@ app.get('/api/health', (req, res) => {
 
 app.get('/api/test', (req, res) => {
   res.json({ message: 'Backend is running!' });
+});
+
+app.get('/api/test-delete', (req, res) => {
+  res.json({ message: 'DELETE route test endpoint' });
 });
 
 // === START SERVER ===

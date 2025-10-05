@@ -151,8 +151,9 @@ const StoryView = () => {
 
       return (
         <div className="min-h-screen bg-cream-100">
-          <StoryDisplay 
+          <StoryDisplay
             story={story.STORY_TEXT}
+            storyTitle={story.STORY_TITLE}
             onGenerateNew={handleGenerateNew}
             onBackToHistory={handleBackToHistory}
             vocabularyWords={story.VOCAB_WORDS ? story.VOCAB_WORDS.split(',').filter(word => word.trim()) : []}

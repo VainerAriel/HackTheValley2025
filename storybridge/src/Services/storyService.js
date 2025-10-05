@@ -72,3 +72,24 @@ export const getStoryById = async (storyId) => {
     throw error;
   }
 };
+
+export const deleteStory = async (storyId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/story/${storyId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('Error deleting story:', error);
+    throw error;
+  }
+};

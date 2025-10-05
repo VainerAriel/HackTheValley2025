@@ -316,6 +316,61 @@ Provide valid JSON only.`;
 }
 
 /**
+ * Generate a story title based on the story content
+ * @param {string} storyText - The story text to generate a title for
+ * @returns {Promise<string>} A story title (max 3 words)
+ */
+export async function generateStoryTitle(storyText) {
+  try {
+    const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
+    
+    if (!apiKey) {
+      throw new Error('API key not found. Please set REACT_APP_GEMINI_API_KEY in your .env file');
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
+
+    const prompt = `Generate a short, engaging title for this children's story. The title should be:
+- Maximum 3 words
+- Child-friendly and exciting
+- Capture the main theme or adventure
+- Be simple and memorable
+
+Story text:
+${storyText}
+
+Provide ONLY the title, no quotes, no explanations, no additional text.`;
+
+    const result = await ai.models.generateContent({
+      model: 'gemini-2.0-flash-exp',
+      contents: prompt,
+      generationConfig: {
+        temperature: 0.8,
+        maxOutputTokens: 50,
+      },
+    });
+
+    if (!result || !result.text) {
+      throw new Error('No title was generated.');
+    }
+
+    // Clean up the response - remove quotes and extra whitespace
+    let title = result.text.trim();
+    title = title.replace(/^["']|["']$/g, ''); // Remove surrounding quotes
+    title = title.replace(/\n/g, ' ').trim(); // Remove newlines
+    
+    // Ensure it's max 3 words
+    const words = title.split(' ').slice(0, 3);
+    return words.join(' ');
+
+  } catch (error) {
+    console.error('Error generating story title:', error);
+    // Return a fallback title
+    return 'Adventure Story';
+  }
+}
+
+/**
  * Get batch vocabulary definitions in a single API call
  * @param {Array<string>} words - Array of words to define
  * @param {string} age - Age of the child (for age-appropriate definitions)

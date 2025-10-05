@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
-import { getUserStories } from '../services/storyService';
+import { getUserStories, deleteStory } from '../services/storyService';
 import LogoutButton from './LogoutButton';
 
 const StoryHistory = () => {
@@ -9,6 +9,8 @@ const StoryHistory = () => {
   const { user } = useAuth0();
   const [stories, setStories] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const [deletingStoryId, setDeletingStoryId] = React.useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(null);
 
   // Load stories on component mount
   React.useEffect(() => {
@@ -33,6 +35,33 @@ const StoryHistory = () => {
 
   const handleViewStory = (story) => {
     navigate(`/story/${story.STORY_ID}`);
+  };
+
+  const handleDeleteStory = async (storyId) => {
+    try {
+      setDeletingStoryId(storyId);
+      await deleteStory(storyId);
+      
+      // Remove the story from the local state
+      setStories(prevStories => prevStories.filter(story => story.STORY_ID !== storyId));
+      setShowDeleteConfirm(null);
+      
+      console.log('Story deleted successfully');
+    } catch (error) {
+      console.error('Error deleting story:', error);
+      alert('Failed to delete story. Please try again.');
+    } finally {
+      setDeletingStoryId(null);
+    }
+  };
+
+  const handleDeleteClick = (storyId, event) => {
+    event.stopPropagation(); // Prevent triggering the story view
+    setShowDeleteConfirm(storyId);
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(null);
   };
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -146,9 +175,9 @@ const StoryHistory = () => {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h3 className="font-bold text-lg text-brand-brown-dark group-hover:text-brand-blue transition-colors">
-                    Story #{index + 1}
+                    {story.STORY_TITLE || `Story #${index + 1}`}
                   </h3>
-                  <p className="text-sm text-gray-500">Generated Story</p>
+                  <p className="text-sm text-gray-500">Personalized Story</p>
                 </div>
                 <span className="text-xs text-gray-400">
                   {story.CREATED_AT ? formatDate(story.CREATED_AT) : 'Unknown date'}
@@ -200,10 +229,20 @@ const StoryHistory = () => {
                 </div>
               )}
 
-              {/* View Button */}
+              {/* Action Buttons */}
               <div className="pt-4 border-t border-cream-200">
-                <button className="w-full py-2 text-brand-blue font-semibold text-sm hover:text-brand-blue-dark transition-colors">
+                <button 
+                  className="w-full py-2 text-brand-blue font-semibold text-sm hover:text-brand-blue-dark transition-colors mb-2"
+                  onClick={() => handleViewStory(story)}
+                >
                   📖 Read Story
+                </button>
+                <button 
+                  className="w-full py-2 text-red-600 font-semibold text-sm hover:text-red-700 transition-colors"
+                  onClick={(e) => handleDeleteClick(story.STORY_ID, e)}
+                  disabled={deletingStoryId === story.STORY_ID}
+                >
+                  {deletingStoryId === story.STORY_ID ? '🗑️ Deleting...' : '🗑️ Delete Story'}
                 </button>
               </div>
             </div>
@@ -223,6 +262,38 @@ const StoryHistory = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 border border-cream-300">
+            <div className="text-center">
+              <div className="text-6xl mb-4">⚠️</div>
+              <h3 className="text-2xl font-bold text-brand-brown-dark mb-4">
+                Delete Story?
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to delete this story? This action cannot be undone.
+              </p>
+              
+              <div className="flex gap-4 justify-center">
+                <button
+                  onClick={handleCancelDelete}
+                  className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDeleteStory(showDeleteConfirm)}
+                  className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors"
+                >
+                  Delete Story
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

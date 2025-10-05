@@ -16,6 +16,7 @@ const Dashboard = () => {
     step,
     formData,
     story,
+    storyTitle,
     vocabularyWords,
     loading,
     storyId,
@@ -60,6 +61,7 @@ const Dashboard = () => {
         return (
           <StoryDisplay 
             story={story} 
+            storyTitle={storyTitle}
             onGenerateNew={handleBackToForm}
             vocabularyWords={vocabularyWords}
             age={formData?.age}

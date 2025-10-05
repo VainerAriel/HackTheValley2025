@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { generateStory } from '../services/gemini';
+import { generateStory, generateStoryTitle } from '../services/gemini';
 import { getBatchWordDefinitions } from '../services/gemini';
 import { convertTextToSpeech } from '../services/elevenLabsService';
 import { saveStory } from '../services/storyService';
@@ -8,6 +8,7 @@ export const useStoryFlow = () => {
   const [step, setStep] = useState('form');
   const [formData, setFormData] = useState(null);
   const [story, setStory] = useState(null);
+  const [storyTitle, setStoryTitle] = useState(null);
   const [vocabularyWords, setVocabularyWords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [storyId, setStoryId] = useState(null);
@@ -30,6 +31,13 @@ export const useStoryFlow = () => {
         vocabularyWords: words 
       });
       setStory(generatedStory);
+      
+      // Generate a title for the story
+      console.log('📝 Generating story title...');
+      const title = await generateStoryTitle(generatedStory);
+      setStoryTitle(title);
+      console.log('✅ Generated title:', title);
+      
       setStep('story');
       
       // Save the story if userId is provided
@@ -47,6 +55,7 @@ export const useStoryFlow = () => {
           const saveResult = await saveStory({
             userId: userId,
             storyText: generatedStory,
+            title: title,
             interests: formData.interests || [],
             vocabWords: words,
             childName: formData.childName,
@@ -96,6 +105,7 @@ export const useStoryFlow = () => {
     setStep('form');
     setFormData(null);
     setStory(null);
+    setStoryTitle(null);
     setVocabularyWords([]);
     setStoryId(null);
   };
@@ -104,6 +114,7 @@ export const useStoryFlow = () => {
     step,
     formData,
     story,
+    storyTitle,
     vocabularyWords,
     loading,
     storyId,
