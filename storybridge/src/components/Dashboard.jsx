@@ -105,7 +105,7 @@ const Dashboard = () => {
                   onClick={() => navigate('/')}
                   className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 text-amber-800 hover:bg-amber-50 hover:text-amber-900"
                 >
-                  🏠 Home
+                  Home
                 </button>
                 
                 <button
@@ -118,14 +118,14 @@ const Dashboard = () => {
                       : 'text-amber-800 hover:bg-amber-50 hover:text-amber-900'
                   }`}
                 >
-                  ✨ Generate a Story
+                  Generate a Story
                 </button>
                 
                 <button
                   onClick={() => navigate('/profile')}
                   className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 text-amber-800 hover:bg-amber-50 hover:text-amber-900"
                 >
-                  👤 User Info
+                  User Info
                 </button>
               </nav>
             </div>

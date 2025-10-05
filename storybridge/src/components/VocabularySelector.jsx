@@ -25,7 +25,7 @@ function VocabularySelector({ childName, age, interests, onBack, onGenerate, loa
           try {
             excludeWords = await getUserVocabulary(userId);
             setUsedWords(excludeWords);
-            console.log('📚 Found previously used vocabulary words:', excludeWords);
+            console.log('Found previously used vocabulary words:', excludeWords);
           } catch (vocabError) {
             console.warn('Could not fetch used vocabulary words:', vocabError);
             // Continue without excluding words if fetch fails
@@ -142,7 +142,7 @@ function VocabularySelector({ childName, age, interests, onBack, onGenerate, loa
           {usedWords.length > 0 && (
             <div className="mt-4 p-3 bg-cream-100 border border-cream-400 rounded-lg shadow-sm">
               <p className="text-sm text-brand-brown-dark">
-                📚 We've excluded {usedWords.length} previously used words to give you fresh vocabulary options!
+                We've excluded {usedWords.length} previously used words to give you fresh vocabulary options!
               </p>
             </div>
           )}
@@ -400,7 +400,7 @@ function VocabularySelector({ childName, age, interests, onBack, onGenerate, loa
                 Generating Story...
               </span>
             ) : (
-              '✨ Generate Story'
+              'Generate Story'
             )}
           </button>
         </div>

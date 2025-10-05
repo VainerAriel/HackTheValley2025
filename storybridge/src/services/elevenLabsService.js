@@ -23,8 +23,8 @@ export const convertTextToSpeech = async (text) => {
   // Optimize text for TTS
   const optimizedText = optimizeTextForTTS(text);
 
-  console.log('🎵 Generating new audio for text (length:', optimizedText.length, 'chars) using Flash model for cost savings');
-  console.log('💰 Estimated credits needed:', Math.ceil(optimizedText.length * 0.5), 'credits (Flash model: 0.5 per character)');
+  console.log('Generating new audio for text (length:', optimizedText.length, 'chars) using Flash model for cost savings');
+  console.log('Estimated credits needed:', Math.ceil(optimizedText.length * 0.5), 'credits (Flash model: 0.5 per character)');
 
   const response = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}?output_format=mp3_22050_32`, // Lower quality = less credits
@@ -53,7 +53,7 @@ export const convertTextToSpeech = async (text) => {
 
   const audioBlob = await response.blob();
   
-  console.log('✅ Audio generated successfully');
+  console.log('Audio generated successfully');
   return audioBlob;
 };
 

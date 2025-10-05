@@ -50,7 +50,7 @@ const UserProfile = () => {
       
       if (response.ok) {
         const result = await response.json();
-        console.log('📋 UserProfile loaded data:', result.data);
+        console.log('UserProfile loaded data:', result.data);
         
         const interests = result.data.interests || [];
         const commonInterestsList = ['Adventure', 'Animals', 'Magic', 'Superheroes', 'Friendship', 'Nature', 'Space', 'Art', 'Music'];
@@ -66,8 +66,8 @@ const UserProfile = () => {
           interests: interests
         };
         
-        console.log('📋 UserProfile setting data:', newProfileData);
-        console.log('📋 UserProfile custom interests:', customInterests);
+        console.log('UserProfile setting data:', newProfileData);
+        console.log('UserProfile custom interests:', customInterests);
         
         setProfileData(newProfileData);
         setCustomInterests(customInterests);
@@ -253,21 +253,21 @@ const UserProfile = () => {
                   onClick={() => navigate('/')}
                   className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 text-amber-800 hover:bg-amber-50 hover:text-amber-900"
                 >
-                  🏠 Home
+                  Home
                 </button>
                 
                 <button
                   onClick={() => navigate('/create')}
                   className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 text-amber-800 hover:bg-amber-50 hover:text-amber-900"
                 >
-                  ✨ Generate a Story
+                  Generate a Story
                 </button>
                 
                 <button
                   onClick={() => navigate('/profile')}
                   className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 bg-gradient-to-r from-yellow-700 to-yellow-800 text-white font-semibold shadow-md"
                 >
-                  👤 User Info
+                  User Info
                 </button>
               </nav>
             </div>
