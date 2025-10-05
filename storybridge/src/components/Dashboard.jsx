@@ -114,6 +114,13 @@ const Dashboard = () => {
           >
             📚 Story History
           </button>
+          
+          <button
+            onClick={() => navigate('/profile')}
+            className="w-full text-left px-4 py-3 rounded-lg transition-colors text-brand-brown hover:bg-cream-100"
+          >
+            👤 User Profile
+          </button>
         </nav>
       </div>
 

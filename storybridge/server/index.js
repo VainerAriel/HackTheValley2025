@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const snowflake = require('snowflake-sdk');
+const jwt = require('jsonwebtoken');
+const jwksClient = require('jwks-rsa');
 require('dotenv').config({ path: '../.env.local' });
 
 const app = express();
@@ -14,6 +16,41 @@ app.use(cors({
 // Increase body parser limit for large audio files
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Auth0 JWT verification setup
+const client = jwksClient({
+  jwksUri: `https://${process.env.REACT_APP_AUTH0_DOMAIN}/.well-known/jwks.json`
+});
+
+function getKey(header, callback) {
+  client.getSigningKey(header.kid, (err, key) => {
+    const signingKey = key.publicKey || key.rsaPublicKey;
+    callback(null, signingKey);
+  });
+}
+
+// Auth0 middleware
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Access token required' });
+  }
+
+  jwt.verify(token, getKey, {
+    audience: `https://${process.env.REACT_APP_AUTH0_DOMAIN}/api/v2/`,
+    issuer: `https://${process.env.REACT_APP_AUTH0_DOMAIN}/`,
+    algorithms: ['RS256']
+  }, (err, decoded) => {
+    if (err) {
+      console.error('JWT verification failed:', err);
+      return res.status(403).json({ error: 'Invalid token' });
+    }
+    req.user = decoded;
+    next();
+  });
+};
 
 // Remove quotes from env variables
 const cleanEnv = (str) => str ? str.replace(/^["']|["']$/g, '') : str;
@@ -232,6 +269,124 @@ app.get('/api/story/:storyId/audio', async (req, res) => {
     res.send(audioBuffer);
   } catch (error) {
     console.error('Error retrieving audio:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// User profile endpoints (using Snowflake database)
+app.get('/api/user/profile', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.sub;
+    console.log('📋 Getting user profile for:', userId);
+    
+    // Check if user profile exists in database
+    const checkSql = `SELECT * FROM user_profiles WHERE USER_ID = '${userId}'`;
+    const existingProfiles = await executeQuery(checkSql);
+    
+    if (existingProfiles.length > 0) {
+      const profile = existingProfiles[0];
+      res.json({
+        success: true,
+        data: {
+          childName: profile.CHILD_NAME || '',
+          childGender: profile.CHILD_GENDER || '',
+          interests: profile.INTERESTS ? profile.INTERESTS.split(',') : [],
+          profileCompleted: profile.PROFILE_COMPLETED === 'true' || profile.PROFILE_COMPLETED === true
+        }
+      });
+    } else {
+      // No profile found, return empty data
+      res.json({
+        success: true,
+        data: {
+          childName: '',
+          childGender: '',
+          interests: [],
+          profileCompleted: false
+        }
+      });
+    }
+  } catch (error) {
+    console.error('❌ Error getting user profile:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/user/profile', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.sub;
+    const { childName, childGender, interests, profileCompleted } = req.body;
+    
+    console.log('💾 Updating user profile for:', userId);
+    console.log('Profile data:', { childName, childGender, interests, profileCompleted });
+    
+    // Escape data for SQL
+    const escapedChildName = (childName || '').replace(/'/g, "''");
+    const escapedChildGender = (childGender || '').replace(/'/g, "''");
+    const escapedInterests = (interests || []).join(',').replace(/'/g, "''");
+    
+    // Check if profile exists
+    const checkSql = `SELECT USER_ID FROM user_profiles WHERE USER_ID = '${userId}'`;
+    const existingProfiles = await executeQuery(checkSql);
+    
+    if (existingProfiles.length > 0) {
+      // Update existing profile
+      const updateSql = `
+        UPDATE user_profiles 
+        SET CHILD_NAME = '${escapedChildName}',
+            CHILD_GENDER = '${escapedChildGender}',
+            INTERESTS = '${escapedInterests}',
+            PROFILE_COMPLETED = '${profileCompleted || false}',
+            UPDATED_AT = CURRENT_TIMESTAMP
+        WHERE USER_ID = '${userId}'
+      `;
+      await executeQuery(updateSql);
+    } else {
+      // Create new profile
+      const insertSql = `
+        INSERT INTO user_profiles (USER_ID, CHILD_NAME, CHILD_GENDER, INTERESTS, PROFILE_COMPLETED, CREATED_AT, UPDATED_AT)
+        VALUES ('${userId}', '${escapedChildName}', '${escapedChildGender}', '${escapedInterests}', '${profileCompleted || false}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `;
+      await executeQuery(insertSql);
+    }
+    
+    console.log('✅ User profile updated successfully');
+    res.json({ 
+      success: true, 
+      message: 'Profile updated successfully' 
+    });
+  } catch (error) {
+    console.error('❌ Error updating user profile:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create user_profiles table if it doesn't exist
+app.post('/api/setup-database', async (req, res) => {
+  try {
+    console.log('🗄️ Setting up user_profiles table...');
+    
+    const createTableSql = `
+      CREATE TABLE IF NOT EXISTS user_profiles (
+        USER_ID VARCHAR(255) PRIMARY KEY,
+        CHILD_NAME VARCHAR(255),
+        CHILD_GENDER VARCHAR(50),
+        INTERESTS TEXT,
+        PROFILE_COMPLETED BOOLEAN DEFAULT FALSE,
+        CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UPDATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    
+    await executeQuery(createTableSql);
+    console.log('✅ user_profiles table created successfully');
+    
+    res.json({ 
+      success: true, 
+      message: 'Database setup completed successfully' 
+    });
+  } catch (error) {
+    console.error('❌ Error setting up database:', error);
     res.status(500).json({ error: error.message });
   }
 });
