@@ -276,7 +276,7 @@ const StoriesModal = ({ isOpen, onClose }) => {
                         disabled={deletingStoryId === story.STORY_ID}
                         className="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 text-sm font-medium rounded-lg border border-red-200 hover:border-red-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {deletingStoryId === story.STORY_ID ? '🗑️ Deleting...' : '🗑️ Delete Story'}
+                        {deletingStoryId === story.STORY_ID ? 'Deleting...' : 'Delete Story'}
                       </button>
                     </div>
                   </div>

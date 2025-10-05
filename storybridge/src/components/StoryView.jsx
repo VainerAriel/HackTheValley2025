@@ -45,7 +45,7 @@ const StoryView = () => {
         setStory(storyData);
         
         // Preload audio if it exists
-        console.log('🎵 Preloading audio for story...');
+        console.log('Preloading audio for story...');
         setAudioPreloadStatus('loading');
         try {
           const audioResponse = await fetch(`http://localhost:5000/api/story/${storyId}/audio?t=${Date.now()}`, {
@@ -58,16 +58,16 @@ const StoryView = () => {
           
           if (audioResponse.ok) {
             const audioBlob = await audioResponse.blob();
-            console.log('✅ Audio preloaded from database - ready for instant playback!');
+            console.log('Audio preloaded from database - ready for instant playback!');
             console.log('Audio size:', audioBlob.size, 'bytes');
             setPreloadedAudio(audioBlob);
             setAudioPreloadStatus('loaded');
           } else {
-            console.log('ℹ️ No audio found in database - will generate on-demand');
+            console.log('No audio found in database - will generate on-demand');
             setAudioPreloadStatus('not-found');
           }
         } catch (audioError) {
-          console.log('ℹ️ Audio preload failed - will generate on-demand:', audioError.message);
+          console.log('Audio preload failed - will generate on-demand:', audioError.message);
           setAudioPreloadStatus('not-found');
         }
       } catch (error) {

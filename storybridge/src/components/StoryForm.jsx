@@ -42,7 +42,7 @@ function StoryForm({ onGenerateStory, loading }) {
       
       if (response.ok) {
         const result = await response.json();
-        console.log('📋 StoryForm loaded profile data:', result.data);
+        console.log('StoryForm loaded profile data:', result.data);
         
         const newProfileData = {
           childName: result.data.childName || '',
@@ -277,7 +277,7 @@ function StoryForm({ onGenerateStory, loading }) {
               Generating Story...
             </span>
           ) : (
-            `✨ Generate Story for ${profileData.childName}`
+            `Generate Story for ${profileData.childName}`
           )}
         </button>
       </form>

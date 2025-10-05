@@ -35,10 +35,10 @@ export const useStoryFlow = () => {
       setStory(generatedStory);
       
       // Generate a title for the story
-      console.log('📝 Generating story title...');
+      console.log('Generating story title...');
       const title = await generateStoryTitle(generatedStory);
       setStoryTitle(title);
-      console.log('✅ Generated title:', title);
+      console.log('Generated title:', title);
       
       setStep('story');
       
@@ -53,7 +53,7 @@ export const useStoryFlow = () => {
           console.log('Vocabulary definitions fetched:', vocabDefinitions);
           
           // Save story first to get storyId
-          console.log('💾 Saving story to database...');
+          console.log('Saving story to database...');
           const saveResult = await saveStory({
             userId: userId,
             storyText: generatedStory,
@@ -64,13 +64,13 @@ export const useStoryFlow = () => {
             age: formData.age,
             vocabDefinitions: vocabDefinitions
           });
-          console.log('✅ Story auto-saved successfully with vocabulary definitions!', saveResult);
+          console.log('Story auto-saved successfully with vocabulary definitions!', saveResult);
           
           // Store storyId for use in StoryDisplay
           if (saveResult && saveResult.storyId) {
             savedStoryId = saveResult.storyId;
             setStoryId(saveResult.storyId);
-            console.log('🎵 Generating and storing audio immediately for storyId:', saveResult.storyId);
+            console.log('Generating and storing audio immediately for storyId:', saveResult.storyId);
             try {
               const audioResponse = await fetch(`http://localhost:5000/api/story/${saveResult.storyId}/generate-audio`, {
                 method: 'POST',
@@ -80,19 +80,19 @@ export const useStoryFlow = () => {
               });
               
               if (audioResponse.ok) {
-                console.log('✅ Audio generated and stored immediately - ready for instant playback!');
+                console.log('Audio generated and stored immediately - ready for instant playback!');
               } else {
-                console.log('⚠️ Audio generation failed, will generate on-demand');
+                console.log('Audio generation failed, will generate on-demand');
               }
             } catch (error) {
               console.error('Error generating audio immediately:', error);
-              console.log('⚠️ Will generate on-demand when user clicks play');
+              console.log('Will generate on-demand when user clicks play');
             }
           } else {
-            console.log('⚠️ No storyId returned, audio will be generated on-demand');
+            console.log('No storyId returned, audio will be generated on-demand');
           }
         } catch (error) {
-          console.error('❌ Error auto-saving story:', error);
+          console.error('Error auto-saving story:', error);
           console.error('Error details:', error.message);
           // Don't throw error here, just log it
         }
