@@ -4,17 +4,17 @@ const jwksClient = require('jwks-rsa');
 
 // Snowflake connection
 const connection = snowflake.createConnection({
-  account: process.env.REACT_APP_SNOWFLAKE_ACCOUNT,
-  username: process.env.REACT_APP_SNOWFLAKE_USER,
-  password: process.env.REACT_APP_SNOWFLAKE_PASSWORD,
-  warehouse: process.env.REACT_APP_SNOWFLAKE_WAREHOUSE,
-  database: process.env.REACT_APP_SNOWFLAKE_DATABASE,
-  schema: process.env.REACT_APP_SNOWFLAKE_SCHEMA
+  account: process.env.SNOWFLAKE_ACCOUNT,
+  username: process.env.SNOWFLAKE_USER,
+  password: process.env.SNOWFLAKE_PASSWORD,
+  warehouse: process.env.SNOWFLAKE_WAREHOUSE,
+  database: process.env.SNOWFLAKE_DATABASE,
+  schema: process.env.SNOWFLAKE_SCHEMA
 });
 
 // Auth0 JWT verification setup
 const client = jwksClient({
-  jwksUri: `https://${process.env.REACT_APP_AUTH0_DOMAIN}/.well-known/jwks.json`
+  jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`
 });
 
 function getKey(header, callback) {
@@ -34,7 +34,7 @@ const authenticateToken = (req, res, next) => {
   }
 
   jwt.verify(token, getKey, {
-    audience: `https://${process.env.REACT_APP_AUTH0_DOMAIN}/api/v2/`,
+    audience: `https://api.storybites.vip`,
     issuer: `https://${process.env.REACT_APP_AUTH0_DOMAIN}/`,
     algorithms: ['RS256']
   }, (err, decoded) => {

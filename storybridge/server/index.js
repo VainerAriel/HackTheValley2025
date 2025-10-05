@@ -43,7 +43,7 @@ const authenticateToken = (req, res, next) => {
   }
 
   jwt.verify(token, getKey, {
-    audience: `https://${process.env.REACT_APP_AUTH0_DOMAIN}/api/v2/`,
+    audience: `https://api.storybites.vip`,
     issuer: `https://${process.env.REACT_APP_AUTH0_DOMAIN}/`,
     algorithms: ['RS256']
   }, (err, decoded) => {

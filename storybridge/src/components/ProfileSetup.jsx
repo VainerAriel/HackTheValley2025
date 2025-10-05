@@ -33,7 +33,7 @@ const ProfileSetup = ({ onComplete }) => {
     try {
       const token = await getAccessTokenSilently({
         authorizationParams: {
-          audience: `https://${process.env.REACT_APP_AUTH0_DOMAIN}/api/v2/`,
+          audience: `https://api.storybites.vip`,
           scope: "openid profile email"
         }
       });
@@ -158,7 +158,7 @@ const ProfileSetup = ({ onComplete }) => {
     try {
       const token = await getAccessTokenSilently({
         authorizationParams: {
-          audience: `https://${process.env.REACT_APP_AUTH0_DOMAIN}/api/v2/`,
+          audience: `https://api.storybites.vip`,
           scope: "openid profile email"
         }
       });
