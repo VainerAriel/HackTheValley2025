@@ -73,7 +73,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
@@ -99,7 +99,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 sticky top-8">
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 sticky top-24 z-40">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Navigation</h3>
               <nav className="space-y-2">
                 <button

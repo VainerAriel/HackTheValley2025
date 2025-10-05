@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useNavigate } from 'react-router-dom';
+import LogoutButton from './LogoutButton.jsx';
 import storybitesLogo from '../images/storybites.png';
 
 const UserProfile = () => {
@@ -183,10 +184,34 @@ const UserProfile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <span className="text-gray-600">Loading profile...</span>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        {/* Header */}
+        <div className="bg-white shadow-sm border-b sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center py-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center p-1">
+                  <img src={storybitesLogo} alt="StoryBites Logo" className="w-full h-full object-contain" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">StoryBites</h1>
+                  <p className="text-sm text-gray-600">User Profile</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <LogoutButton />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
+          <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <span className="text-gray-600">Loading profile...</span>
+          </div>
         </div>
       </div>
     );
@@ -195,7 +220,7 @@ const UserProfile = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
@@ -221,7 +246,7 @@ const UserProfile = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 sticky top-8">
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 sticky top-24 z-40">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Navigation</h3>
               <nav className="space-y-2">
                 <button

@@ -120,7 +120,7 @@ const StoryHistory = () => {
   return (
     <div className="min-h-screen bg-cream-100 flex">
       {/* Sidebar */}
-      <div className="w-80 bg-white shadow-lg flex flex-col border-r border-cream-300">
+      <div className="w-80 bg-white shadow-lg flex flex-col border-r border-cream-300 sticky top-0 h-screen z-40" style={{top: '6rem'}}>
         <div className="p-6 border-b border-cream-300">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
