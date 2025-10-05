@@ -55,9 +55,9 @@ const LoginPage = () => {
               {/* Feature 1 */}
               <div className="bg-white rounded-2xl shadow-lg border border-cream-300 p-8 text-center hover:shadow-xl transition-shadow">
                 <div className="text-brand-blue text-5xl mb-4">✓</div>
-                <h3 className="text-brand-brown-dark font-bold text-xl mb-3">Dyslexia-Friendly</h3>
+                <h3 className="text-brand-brown-dark font-bold text-xl mb-3">Customizable Reading</h3>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  Specially formatted for easy reading with OpenDyslexic font
+                  Choose from multiple readable fonts including OpenDyslexic, with adjustable sizes for optimal reading comfort
                 </p>
               </div>
 
@@ -66,7 +66,7 @@ const LoginPage = () => {
                 <div className="text-brand-blue text-5xl mb-4">✓</div>
                 <h3 className="text-brand-brown-dark font-bold text-xl mb-3">Audio Narration</h3>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  Every story includes high-quality audio narration
+                  Every story includes high-quality audio narration with word highlighting
                 </p>
               </div>
 
@@ -75,7 +75,7 @@ const LoginPage = () => {
                 <div className="text-brand-blue text-5xl mb-4">✓</div>
                 <h3 className="text-brand-brown-dark font-bold text-xl mb-3">Personalized Themes</h3>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  Stories based on themes that engage your child
+                  Stories based on themes that engage your child with vocabulary learning
                 </p>
               </div>
             </div>
