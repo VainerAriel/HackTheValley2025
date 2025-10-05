@@ -61,6 +61,7 @@ ${vocabularySection}
 4. Avoid complex sentence structures
 5. Include dialogue to break up narrative text
 6. Use concrete, descriptive language
+7. **IMPORTANT: Do NOT add spaces before ending quotation marks. Write "hello" not "hello ". This prevents sentence splitting errors.**
 
 **STORY STRUCTURE:**
 - **Beginning (100-120 words):** Introduce ${childName} as the protagonist in a relatable setting. Establish themes from: ${interestsText}.

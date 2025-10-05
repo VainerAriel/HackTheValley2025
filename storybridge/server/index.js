@@ -252,10 +252,22 @@ app.delete('/api/story/:storyId', async (req, res) => {
   }
 });
 
-// Generate and store audio for a story
+// Utility function to split text into sentences
+function splitIntoSentences(text) {
+  // Split by sentence endings, keeping the punctuation
+  const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
+  const lastMatch = sentences.join('');
+  const remaining = text.slice(lastMatch.length).trim();
+  if (remaining) {
+    sentences.push(remaining);
+  }
+  return sentences.length > 0 ? sentences : [text];
+}
+
+// Generate and store sentence-based audio for a story
 app.post('/api/story/:storyId/generate-audio', async (req, res) => {
   try {
-    console.log('🎵 Generating audio for story:', req.params.storyId);
+    console.log('🎵 Generating sentence-based audio for story:', req.params.storyId);
     
     // Get story text from database
     const storySql = `SELECT STORY_TEXT FROM stories WHERE STORY_ID = '${req.params.storyId}'`;
@@ -268,40 +280,146 @@ app.post('/api/story/:storyId/generate-audio', async (req, res) => {
     const storyText = storyRows[0].STORY_TEXT;
     console.log('Story text length:', storyText.length, 'characters');
     
-    // Check if audio already exists
-    const audioCheckSql = `SELECT AUDIO_DATA FROM stories WHERE STORY_ID = '${req.params.storyId}' AND AUDIO_DATA IS NOT NULL`;
-    const audioRows = await executeQuery(audioCheckSql);
-    
-    if (audioRows[0] && audioRows[0].AUDIO_DATA) {
-      console.log('✅ Audio already exists for this story');
-      return res.json({ success: true, message: 'Audio already exists' });
+    // Check if sentence audio already exists (allow force regeneration with ?force=true)
+    const forceRegenerate = req.query.force === 'true';
+    if (!forceRegenerate) {
+      const audioCheckSql = `SELECT SENTENCE_AUDIO_DATA FROM stories WHERE STORY_ID = '${req.params.storyId}' AND SENTENCE_AUDIO_DATA IS NOT NULL`;
+      const audioRows = await executeQuery(audioCheckSql);
+      
+      if (audioRows[0] && audioRows[0].SENTENCE_AUDIO_DATA) {
+        console.log('✅ Sentence audio already exists for this story');
+        return res.json({ success: true, message: 'Sentence audio already exists' });
+      }
+    } else {
+      console.log('🔄 Force regenerating sentence audio...');
     }
     
-    // Generate audio using ElevenLabs (this will use credits)
+    // Split story into sentences
+    const sentences = splitIntoSentences(storyText);
+    console.log('Split into', sentences.length, 'sentences');
+    
+    // Generate combined audio using ElevenLabs (this will use credits)
     const { convertTextToSpeech } = require('./elevenLabsService');
-    const audioBlob = await convertTextToSpeech(storyText);
+    const combinedAudioBlob = await convertTextToSpeech(storyText);
     
-    // Convert blob to base64 for storage (safer approach)
-    const audioBuffer = Buffer.from(await audioBlob.arrayBuffer());
-    const base64Audio = audioBuffer.toString('base64');
+    // Convert combined audio to buffer for processing
+    const combinedAudioBuffer = Buffer.from(await combinedAudioBlob.arrayBuffer());
     
-    // Store audio as base64 string in database (avoiding binary issues)
-    const escapedAudio = base64Audio.replace(/'/g, "''");
-    const updateSql = `UPDATE stories SET AUDIO_DATA = '${escapedAudio}' WHERE STORY_ID = '${req.params.storyId}'`;
+    // For now, we'll store the combined audio and split it on the client side
+    // In a production system, you'd want to use ffmpeg or similar to split server-side
+    const base64CombinedAudio = combinedAudioBuffer.toString('base64');
+    
+    // Create sentence audio data structure
+    const sentenceAudioData = {
+      combinedAudio: base64CombinedAudio,
+      sentences: sentences,
+      sentenceCount: sentences.length,
+      totalDuration: null // Will be calculated on client side
+    };
+    
+    // Store sentence audio data as JSON string
+    const jsonString = JSON.stringify(sentenceAudioData);
+    console.log('💾 Storing sentence audio data, JSON length:', jsonString.length);
+    
+    // Use a more robust approach - store as base64 encoded JSON to avoid SQL injection and character issues
+    const base64Json = Buffer.from(jsonString, 'utf8').toString('base64');
+    const updateSql = `UPDATE stories SET SENTENCE_AUDIO_DATA = '${base64Json}' WHERE STORY_ID = '${req.params.storyId}'`;
+    console.log('📝 Update SQL length:', updateSql.length);
     await executeQuery(updateSql);
+    console.log('✅ Sentence audio data stored successfully');
     
-    console.log('✅ Audio generated and stored successfully, size:', audioBuffer.length, 'bytes, base64 length:', base64Audio.length, 'characters');
-    res.json({ success: true, message: 'Audio generated and stored successfully' });
+    console.log('✅ Sentence audio generated and stored successfully, combined size:', combinedAudioBuffer.length, 'bytes');
+    res.json({ 
+      success: true, 
+      message: 'Sentence audio generated and stored successfully',
+      sentenceCount: sentences.length 
+    });
     
   } catch (error) {
-    console.error('❌ Error generating audio:', error);
+    console.error('❌ Error generating sentence audio:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Get audio data for a story
+// Get sentence audio data for a story
+app.get('/api/story/:storyId/sentence-audio', async (req, res) => {
+  try {
+    console.log('🔍 Retrieving sentence audio for story:', req.params.storyId);
+    const sql = `SELECT SENTENCE_AUDIO_DATA FROM stories WHERE STORY_ID = '${req.params.storyId}'`;
+    const rows = await executeQuery(sql);
+    
+    console.log('📊 Query result:', rows.length, 'rows found');
+    console.log('📊 First row data:', rows[0] ? Object.keys(rows[0]) : 'No rows');
+    
+    if (!rows[0]) {
+      console.log('❌ No story found with ID:', req.params.storyId);
+      return res.status(404).json({ error: 'Story not found' });
+    }
+    
+    if (!rows[0].SENTENCE_AUDIO_DATA) {
+      console.log('❌ No sentence audio data found for story:', req.params.storyId);
+      return res.status(404).json({ error: 'Sentence audio not found' });
+    }
+    
+    console.log('✅ Sentence audio data found, length:', rows[0].SENTENCE_AUDIO_DATA.length);
+    
+    // Decode base64 JSON and parse the sentence audio data
+    const decodedJson = Buffer.from(rows[0].SENTENCE_AUDIO_DATA, 'base64').toString('utf8');
+    const sentenceAudioData = JSON.parse(decodedJson);
+    console.log('✅ Decoded and parsed sentence audio data successfully');
+    
+    res.json({
+      success: true,
+      data: sentenceAudioData
+    });
+  } catch (error) {
+    console.error('❌ Error retrieving sentence audio:', error);
+    console.error('❌ Error details:', error.message);
+    console.error('❌ Error stack:', error.stack);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Clear sentence audio data for a story
+app.post('/api/story/:storyId/clear-sentence-audio', async (req, res) => {
+  try {
+    console.log('🗑️ Clearing sentence audio for story:', req.params.storyId);
+    const updateSql = `UPDATE stories SET SENTENCE_AUDIO_DATA = NULL WHERE STORY_ID = '${req.params.storyId}'`;
+    await executeQuery(updateSql);
+    console.log('✅ Sentence audio cleared successfully');
+    res.json({ success: true, message: 'Sentence audio cleared successfully' });
+  } catch (error) {
+    console.error('❌ Error clearing sentence audio:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get combined audio data for a story (fallback for compatibility)
 app.get('/api/story/:storyId/audio', async (req, res) => {
   try {
+    // First try to get sentence audio data
+    const sentenceSql = `SELECT SENTENCE_AUDIO_DATA FROM stories WHERE STORY_ID = '${req.params.storyId}'`;
+    const sentenceRows = await executeQuery(sentenceSql);
+    
+    if (sentenceRows[0] && sentenceRows[0].SENTENCE_AUDIO_DATA) {
+      // Extract combined audio from sentence data
+      const decodedJson = Buffer.from(sentenceRows[0].SENTENCE_AUDIO_DATA, 'base64').toString('utf8');
+      const sentenceAudioData = JSON.parse(decodedJson);
+      const audioBuffer = Buffer.from(sentenceAudioData.combinedAudio, 'base64');
+      
+      res.set({
+        'Content-Type': 'audio/mpeg',
+        'Content-Length': audioBuffer.length,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
+      res.send(audioBuffer);
+      return;
+    }
+    
+    // Fallback to old AUDIO_DATA column
     const sql = `SELECT AUDIO_DATA FROM stories WHERE STORY_ID = '${req.params.storyId}'`;
     const rows = await executeQuery(sql);
     
@@ -316,7 +434,7 @@ app.get('/api/story/:storyId/audio', async (req, res) => {
     res.set({
       'Content-Type': 'audio/mpeg',
       'Content-Length': audioBuffer.length,
-      'Cache-Control': 'no-cache, no-store, must-revalidate', // Always fetch from database
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Pragma': 'no-cache',
       'Expires': '0'
     });
@@ -501,6 +619,46 @@ app.post('/api/migrate-stories-title', async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Error migrating stories table:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add SENTENCE_AUDIO_DATA column to stories table for sentence-based audio
+app.post('/api/migrate-sentence-audio', async (req, res) => {
+  try {
+    console.log('🔄 Adding SENTENCE_AUDIO_DATA column to stories table...');
+    
+    // Check if SENTENCE_AUDIO_DATA column exists
+    const checkColumnSql = `
+      SELECT COLUMN_NAME 
+      FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_NAME = 'STORIES' 
+      AND COLUMN_NAME = 'SENTENCE_AUDIO_DATA'
+    `;
+    
+    const columnExists = await executeQuery(checkColumnSql);
+    
+    if (columnExists.length === 0) {
+      console.log('📋 Adding SENTENCE_AUDIO_DATA column...');
+      
+      const addSentenceAudioColumnSql = `
+        ALTER TABLE stories 
+        ADD COLUMN SENTENCE_AUDIO_DATA TEXT
+      `;
+      
+      await executeQuery(addSentenceAudioColumnSql);
+      
+      console.log('✅ SENTENCE_AUDIO_DATA column added successfully');
+    } else {
+      console.log('✅ SENTENCE_AUDIO_DATA column already exists');
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Sentence audio migration completed successfully' 
+    });
+  } catch (error) {
+    console.error('❌ Error migrating sentence audio column:', error);
     res.status(500).json({ error: error.message });
   }
 });

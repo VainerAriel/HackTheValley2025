@@ -27,6 +27,8 @@ const StoryReader = ({
   const [highlightedWords, setHighlightedWords] = useState(new Set());
   const [currentSentence, setCurrentSentence] = useState(-1);
   const [readingProgress, setReadingProgress] = useState(0);
+  const [totalWords, setTotalWords] = useState(0);
+  const [highlightedWordCount, setHighlightedWordCount] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [fontSize, setFontSize] = useState('medium');
   const [showVocabularyPanel, setShowVocabularyPanel] = useState(false);
@@ -34,6 +36,12 @@ const StoryReader = ({
   const [selectedFont, setSelectedFont] = useState(() => {
     return localStorage.getItem('storyFont') || 'OpenDyslexic';
   });
+  
+  // Sentence-based audio state
+  const [sentenceAudioData, setSentenceAudioData] = useState(null);
+  const [sentenceAudioSegments, setSentenceAudioSegments] = useState([]);
+  const [currentPlayingSentence, setCurrentPlayingSentence] = useState(-1);
+  const [sentenceAudioStatus, setSentenceAudioStatus] = useState(null);
   
   const audioRef = useRef(null);
   const timeoutsRef = useRef([]);
@@ -99,24 +107,26 @@ const StoryReader = ({
     }
   }, [vocabularyWords, age, storedVocabDefinitions]);
 
-  // Track reading progress
+  // Calculate total words when story changes
   useEffect(() => {
-    const handleScroll = () => {
-      if (storyRef.current && progressRef.current) {
-        const storyHeight = storyRef.current.scrollHeight;
-        const scrollTop = storyRef.current.scrollTop;
-        const clientHeight = storyRef.current.clientHeight;
-        const progress = Math.min(100, (scrollTop / (storyHeight - clientHeight)) * 100);
-        setReadingProgress(progress);
-      }
-    };
-
-    const storyElement = storyRef.current;
-    if (storyElement) {
-      storyElement.addEventListener('scroll', handleScroll);
-      return () => storyElement.removeEventListener('scroll', handleScroll);
+    if (story) {
+      const sentences = getSentences(story);
+      const totalWordCount = sentences.reduce((total, sentence) => {
+        return total + sentence.trim().split(/\s+/).length;
+      }, 0);
+      setTotalWords(totalWordCount);
+      setHighlightedWordCount(0);
+      setReadingProgress(0);
     }
   }, [story]);
+
+  // Update progress based on highlighted words
+  useEffect(() => {
+    if (totalWords > 0) {
+      const progress = Math.min(100, (highlightedWordCount / totalWords) * 100);
+      setReadingProgress(progress);
+    }
+  }, [highlightedWordCount, totalWords]);
 
   // Handle fullscreen toggle
   const toggleFullscreen = () => {
@@ -172,12 +182,112 @@ const StoryReader = ({
     return sentences.length > 0 ? sentences : [text];
   };
 
+  // Load sentence audio data
+  const loadSentenceAudioData = async (storyId) => {
+    try {
+      console.log('🎵 Loading sentence audio data for story:', storyId);
+      const response = await fetch(`http://localhost:5000/api/story/${storyId}/sentence-audio?t=${Date.now()}`, {
+        cache: 'no-cache',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setSentenceAudioData(data.data);
+        console.log('✅ Sentence audio data loaded:', data.data.sentenceCount, 'sentences');
+        return data.data;
+      } else {
+        console.log('Sentence audio not found (404)');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error loading sentence audio data:', error);
+      return null;
+    }
+  };
+
+  // Generate sentence audio segments using word timing estimation
+  const generateSentenceAudioSegments = async (sentenceData) => {
+    try {
+      console.log('🎯 Generating precise sentence segments using word timing estimation');
+      
+      // Convert base64 combined audio to blob
+      const combinedAudioBlob = new Blob([
+        Uint8Array.from(atob(sentenceData.combinedAudio), c => c.charCodeAt(0))
+      ], { type: 'audio/mpeg' });
+      
+      // Create audio element to get duration
+      const audio = new Audio();
+      const audioUrl = URL.createObjectURL(combinedAudioBlob);
+      audio.src = audioUrl;
+      
+      return new Promise((resolve) => {
+        audio.addEventListener('loadedmetadata', () => {
+          const totalDuration = audio.duration;
+          URL.revokeObjectURL(audioUrl);
+          
+          console.log(`📊 Total audio duration: ${totalDuration.toFixed(2)}s`);
+          
+          // Calculate precise timing for each sentence using word estimation
+          const segments = [];
+          let currentTime = 0;
+          
+          sentenceData.sentences.forEach((sentence, index) => {
+            // Simple approach: estimate sentence duration based on character count
+            const estimatedDuration = Math.max(2, sentence.length * 0.1); // Rough estimate: 0.1s per character, minimum 2s
+            
+            const segment = {
+              sentence,
+              startTime: currentTime,
+              endTime: currentTime + estimatedDuration,
+              duration: estimatedDuration
+            };
+            
+            segments.push(segment);
+            currentTime += estimatedDuration;
+            
+            console.log(`📝 Sentence ${index}: "${sentence.substring(0, 30)}..." (${estimatedDuration.toFixed(2)}s at ${currentTime.toFixed(2)}s)`);
+          });
+          
+          // Adjust for any timing discrepancies
+          const totalEstimatedTime = segments.reduce((sum, seg) => sum + seg.duration, 0);
+          const timeRatio = totalDuration / totalEstimatedTime;
+          
+          if (Math.abs(timeRatio - 1) > 0.1) { // If more than 10% difference
+            console.log(`🔧 Adjusting timing by ratio: ${timeRatio.toFixed(3)}`);
+            segments.forEach(segment => {
+              segment.startTime *= timeRatio;
+              segment.endTime *= timeRatio;
+              segment.duration *= timeRatio;
+            });
+          }
+          
+          setSentenceAudioSegments(segments);
+          console.log(`✅ Generated ${segments.length} precise sentence segments`);
+          resolve(segments);
+        });
+        
+        audio.addEventListener('error', () => {
+          console.error('Error loading audio metadata');
+          URL.revokeObjectURL(audioUrl);
+          resolve([]);
+        });
+      });
+    } catch (error) {
+      console.error('Error generating sentence segments:', error);
+      return [];
+    }
+  };
+
   const estimateWordTimings = (sentence) => {
     const words = sentence.trim().split(/\s+/);
     
     return words.map((word, index) => {
       // Base duration based on word length (20% slower than original)
-      const baseDuration = Math.max(242, word.length * 61); // Minimum 242ms, 61ms per character
+      const baseDuration = Math.max(242, word.length * 56); // Minimum 242ms, 61ms per character
       
       // Adjust for word complexity
       let duration = baseDuration;
@@ -194,7 +304,7 @@ const StoryReader = ({
       
       // Adjust for punctuation (words ending with punctuation get more time)
       if (/[.!?]$/.test(word)) {
-        duration += 106; // Extra time for sentence endings
+        duration += 106; // Extra time for "sentence endings"
       } else if (/[,;:]$/.test(word)) {
         duration += 61; // Slight pause for commas/semicolons
       }
@@ -221,6 +331,11 @@ const StoryReader = ({
   const highlightText = () => {
     const sentences = getSentences(story);
     let cumulativeDelay = 0;
+    let globalWordIndex = 0;
+
+    // Reset progress when starting
+    setHighlightedWordCount(0);
+    setReadingProgress(0);
 
     sentences.forEach((sentence, sentenceIndex) => {
       const wordTimings = estimateWordTimings(sentence);
@@ -239,6 +354,8 @@ const StoryReader = ({
             newSet.add(`${sentenceIndex}-${wordIndex}`);
             return newSet;
           });
+          // Update progress when word is highlighted
+          setHighlightedWordCount(prev => prev + 1);
         }, sentenceStartDelay + timing.startTime);
         timeoutsRef.current.push(addTimeout);
 
@@ -275,6 +392,8 @@ const StoryReader = ({
     setIsPlaying(false);
     setHighlightedWords(new Set());
     setCurrentSentence(-1);
+    setHighlightedWordCount(0);
+    setReadingProgress(0);
     clearAllTimeouts();
   };
 
@@ -291,6 +410,8 @@ const StoryReader = ({
       setIsPlaying(false);
       setCurrentSentence(-1);
       setHighlightedWords(new Set());
+      // Set progress to 100% when audio completes
+      setHighlightedWordCount(totalWords);
       clearAllTimeouts();
       URL.revokeObjectURL(audioUrl);
     };
@@ -312,6 +433,170 @@ const StoryReader = ({
     }
   };
 
+  // Detect sections (paragraphs) in the story
+  const getSections = (text) => {
+    return text.split('\n').filter(p => p.trim() !== '');
+  };
+
+
+  // Get section start sentence indices
+  const getSectionStartSentences = () => {
+    if (!story) return [];
+    
+    const sections = getSections(story);
+    const sectionStarts = [];
+    let currentSentenceIndex = 0;
+    
+    sections.forEach((section, sectionIndex) => {
+      const sectionSentences = getSentences(section);
+      sectionStarts.push({
+        sectionIndex,
+        sentenceIndex: currentSentenceIndex,
+        sectionText: section.substring(0, 50) + '...'
+      });
+      currentSentenceIndex += sectionSentences.length;
+    });
+    
+    console.log('📊 Total sections found:', sectionStarts.length);
+    return sectionStarts;
+  };
+
+  // Play a specific sentence - simple approach
+  const playSentenceBasedAudio = async (startSentenceIndex = 0) => {
+    if (!sentenceAudioData || !sentenceAudioSegments.length) {
+      console.log('No sentence audio data available');
+      return;
+    }
+    
+    console.log(`🎵 Playing sentence ${startSentenceIndex}`);
+    
+    try {
+      setIsPlaying(true);
+      setPlayError(null);
+      
+      // Use the same global sentence index as the rendering system
+      setCurrentSentence(startSentenceIndex);
+      setCurrentPlayingSentence(startSentenceIndex);
+      console.log(`🎯 Highlighting sentence ${startSentenceIndex}: "${sentenceAudioSegments[startSentenceIndex]?.sentence.substring(0, 50)}..."`);
+      
+      // Highlight all words in this sentence
+      highlightWordsInSentence(startSentenceIndex);
+      
+      // Convert base64 combined audio to blob
+      const combinedAudioBlob = new Blob([
+        Uint8Array.from(atob(sentenceAudioData.combinedAudio), c => c.charCodeAt(0))
+      ], { type: 'audio/mpeg' });
+      
+      // Create audio element
+      const audio = new Audio();
+      const audioUrl = URL.createObjectURL(combinedAudioBlob);
+      audio.src = audioUrl;
+      
+      // Set start time to the beginning of the specified sentence
+      const startSegment = sentenceAudioSegments[startSentenceIndex];
+      if (startSegment) {
+        console.log(`⏰ Starting at time ${startSegment.startTime}s for sentence: "${startSegment.sentence.substring(0, 50)}..."`);
+        audio.currentTime = startSegment.startTime;
+      }
+      
+      // Play the audio
+      await audio.play();
+      
+      // Simple approach: just highlight the sentence we're playing and stay there
+      console.log(`🎯 Staying on sentence ${startSentenceIndex} until audio moves naturally`);
+      
+      // Set up simple highlighting that only updates when we actually move to a different sentence
+      let lastHighlightedSentence = startSentenceIndex;
+      const updateHighlighting = () => {
+        const currentTime = audio.currentTime;
+        
+        console.log(`⏰ Audio time: ${currentTime.toFixed(2)}s, Currently highlighting: ${lastHighlightedSentence}`);
+        
+        // Find which sentence should be highlighted based on audio time
+        let currentSentenceIndex = -1;
+        for (let i = 0; i < sentenceAudioSegments.length; i++) {
+          const segment = sentenceAudioSegments[i];
+          console.log(`📊 Sentence ${i}: ${segment.startTime.toFixed(2)}s - ${segment.endTime.toFixed(2)}s`);
+          
+          if (currentTime >= segment.startTime && currentTime < segment.endTime) {
+            currentSentenceIndex = i;
+            console.log(`✅ Audio time ${currentTime.toFixed(2)}s falls in sentence ${i}`);
+            break;
+          }
+        }
+        
+        // Only update if we've actually moved to a different sentence
+        if (currentSentenceIndex !== -1 && currentSentenceIndex !== lastHighlightedSentence) {
+          console.log(`🎯 Audio naturally moved to sentence ${currentSentenceIndex}: "${sentenceAudioSegments[currentSentenceIndex]?.sentence.substring(0, 50)}..."`);
+          setCurrentSentence(currentSentenceIndex);
+          setCurrentPlayingSentence(currentSentenceIndex);
+          highlightWordsInSentence(currentSentenceIndex);
+          lastHighlightedSentence = currentSentenceIndex;
+        } else if (currentSentenceIndex === -1) {
+          console.log(`❌ No sentence found for audio time ${currentTime.toFixed(2)}s`);
+        } else {
+          console.log(`⏸️ Staying on sentence ${currentSentenceIndex} (no change)`);
+        }
+      };
+      
+      // Update highlighting every 500ms to avoid jumping
+      const highlightInterval = setInterval(updateHighlighting, 500);
+      
+      // Set up event listeners
+      audio.addEventListener('ended', () => {
+        URL.revokeObjectURL(audioUrl);
+        clearInterval(highlightInterval);
+        setIsPlaying(false);
+        setCurrentPlayingSentence(-1);
+        setCurrentSentence(-1);
+        setHighlightedWords(new Set());
+        console.log(`✅ Finished playing sentence ${startSentenceIndex}`);
+      });
+      
+      audio.addEventListener('error', () => {
+        URL.revokeObjectURL(audioUrl);
+        clearInterval(highlightInterval);
+        setPlayError('Failed to play sentence audio');
+        setIsPlaying(false);
+        setCurrentPlayingSentence(-1);
+      });
+      
+    } catch (error) {
+      console.error('Error playing sentence-based audio:', error);
+      setPlayError('Failed to play sentence audio');
+      setIsPlaying(false);
+      setCurrentPlayingSentence(-1);
+    }
+  };
+
+  // Simple word highlighting - highlight all words in a sentence
+  const highlightWordsInSentence = (sentenceIndex) => {
+    if (!sentenceAudioSegments[sentenceIndex]) {
+      console.log(`❌ No audio segment found for sentence ${sentenceIndex}`);
+      return;
+    }
+    
+    const segment = sentenceAudioSegments[sentenceIndex];
+    const words = segment.sentence.trim().split(/\s+/);
+    const newHighlightedWords = new Set();
+    
+    console.log(`🎯 Highlighting words for sentence ${sentenceIndex}: "${segment.sentence.substring(0, 50)}..."`);
+    console.log(`📝 Words: ${words.length} words`);
+    
+    words.forEach((word, wordIndex) => {
+      newHighlightedWords.add(`${sentenceIndex}-${wordIndex}`);
+      console.log(`📝 Word ${wordIndex}: "${word}" -> key: ${sentenceIndex}-${wordIndex}`);
+    });
+    
+    console.log(`🎯 Setting highlighted words:`, Array.from(newHighlightedWords));
+    setHighlightedWords(newHighlightedWords);
+  };
+
+  // Play audio from a specific sentence (for individual sentence replay)
+  const playFromSentence = async (sentenceIndex) => {
+    await playSentenceBasedAudio(sentenceIndex);
+  };
+
   const handlePlayStory = async () => {
     if (!story) return;
     
@@ -319,6 +604,21 @@ const StoryReader = ({
     setPlayError(null);
     
     try {
+      // First try to load sentence audio data
+      if (storyId) {
+        const sentenceData = await loadSentenceAudioData(storyId);
+        if (sentenceData) {
+          console.log('✅ Using sentence audio data');
+          setSentenceAudioStatus('ready');
+          await generateSentenceAudioSegments(sentenceData);
+          
+          // Start sentence-based playback from the beginning
+          await playSentenceBasedAudio(0);
+          return;
+        }
+      }
+      
+      // Fallback to old audio system
       if (preloadedAudio && audioPreloadStatus === 'loaded') {
         console.log('✅ Using preloaded audio - INSTANT PLAYBACK!');
         setAudioStatus('ready');
@@ -354,7 +654,7 @@ const StoryReader = ({
         }
         
         try {
-          console.log('🎵 Generating and storing audio in database - THIS WILL USE API CREDITS');
+          console.log('🎵 Generating and storing sentence audio in database - THIS WILL USE API CREDITS');
           console.log('💰 Using Flash model for cost savings (0.5 credits per character)');
           
           const generateResponse = await fetch(`http://localhost:5000/api/story/${storyId}/generate-audio`, {
@@ -365,26 +665,19 @@ const StoryReader = ({
           });
           
           if (generateResponse.ok) {
-            console.log('✅ Audio generated and stored in database');
+            console.log('✅ Sentence audio generated and stored in database');
             
-            const audioResponse = await fetch(`http://localhost:5000/api/story/${storyId}/audio?t=${Date.now()}`, {
-              cache: 'no-cache',
-              headers: {
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
-              }
-            });
-            if (audioResponse.ok) {
-              const audioBlob = await audioResponse.blob();
-              console.log('✅ Stored audio loaded from database after generation - NO ADDITIONAL CREDITS USED!');
-              setAudioStatus('ready');
-              setAudioSource('stored');
-              await playAudioWithHighlighting(audioBlob);
+            // Load the newly generated sentence audio
+            const sentenceData = await loadSentenceAudioData(storyId);
+            if (sentenceData) {
+              setSentenceAudioStatus('ready');
+              await generateSentenceAudioSegments(sentenceData);
+              await playFromSentence(0);
               return;
             }
           }
         } catch (error) {
-          console.error('Error generating/storing audio:', error);
+          console.error('Error generating/storing sentence audio:', error);
         }
       }
       
@@ -419,13 +712,22 @@ const StoryReader = ({
       }
       
       return sentences.map((sentence, sentenceIndex) => {
+        const currentGlobalIndex = globalSentenceIndex; // Capture the current index
         const words = sentence.trim().split(/\s+/);
-        const isSentenceActive = currentSentence === globalSentenceIndex;
+        const isSentenceActive = currentSentence === currentGlobalIndex;
+        const isCurrentlyPlaying = currentPlayingSentence === currentGlobalIndex;
+        
+        // Debug logging
+        if (isSentenceActive || isCurrentlyPlaying) {
+          console.log(`🎨 RENDERING: Paragraph ${paragraphIndex}, Sentence ${sentenceIndex}, Global Index ${currentGlobalIndex}`);
+          console.log(`🎨 Sentence: "${sentence.substring(0, 50)}..."`);
+          console.log(`🎨 Current sentence state: ${currentSentence}, Playing: ${currentPlayingSentence}`);
+        }
         
         const result = (
-          <span key={`p${paragraphIndex}-s${sentenceIndex}`}>
+          <span key={`p${paragraphIndex}-s${sentenceIndex}`} className="sentence-container relative group">
             {words.map((word, wordIndex) => {
-              const isWordActive = highlightedWords.has(`${globalSentenceIndex}-${wordIndex}`);
+              const isWordActive = highlightedWords.has(`${currentGlobalIndex}-${wordIndex}`);
               
               const isVocabWord = word.includes('**');
               const displayWord = word.replace(/\*\*/g, '');
@@ -457,10 +759,35 @@ const StoryReader = ({
               
               return wordElement;
             })}
+            
+            {/* Section play button - only show at section starts */}
+            {sentenceAudioData && sentenceAudioSegments.length > 0 && (() => {
+              const sectionStarts = getSectionStartSentences();
+              const isSectionStart = sectionStarts.some(section => section.sentenceIndex === currentGlobalIndex);
+              
+              if (isSectionStart) {
+                const sectionInfo = sectionStarts.find(section => section.sentenceIndex === currentGlobalIndex);
+                return (
+                  <button
+                    onClick={() => playFromSentence(currentGlobalIndex)}
+                    className={`absolute -left-8 top-0 w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all duration-200 opacity-0 group-hover:opacity-100 ${
+                      isCurrentlyPlaying 
+                        ? 'bg-red-500 text-white animate-pulse' 
+                        : 'bg-green-500 text-white hover:bg-green-600'
+                    }`}
+                    title={`Play section ${sectionInfo.sectionIndex + 1}: ${sectionInfo.sectionText}`}
+                    disabled={isPlaying && !isCurrentlyPlaying}
+                  >
+                    {isCurrentlyPlaying ? '⏸' : '▶'}
+                  </button>
+                );
+              }
+              return null;
+            })()}
           </span>
         );
         
-        globalSentenceIndex++;
+        globalSentenceIndex++; // Increment after processing
         return result;
       });
     };
