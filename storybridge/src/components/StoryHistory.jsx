@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import { getUserStories, deleteStory } from '../services/storyService';
 import LogoutButton from './LogoutButton';
+import storybitesLogo from '../images/storybites.png';
 
 const StoryHistory = () => {
   const navigate = useNavigate();
@@ -123,8 +124,8 @@ const StoryHistory = () => {
         <div className="p-6 border-b border-cream-300">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-brand-blue rounded-lg flex items-center justify-center">
-                <span className="text-white text-xl font-bold">S</span>
+              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center p-1">
+                <img src={storybitesLogo} alt="StoryBites Logo" className="w-full h-full object-contain" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-brand-brown-dark">StoryBites</h2>
