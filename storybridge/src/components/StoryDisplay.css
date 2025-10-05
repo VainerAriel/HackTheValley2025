@@ -1,10 +1,10 @@
 .dyslexia-friendly-story {
-  font-family: 'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif;
+  /* Font family controlled by inline styles */
 }
 
 .story-content {
   color: #2d2d2d;
-  font-size: 20px;
+  /* font-size controlled by inline styles */
   line-height: 2.0;
   letter-spacing: 0.05em;
   word-spacing: 0.16em;
@@ -95,17 +95,15 @@
   border-top: 8px solid #e5e7eb;
 }
 
-/* Responsive font sizes */
+/* Responsive adjustments */
 @media (max-width: 768px) {
   .story-content {
-    font-size: 18px;
     line-height: 1.9;
   }
 }
 
 @media (min-width: 1024px) {
   .story-content {
-    font-size: 20px;
     line-height: 2.0;
   }
 }
@@ -121,4 +119,3 @@
     display: none;
   }
 }
-

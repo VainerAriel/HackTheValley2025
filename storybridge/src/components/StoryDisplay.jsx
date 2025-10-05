@@ -16,17 +16,49 @@ function StoryDisplay({ story, storyTitle, onGenerateNew, onBackToHistory, vocab
   const [currentSentence, setCurrentSentence] = useState(-1);
   const audioRef = useRef(null);
   const timeoutsRef = useRef([]);
+  
+  // Font customization state
+  const [selectedFont, setSelectedFont] = useState(() => {
+    return localStorage.getItem('storyFont') || 'OpenDyslexic';
+  });
+  const [fontSize, setFontSize] = useState(() => {
+    return parseInt(localStorage.getItem('storyFontSize')) || 22;
+  });
+  const [showFontOptions, setShowFontOptions] = useState(true);
 
-  // Load OpenDyslexic font
+  // Save font preferences to localStorage
   useEffect(() => {
-    const existingLink = document.querySelector('link[href*="opendyslexic"]');
-    if (!existingLink) {
-      const link = document.createElement('link');
-      link.href = 'https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/open-dyslexic-regular.css';
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-    }
-  }, []);
+    localStorage.setItem('storyFont', selectedFont);
+  }, [selectedFont]);
+
+  useEffect(() => {
+    localStorage.setItem('storyFontSize', fontSize.toString());
+  }, [fontSize]);
+
+  // Font options
+  const fontOptions = [
+    { name: 'OpenDyslexic', value: 'OpenDyslexic', description: 'Designed for dyslexia' },
+    { name: 'Verdana', value: 'Verdana', description: 'Highly readable' },
+    { name: 'Arial', value: 'Arial', description: 'Clean & simple' },
+    { name: 'Georgia', value: 'Georgia', description: 'Elegant serif' },
+    { name: 'Comic Sans MS', value: 'Comic Sans MS', description: 'Friendly & rounded' }
+  ];
+
+  const handleFontChange = (font) => {
+    setSelectedFont(font);
+  };
+
+  const handleFontSizeIncrease = () => {
+    setFontSize(prev => Math.min(prev + 2, 32));
+  };
+
+  const handleFontSizeDecrease = () => {
+    setFontSize(prev => Math.max(prev - 2, 14));
+  };
+
+  const handleResetFontSize = () => {
+    setFontSize(22);
+  };
 
   // Load vocabulary definitions (either from storage or fetch them)
   useEffect(() => {
@@ -418,10 +450,21 @@ function StoryDisplay({ story, storyTitle, onGenerateNew, onBackToHistory, vocab
     return null;
   }
 
+  // Get font family string
+  const getFontFamily = () => {
+    if (selectedFont === 'OpenDyslexic') {
+      return `'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif`;
+    }
+    return `'${selectedFont}', sans-serif`;
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-8">
       <article 
         className="dyslexia-friendly-story bg-[#FFF8E7] rounded-2xl shadow-2xl p-8 md:p-12"
+        style={{
+          fontFamily: getFontFamily()
+        }}
         aria-label="Generated story"
       >
         {/* Vocabulary Loading Indicator */}
@@ -443,9 +486,92 @@ function StoryDisplay({ story, storyTitle, onGenerateNew, onBackToHistory, vocab
           </div>
         )}
 
+        {/* Font Customization Toolbar - ALWAYS VISIBLE */}
+        <div className="mb-8 p-6 bg-blue-50 border-2 border-blue-200 rounded-xl shadow-md">
+          <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">📖 Reading Options</h3>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* LEFT SIDE - Font Style Selection */}
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <label className="text-sm font-bold text-gray-900 mb-3 block">
+                Font Style:
+              </label>
+              <div className="space-y-2">
+                {fontOptions.map((font) => (
+                  <button
+                    key={font.value}
+                    onClick={() => handleFontChange(font.value)}
+                    className={`w-full p-3 text-left rounded-lg border-2 transition-all ${
+                      selectedFont === font.value
+                        ? 'border-blue-500 bg-blue-50 shadow-md'
+                        : 'border-gray-200 bg-white hover:border-gray-300'
+                    }`}
+                    style={{ fontFamily: font.value === 'OpenDyslexic' ? `'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif` : `'${font.value}', sans-serif` }}
+                  >
+                    <div className="font-semibold text-gray-800">{font.name}</div>
+                    <div className="text-xs text-gray-500">{font.description}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* RIGHT SIDE - Font Size Controls */}
+            <div className="bg-white p-4 rounded-lg border border-gray-200 flex flex-col">
+              <label className="text-sm font-bold text-gray-900 mb-3 block">
+                Font Size:
+              </label>
+              
+              <div className="flex flex-col items-center justify-center flex-1 space-y-4">
+                <div className="text-4xl font-bold text-blue-600">
+                  {fontSize}px
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleFontSizeDecrease}
+                    className="px-5 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold text-lg transition-colors"
+                    aria-label="Decrease font size"
+                  >
+                    A-
+                  </button>
+                  <button
+                    onClick={handleResetFontSize}
+                    className="px-5 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
+                    aria-label="Reset font size"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    onClick={handleFontSizeIncrease}
+                    className="px-5 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold text-lg transition-colors"
+                    aria-label="Increase font size"
+                  >
+                    A+
+                  </button>
+                </div>
+              </div>
+
+              {/* Preview Text */}
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <p className="text-xs text-gray-500 mb-2 text-center">Preview:</p>
+                <p 
+                  className="text-center text-gray-700"
+                  style={{ 
+                    fontFamily: getFontFamily(),
+                    fontSize: `${fontSize}px`
+                  }}
+                >
+                  The quick brown fox
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Story Content */}
         <div 
           className="story-content max-w-[700px] mx-auto"
+          style={{ fontSize: `${fontSize}px` }}
           role="article"
         >
           {renderStoryWithVocabulary()}

@@ -30,6 +30,10 @@ const StoryReader = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [fontSize, setFontSize] = useState('medium');
   const [showVocabularyPanel, setShowVocabularyPanel] = useState(false);
+  const [showFontSelector, setShowFontSelector] = useState(false);
+  const [selectedFont, setSelectedFont] = useState(() => {
+    return localStorage.getItem('storyFont') || 'OpenDyslexic';
+  });
   
   const audioRef = useRef(null);
   const timeoutsRef = useRef([]);
@@ -44,16 +48,27 @@ const StoryReader = ({
     xlarge: '28px'
   };
 
-  // Load OpenDyslexic font
+  // Font options
+  const fontOptions = [
+    { name: 'OpenDyslexic', value: 'OpenDyslexic', description: 'Designed for dyslexia' },
+    { name: 'Verdana', value: 'Verdana', description: 'Highly readable' },
+    { name: 'Arial', value: 'Arial', description: 'Clean & simple' },
+    { name: 'Georgia', value: 'Georgia', description: 'Elegant serif' },
+    { name: 'Comic Sans MS', value: 'Comic Sans MS', description: 'Friendly & rounded' }
+  ];
+
+  // Save font preference
   useEffect(() => {
-    const existingLink = document.querySelector('link[href*="opendyslexic"]');
-    if (!existingLink) {
-      const link = document.createElement('link');
-      link.href = 'https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/open-dyslexic-regular.css';
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
+    localStorage.setItem('storyFont', selectedFont);
+  }, [selectedFont]);
+
+  // Get font family string
+  const getFontFamily = () => {
+    if (selectedFont === 'OpenDyslexic') {
+      return `'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif`;
     }
-  }, []);
+    return `'${selectedFont}', sans-serif`;
+  };
 
   // Load vocabulary definitions
   useEffect(() => {
@@ -475,6 +490,22 @@ const StoryReader = ({
       <div className="story-reader-header">
         <div className="story-reader-controls">
           <div className="control-group">
+          <button
+              onClick={() => setShowVocabularyPanel(!showVocabularyPanel)}
+              className="control-button"
+              title="Toggle vocabulary panel"
+            >
+              Vocabulary: {showVocabularyPanel ? 'On ' : 'Off'}
+            </button>
+            <button
+              onClick={toggleFullscreen}
+              className="control-button"
+              title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+            >
+              <span style={{ fontSize: '1.5em' }}>
+                {isFullscreen ? '\uF3DE' : '⛶'}
+              </span>
+            </button>
             <button
               onClick={() => setFontSize(fontSize === 'xlarge' ? 'large' : fontSize === 'large' ? 'medium' : fontSize === 'medium' ? 'small' : 'small')}
               className="control-button"
@@ -491,22 +522,19 @@ const StoryReader = ({
               A
             </button>
             
+
+          
             <button
-              onClick={toggleFullscreen}
+              onClick={() => setShowFontSelector(!showFontSelector)}
               className="control-button"
-              title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+              title="Change font"
+              style={{ fontFamily: getFontFamily() }}
             >
-              {isFullscreen ? '⤓' : '⤢'}
-            </button>
-            
-            <button
-              onClick={() => setShowVocabularyPanel(!showVocabularyPanel)}
-              className="control-button"
-              title="Toggle vocabulary panel"
-            >
-              📚
+              Font: {selectedFont}
             </button>
           </div>
+
+          
           
           <div className="progress-container">
             <div className="progress-bar">
@@ -518,6 +546,32 @@ const StoryReader = ({
             <span className="progress-text">{Math.round(readingProgress)}%</span>
           </div>
         </div>
+
+        {/* Font Selector Dropdown */}
+        {showFontSelector && (
+          <div className="font-selector-dropdown">
+            <div className="font-selector-header">
+              <h4>Choose Font</h4>
+              <button onClick={() => setShowFontSelector(false)}>×</button>
+            </div>
+            <div className="font-options">
+              {fontOptions.map((font) => (
+                <button
+                  key={font.value}
+                  onClick={() => {
+                    setSelectedFont(font.value);
+                    setShowFontSelector(false);
+                  }}
+                  className={`font-option ${selectedFont === font.value ? 'selected' : ''}`}
+                  style={{ fontFamily: font.value === 'OpenDyslexic' ? `'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif` : `'${font.value}', sans-serif` }}
+                >
+                  <div className="font-name">{font.name}</div>
+                  <div className="font-description">{font.description}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Main reading area */}
@@ -549,7 +603,10 @@ const StoryReader = ({
         <div 
           ref={storyRef}
           className="story-content-area"
-          style={{ fontSize: fontSizes[fontSize] }}
+          style={{ 
+            fontSize: fontSizes[fontSize],
+            fontFamily: getFontFamily()
+          }}
         >
           <article
             className="story-article"
