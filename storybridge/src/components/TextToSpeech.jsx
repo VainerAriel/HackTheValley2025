@@ -4,7 +4,7 @@ import { convertTextToSpeech, playAudioFromBlob } from '../services/elevenLabsSe
 const TextToSpeech = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [error, setError] = useState(null);
-  const [text, setText] = useState('Welcome to StoryBridge! Type something to hear it spoken.');
+  const [text, setText] = useState('Welcome to StoryBites! Type something to hear it spoken.');
   const [highlightedWords, setHighlightedWords] = useState(new Set());
   const [currentSentence, setCurrentSentence] = useState(-1);
   const audioRef = useRef(null);

@@ -57,9 +57,9 @@ const StoryHistory = () => {
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8 border border-cream-300">
           <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-blue"></div>
             <span className="ml-3 text-gray-600">Loading your stories...</span>
           </div>
         </div>
@@ -70,15 +70,15 @@ const StoryHistory = () => {
   if (stories.length === 0) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+        <div className="bg-white rounded-2xl shadow-xl p-8 text-center border border-cream-300">
           <div className="text-6xl mb-4">📚</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">No Stories Yet</h2>
+          <h2 className="text-2xl font-bold text-brand-brown-dark mb-4">No Stories Yet</h2>
           <p className="text-gray-600 mb-6">
             Start creating personalized stories for your child!
           </p>
           <button
             onClick={() => navigate('/')}
-            className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105 shadow-lg"
+            className="px-8 py-4 bg-brand-blue hover:bg-brand-blue-dark text-white font-bold rounded-lg transition-all transform hover:scale-105 shadow-lg"
           >
             ✨ Create Your First Story
           </button>
@@ -88,15 +88,22 @@ const StoryHistory = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
+    <div className="min-h-screen bg-cream-100 flex">
       {/* Sidebar */}
-      <div className="w-80 bg-white shadow-lg flex flex-col">
-        <div className="p-6 border-b border-gray-200">
+      <div className="w-80 bg-white shadow-lg flex flex-col border-r border-cream-300">
+        <div className="p-6 border-b border-cream-300">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800">StoryBridge</h2>
-              <p className="text-sm text-gray-600 mt-1">Your Story Collection</p>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-brand-blue rounded-lg flex items-center justify-center">
+                <span className="text-white text-xl font-bold">S</span>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-brand-brown-dark">StoryBites</h2>
+                <p className="text-sm text-gray-600 mt-1">Your Story Collection</p>
+              </div>
             </div>
+          </div>
+          <div className="mt-4">
             <LogoutButton />
           </div>
         </div>
@@ -104,14 +111,14 @@ const StoryHistory = () => {
         <nav className="flex-1 p-4">
           <button
             onClick={() => navigate('/')}
-            className="w-full text-left px-4 py-3 rounded-lg mb-2 transition-colors text-gray-600 hover:bg-gray-100"
+            className="w-full text-left px-4 py-3 rounded-lg mb-2 transition-colors text-brand-brown hover:bg-cream-100"
           >
             ✨ Generate New Story
           </button>
           
           <button
             onClick={() => navigate('/history')}
-            className="w-full text-left px-4 py-3 rounded-lg transition-colors bg-purple-100 text-purple-700 font-semibold"
+            className="w-full text-left px-4 py-3 rounded-lg transition-colors bg-brand-blue text-white font-semibold shadow-md"
           >
             📚 Story History ({stories.length})
           </button>
@@ -123,7 +130,7 @@ const StoryHistory = () => {
         <div className="flex-1 overflow-auto">
           <div className="max-w-6xl mx-auto px-4 py-8">
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">Your Story Collection</h1>
+              <h1 className="text-3xl font-bold text-brand-brown-dark mb-2">Your Story Collection</h1>
               <p className="text-gray-600">Browse and revisit your created stories</p>
             </div>
 
@@ -131,14 +138,14 @@ const StoryHistory = () => {
         {stories.filter(story => story && story.STORY_ID).map((story, index) => (
           <div
             key={story.STORY_ID || index}
-            className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer group"
+            className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer group border border-cream-300"
             onClick={() => handleViewStory(story)}
           >
             <div className="p-6">
               {/* Story Header */}
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 className="font-bold text-lg text-gray-800 group-hover:text-purple-600 transition-colors">
+                  <h3 className="font-bold text-lg text-brand-brown-dark group-hover:text-brand-blue transition-colors">
                     Story #{index + 1}
                   </h3>
                   <p className="text-sm text-gray-500">Generated Story</p>
@@ -162,7 +169,7 @@ const StoryHistory = () => {
                     {story.INTERESTS.split(',').filter(interest => interest.trim()).map((interest, idx) => (
                       <span
                         key={idx}
-                        className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full"
+                        className="px-2 py-1 bg-cream-200 text-brand-brown text-xs rounded-full"
                       >
                         {interest.trim()}
                       </span>
@@ -179,7 +186,7 @@ const StoryHistory = () => {
                     {story.VOCAB_WORDS.split(',').filter(word => word.trim()).slice(0, 3).map((word, idx) => (
                       <span
                         key={idx}
-                        className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded"
+                        className="px-2 py-1 bg-blue-100 text-brand-blue-dark text-xs rounded"
                       >
                         {word.trim()}
                       </span>
@@ -194,8 +201,8 @@ const StoryHistory = () => {
               )}
 
               {/* View Button */}
-              <div className="pt-4 border-t border-gray-100">
-                <button className="w-full py-2 text-purple-600 font-semibold text-sm hover:text-purple-700 transition-colors">
+              <div className="pt-4 border-t border-cream-200">
+                <button className="w-full py-2 text-brand-blue font-semibold text-sm hover:text-brand-blue-dark transition-colors">
                   📖 Read Story
                 </button>
               </div>
@@ -208,7 +215,7 @@ const StoryHistory = () => {
             <div className="mt-8 text-center">
               <button
                 onClick={() => navigate('/')}
-                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105 shadow-lg"
+                className="px-8 py-4 bg-brand-blue hover:bg-brand-blue-dark text-white font-bold rounded-lg transition-all transform hover:scale-105 shadow-lg"
               >
                 ✨ Create New Story
               </button>

@@ -74,15 +74,22 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
+    <div className="min-h-screen bg-cream-100 flex">
       {/* Sidebar */}
-      <div className="w-80 bg-white shadow-lg flex flex-col">
-        <div className="p-6 border-b border-gray-200">
+      <div className="w-80 bg-white shadow-lg flex flex-col border-r border-cream-300">
+        <div className="p-6 border-b border-cream-300">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800">StoryBridge</h2>
-              <p className="text-sm text-gray-600 mt-1">Welcome back!</p>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-brand-blue rounded-lg flex items-center justify-center">
+                <span className="text-white text-xl font-bold">S</span>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-brand-brown-dark">StoryBites</h2>
+                <p className="text-sm text-gray-600 mt-1">Welcome back!</p>
+              </div>
             </div>
+          </div>
+          <div className="mt-4">
             <LogoutButton />
           </div>
         </div>
@@ -94,8 +101,8 @@ const Dashboard = () => {
             }}
             className={`w-full text-left px-4 py-3 rounded-lg mb-2 transition-colors ${
               step === 'form' 
-                ? 'bg-purple-100 text-purple-700 font-semibold' 
-                : 'text-gray-600 hover:bg-gray-100'
+                ? 'bg-brand-blue text-white font-semibold shadow-md' 
+                : 'text-brand-brown hover:bg-cream-100'
             }`}
           >
             ✨ Generate New Story
@@ -103,7 +110,7 @@ const Dashboard = () => {
           
           <button
             onClick={() => navigate('/history')}
-            className="w-full text-left px-4 py-3 rounded-lg transition-colors text-gray-600 hover:bg-gray-100"
+            className="w-full text-left px-4 py-3 rounded-lg transition-colors text-brand-brown hover:bg-cream-100"
           >
             📚 Story History
           </button>
