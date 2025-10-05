@@ -6,7 +6,7 @@ import VocabularySelector from './VocabularySelector';
 import StoryReader from './StoryReader';
 import LogoutButton from './LogoutButton';
 import { useStoryFlow } from '../hooks/useStoryFlow';
-import { saveStory } from '../services/storyService.js';
+import { saveStory } from '../services';
 import storybitesLogo from '../images/storybites.png';
 
 const Dashboard = () => {

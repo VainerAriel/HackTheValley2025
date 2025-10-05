@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getBatchWordDefinitions } from '../services/gemini.js';
-import { convertTextToSpeech, playAudioFromBlob } from '../services/elevenLabsService.js';
+import { getBatchWordDefinitions, convertTextToSpeech, playAudioFromBlob } from '../services';
 import './StoryReader.css';
 
 const StoryReader = ({ 
