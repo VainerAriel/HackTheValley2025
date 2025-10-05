@@ -25,6 +25,8 @@ export const useStoryFlow = () => {
   const handleVocabularyGenerate = async (words, userId = null) => {
     setVocabularyWords(words);
     setLoading(true);
+    let savedStoryId = null;
+    
     try {
       const generatedStory = await generateStory({ 
         ...formData, 
@@ -66,6 +68,7 @@ export const useStoryFlow = () => {
           
           // Store storyId for use in StoryDisplay
           if (saveResult && saveResult.storyId) {
+            savedStoryId = saveResult.storyId;
             setStoryId(saveResult.storyId);
             console.log('🎵 Generating and storing audio immediately for storyId:', saveResult.storyId);
             try {
@@ -99,6 +102,9 @@ export const useStoryFlow = () => {
     } finally {
       setLoading(false);
     }
+    
+    // Return the storyId for navigation
+    return { storyId: savedStoryId };
   };
 
   const handleGenerateNew = () => {

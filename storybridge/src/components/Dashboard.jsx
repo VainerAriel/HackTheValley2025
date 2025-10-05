@@ -3,7 +3,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { useNavigate } from 'react-router-dom';
 import StoryForm from './StoryForm';
 import VocabularySelector from './VocabularySelector';
-import StoryDisplay from './StoryDisplay';
+import StoryReader from './StoryReader';
 import LogoutButton from './LogoutButton';
 import { useStoryFlow } from '../hooks/useStoryFlow';
 import { saveStory } from '../services/storyService';
@@ -29,7 +29,12 @@ const Dashboard = () => {
 
   const handleVocabularyGenerateWithSave = async (words) => {
     console.log('Generating story with save...', { words, userId: user.sub });
-    await handleVocabularyGenerate(words, user.sub);
+    const result = await handleVocabularyGenerate(words, user.sub);
+    
+    // After story is generated and saved, navigate to the story view
+    if (result && result.storyId) {
+      navigate(`/story/${result.storyId}`);
+    }
   };
 
   const handleBackToForm = () => {
@@ -59,18 +64,6 @@ const Dashboard = () => {
           />
         );
       
-      case 'story':
-        return (
-          <StoryDisplay 
-            story={story} 
-            storyTitle={storyTitle}
-            onGenerateNew={handleBackToForm}
-            vocabularyWords={vocabularyWords}
-            age={formData?.age}
-            isFromHistory={false}
-            storyId={storyId}
-          />
-        );
       
       default:
         return null;

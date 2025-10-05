@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
-import StoryDisplay from './StoryDisplay';
+import StoryReader from './StoryReader';
 import { getStoryById } from '../services/storyService';
 import LoadingSpinner from './LoadingSpinner';
 
@@ -151,7 +151,7 @@ const StoryView = () => {
 
       return (
         <div className="min-h-screen bg-cream-100">
-          <StoryDisplay
+          <StoryReader
             story={story.STORY_TEXT}
             storyTitle={story.STORY_TITLE}
             onGenerateNew={handleGenerateNew}
