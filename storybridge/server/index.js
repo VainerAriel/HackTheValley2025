@@ -9,8 +9,8 @@ const app = express();
 const PORT = 5000;
 
 // Enable CORS
-app.use(cors({ 
-  origin: 'http://localhost:3000',
+app.use(cors({
+  origin: ['https://www.storybites.vip', 'http://localhost:3000'],
   credentials: true
 }));
 // Increase body parser limit for large audio files
