@@ -26,9 +26,6 @@ const StoryReader = ({
   const [audioSource, setAudioSource] = useState(null);
   const [highlightedWords, setHighlightedWords] = useState(new Set());
   const [currentSentence, setCurrentSentence] = useState(-1);
-  const [readingProgress, setReadingProgress] = useState(0);
-  const [totalWords, setTotalWords] = useState(0);
-  const [highlightedWordCount, setHighlightedWordCount] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [fontSize, setFontSize] = useState('medium');
   const [showVocabularyPanel, setShowVocabularyPanel] = useState(false);
@@ -46,7 +43,6 @@ const StoryReader = ({
   const audioRef = useRef(null);
   const timeoutsRef = useRef([]);
   const storyRef = useRef(null);
-  const progressRef = useRef(null);
   const highlightIntervalRef = useRef(null);
 
   // Font size options
@@ -70,6 +66,13 @@ const StoryReader = ({
   useEffect(() => {
     localStorage.setItem('storyFont', selectedFont);
   }, [selectedFont]);
+
+  // Cleanup audio when component unmounts
+  useEffect(() => {
+    return () => {
+      stopAudio();
+    };
+  }, []);
 
   // Get font family string
   const getFontFamily = () => {
@@ -108,26 +111,6 @@ const StoryReader = ({
     }
   }, [vocabularyWords, age, storedVocabDefinitions]);
 
-  // Calculate total words when story changes
-  useEffect(() => {
-    if (story) {
-      const sentences = getSentences(story);
-      const totalWordCount = sentences.reduce((total, sentence) => {
-        return total + sentence.trim().split(/\s+/).length;
-      }, 0);
-      setTotalWords(totalWordCount);
-      setHighlightedWordCount(0);
-      setReadingProgress(0);
-    }
-  }, [story]);
-
-  // Update progress based on highlighted words
-  useEffect(() => {
-    if (totalWords > 0) {
-      const progress = Math.min(100, (highlightedWordCount / totalWords) * 100);
-      setReadingProgress(progress);
-    }
-  }, [highlightedWordCount, totalWords]);
 
   // Handle fullscreen toggle
   const toggleFullscreen = () => {
@@ -335,9 +318,6 @@ const StoryReader = ({
     let cumulativeDelay = 0;
     let globalWordIndex = 0;
 
-    // Reset progress when starting
-    setHighlightedWordCount(0);
-    setReadingProgress(0);
 
     sentences.forEach((sentence, sentenceIndex) => {
       const wordTimings = estimateWordTimings(sentence);
@@ -356,8 +336,6 @@ const StoryReader = ({
             newSet.add(`${sentenceIndex}-${wordIndex}`);
             return newSet;
           });
-          // Update progress when word is highlighted
-          setHighlightedWordCount(prev => prev + 1);
         }, sentenceStartDelay + timing.startTime);
         timeoutsRef.current.push(addTimeout);
 
@@ -401,8 +379,6 @@ const StoryReader = ({
     setHighlightedWords(new Set());
     setCurrentSentence(-1);
     setCurrentPlayingSentence(-1);
-    setHighlightedWordCount(0);
-    setReadingProgress(0);
     setPlayError(null);
     
     // Clear any audio URLs to prevent memory leaks
@@ -413,7 +389,22 @@ const StoryReader = ({
     console.log('🛑 Audio stopped and state reset');
   };
 
+  // Stop any currently playing audio before starting new audio
+  const stopCurrentAudio = () => {
+    if (audioRef.current && !audioRef.current.paused) {
+      console.log('🛑 Stopping current audio before starting new audio');
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    clearAllTimeouts();
+    setHighlightedWords(new Set());
+    setCurrentSentence(-1);
+    setCurrentPlayingSentence(-1);
+  };
+
   const playAudioWithHighlighting = async (audioBlob) => {
+    stopCurrentAudio(); // Stop any currently playing audio
+    
     const audioUrl = URL.createObjectURL(audioBlob);
     const audio = new Audio(audioUrl);
     audioRef.current = audio;
@@ -426,8 +417,6 @@ const StoryReader = ({
       setIsPlaying(false);
       setCurrentSentence(-1);
       setHighlightedWords(new Set());
-      // Set progress to 100% when audio completes
-      setHighlightedWordCount(totalWords);
       clearAllTimeouts();
       URL.revokeObjectURL(audioUrl);
     };
@@ -512,15 +501,14 @@ const StoryReader = ({
       return;
     }
     
+    stopCurrentAudio(); // Stop any currently playing audio
+    
     console.log(`🎵 Playing sentence ${startSentenceIndex} with provided segments`);
     
     try {
       setIsPlaying(true);
       setPlayError(null);
       
-      // Reset progress when starting
-      setHighlightedWordCount(0);
-      setReadingProgress(0);
       
       // Use the same global sentence index as the rendering system
       setCurrentSentence(startSentenceIndex);
@@ -659,15 +647,14 @@ const StoryReader = ({
       return;
     }
     
+    stopCurrentAudio(); // Stop any currently playing audio
+    
     console.log(`🎵 Playing sentence ${startSentenceIndex}`);
     
     try {
       setIsPlaying(true);
       setPlayError(null);
       
-      // Reset progress when starting
-      setHighlightedWordCount(0);
-      setReadingProgress(0);
       
       // Use the same global sentence index as the rendering system
       setCurrentSentence(startSentenceIndex);
@@ -857,6 +844,8 @@ const StoryReader = ({
 
   const handlePlayStory = async () => {
     if (!story) return;
+    
+    stopCurrentAudio(); // Stop any currently playing audio
     
     setIsPlaying(true);
     setPlayError(null);
@@ -1123,15 +1112,6 @@ const StoryReader = ({
 
           
           
-          <div className="progress-container">
-            <div className="progress-bar">
-              <div 
-                className="progress-fill" 
-                style={{ width: `${readingProgress}%` }}
-              ></div>
-            </div>
-            <span className="progress-text">{Math.round(readingProgress)}%</span>
-          </div>
         </div>
 
         {/* Font Selector Dropdown */}
@@ -1243,7 +1223,10 @@ const StoryReader = ({
 
       {/* Navigation buttons */}
       <div className="story-navigation">
-        <button onClick={() => window.location.href = '/'} className="nav-button home-button">
+        <button onClick={() => {
+          stopAudio(); // Stop any playing audio before navigating
+          window.location.href = '/';
+        }} className="nav-button home-button">
           🏠 Home
         </button>
       </div>
