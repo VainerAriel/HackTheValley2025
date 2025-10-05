@@ -5,6 +5,7 @@ import LogoutButton from './LogoutButton';
 import VocabularyModal from './VocabularyModal';
 import StoriesModal from './StoriesModal';
 import storybitesLogo from '../images/storybites.png';
+import bookImage from '../images/book.png';
 
 const HomePage = () => {
   const { user, getAccessTokenSilently } = useAuth0();
@@ -89,13 +90,24 @@ const HomePage = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
-        <div className="mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">
-            {getGreeting()}, {getDisplayName()}
-          </h2>
-          <p className="text-lg text-gray-600 max-w-3xl">
-            Continue your personalized learning journey with interactive stories and vocabulary building.
-          </p>
+        <div className="mb-12 bg-white rounded-xl shadow-sm p-8 border border-gray-200">
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="flex-1">
+              <h2 className="text-3xl font-bold text-gray-900 mb-3">
+                {getGreeting()}, {getDisplayName()}
+              </h2>
+              <p className="text-lg text-gray-600">
+                Continue your personalized learning journey with interactive stories and vocabulary building.
+              </p>
+            </div>
+            <div className="flex-shrink-0 mr-4">
+              <img 
+                src={bookImage} 
+                alt="Story Book" 
+                className="w-48 h-48 object-contain drop-shadow-lg"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Quick Actions */}

@@ -205,7 +205,9 @@ const ProfileSetup = ({ onComplete }) => {
         <div className="bg-white rounded-lg shadow-lg p-8 border border-amber-200">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-gradient-to-br from-yellow-700 to-amber-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-white text-2xl font-bold">👤</span>
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-700 to-amber-800 bg-clip-text text-transparent mb-2">Welcome to StoryBites!</h1>
             <p className="text-amber-800">Let's set up your child's profile to create personalized stories</p>
@@ -255,8 +257,8 @@ const ProfileSetup = ({ onComplete }) => {
               <label className="block text-sm font-medium text-amber-900 mb-3">
                 What are your child's pronouns? *
               </label>
-              <div className="grid grid-cols-2 gap-3">
-                {['he/him', 'she/her'].map((option) => (
+              <div className="grid grid-cols-3 gap-3">
+                {['he/him', 'she/her', 'they/them'].map((option) => (
                   <label key={option} className={`flex items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all ${
                     profileData.childPronouns === option
                       ? 'border-yellow-700 bg-amber-50 text-amber-900'
@@ -273,23 +275,6 @@ const ProfileSetup = ({ onComplete }) => {
                     <span className="font-medium">{option}</span>
                   </label>
                 ))}
-                <div className="col-span-2">
-                  <label className={`flex items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all w-full ${
-                    profileData.childPronouns === 'they/them'
-                      ? 'border-yellow-700 bg-amber-50 text-amber-900'
-                      : 'border-amber-200 hover:border-amber-300'
-                  }`}>
-                    <input
-                      type="radio"
-                      name="childPronouns"
-                      value="they/them"
-                      checked={profileData.childPronouns === 'they/them'}
-                      onChange={(e) => handleInputChange('childPronouns', e.target.value)}
-                      className="mr-2 text-yellow-700 focus:ring-yellow-700"
-                    />
-                    <span className="font-medium">they/them</span>
-                  </label>
-                </div>
               </div>
             </div>
 
