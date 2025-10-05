@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 
 export const saveStory = async (storyData) => {
   try {
@@ -75,7 +75,7 @@ export const getStoryById = async (storyId) => {
 
 export const deleteStory = async (storyId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/story/${storyId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/story/${storyId}/delete`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

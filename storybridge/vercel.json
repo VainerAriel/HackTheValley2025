@@ -1,0 +1,19 @@
+{
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "REACT_APP_SNOWFLAKE_ACCOUNT": "@snowflake-account",
+    "REACT_APP_SNOWFLAKE_USER": "@snowflake-user", 
+    "REACT_APP_SNOWFLAKE_PASSWORD": "@snowflake-password",
+    "REACT_APP_SNOWFLAKE_WAREHOUSE": "@snowflake-warehouse",
+    "REACT_APP_SNOWFLAKE_DATABASE": "@snowflake-database",
+    "REACT_APP_SNOWFLAKE_SCHEMA": "@snowflake-schema",
+    "REACT_APP_AUTH0_DOMAIN": "@auth0-domain",
+    "REACT_APP_AUTH0_CLIENT_ID": "@auth0-client-id",
+    "REACT_APP_GEMINI_API_KEY": "@gemini-api-key",
+    "REACT_APP_ELEVENLABS_API_KEY": "@elevenlabs-api-key"
+  }
+}
