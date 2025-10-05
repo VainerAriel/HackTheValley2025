@@ -6,7 +6,6 @@ import LoginPage from './components/LoginPage.jsx';
 import HomePage from './components/HomePage.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import StoryView from './components/StoryView.jsx';
-import StoryHistory from './components/StoryHistory.jsx';
 import UserProfile from './components/UserProfile.jsx';
 import ProfileSetup from './components/ProfileSetup.jsx';
 
@@ -77,7 +76,6 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/create" element={<Dashboard />} />
-        <Route path="/history" element={<StoryHistory />} />
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/story/:storyId" element={<StoryView />} />
         <Route path="*" element={<Navigate to="/" replace />} />

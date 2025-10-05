@@ -109,42 +109,42 @@ function StoryForm({ onGenerateStory, loading }) {
 
   if (profileLoading) {
     return (
-      <div className="w-full max-w-2xl mx-auto px-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 border border-cream-300">
-          <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-2 text-gray-600">Loading your child's profile...</span>
-          </div>
-        </div>
+      <div className="flex justify-center items-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-3 text-gray-600">Loading your child's profile...</span>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-4">
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8 border border-cream-300">
-        <h2 className="text-3xl font-bold text-center text-brand-brown-dark mb-8">
+    <div className="w-full">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">
           Create a Story for {profileData.childName}
         </h2>
+        <p className="text-gray-600">Let's create a personalized adventure!</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-8">
 
         {/* Child Info Display */}
-        <div className="mb-8 p-4 bg-cream-50 rounded-lg border border-cream-200">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-brand-brown-dark mb-2">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
               {profileData.childName} ({profileData.childAge})
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-gray-600">
               We'll create a personalized story based on {profileData.childName}'s interests
             </p>
           </div>
         </div>
 
         {/* Story Topics Selection */}
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-700 mb-4">
+        <div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
             What would you like the story to be about? *
           </h3>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-gray-600 mb-6">
             Choose from {profileData.childName}'s interests or add your own topics
           </p>
 
@@ -158,19 +158,19 @@ function StoryForm({ onGenerateStory, loading }) {
                 {profileData.interests.map((interest) => (
                   <label
                     key={interest}
-                    className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                    className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                       selectedTopics.includes(interest)
-                        ? 'border-brand-blue bg-blue-50 text-brand-blue'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
+                        : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                     }`}
                   >
                     <input
                       type="checkbox"
                       checked={selectedTopics.includes(interest)}
                       onChange={() => handleTopicToggle(interest)}
-                      className="mr-2 text-brand-blue focus:ring-brand-blue"
+                      className="mr-3 text-blue-600 focus:ring-blue-500"
                     />
-                    <span className="text-sm font-medium">{interest}</span>
+                    <span className="font-medium">{interest}</span>
                   </label>
                 ))}
               </div>
@@ -178,28 +178,28 @@ function StoryForm({ onGenerateStory, loading }) {
           )}
 
           {/* Custom Topic Input */}
-          <div className="mb-4">
-            <label className="block text-base font-medium text-gray-700 mb-2">
+          <div className="mb-6">
+            <label className="block text-lg font-medium text-gray-900 mb-3">
               Add your own topic:
             </label>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <input
                 type="text"
                 value={customTopic}
                 onChange={(e) => setCustomTopic(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCustomTopic())}
                 disabled={loading}
-                className={`flex-1 px-4 py-3 min-h-[48px] text-lg border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue transition-all border-cream-300 focus:border-brand-blue ${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                className={`flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 placeholder="e.g., space adventure, underwater mystery, magical forest"
               />
               <button
                 type="button"
                 onClick={handleAddCustomTopic}
                 disabled={!customTopic.trim() || loading}
-                className={`px-6 py-3 min-h-[48px] text-lg font-semibold rounded-lg transition-all ${
+                className={`px-6 py-3 font-medium rounded-xl transition-all duration-200 ${
                   !customTopic.trim() || loading
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-brand-blue hover:bg-brand-blue-dark text-white'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg'
                 }`}
               >
                 Add
@@ -209,21 +209,21 @@ function StoryForm({ onGenerateStory, loading }) {
 
           {/* Selected Topics Display */}
           {selectedTopics.length > 0 && (
-            <div className="mb-4">
-              <h4 className="text-base font-medium text-gray-700 mb-3">
+            <div className="mb-6">
+              <h4 className="text-lg font-medium text-gray-900 mb-3">
                 Selected Topics:
               </h4>
               <div className="flex flex-wrap gap-2">
                 {selectedTopics.map((topic, index) => (
                   <span
                     key={index}
-                    className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                    className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
                   >
                     {topic}
                     <button
                       type="button"
                       onClick={() => handleRemoveTopic(topic)}
-                      className="ml-2 text-blue-600 hover:text-blue-800"
+                      className="ml-2 text-blue-600 hover:text-blue-800 font-bold text-lg"
                     >
                       ×
                     </button>
@@ -244,10 +244,10 @@ function StoryForm({ onGenerateStory, loading }) {
         <button
           type="submit"
           disabled={loading || selectedTopics.length === 0}
-          className={`w-full py-4 min-h-[48px] text-lg font-bold rounded-lg transition-all transform ${
+          className={`w-full py-4 text-lg font-bold rounded-xl transition-all duration-200 transform ${
             loading || selectedTopics.length === 0
               ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-brand-blue hover:bg-brand-blue-dark hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl'
+              : 'bg-blue-600 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl'
           } text-white`}
           aria-busy={loading}
         >

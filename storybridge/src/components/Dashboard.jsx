@@ -77,60 +77,75 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-cream-100 flex">
-      {/* Sidebar */}
-      <div className="w-80 bg-white shadow-lg flex flex-col border-r border-cream-300">
-        <div className="p-6 border-b border-cream-300">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-brand-blue rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
                 <span className="text-white text-xl font-bold">S</span>
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-brand-brown-dark">StoryBites</h2>
-                <p className="text-sm text-gray-600 mt-1">Welcome back!</p>
+                <h1 className="text-2xl font-bold text-gray-900">StoryBites</h1>
+                <p className="text-sm text-gray-600">Create your personalized story</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <LogoutButton />
               </div>
             </div>
           </div>
-          <div className="mt-4">
-            <LogoutButton />
-          </div>
         </div>
-        
-        <nav className="flex-1 p-4">
-          <button
-            onClick={() => {
-              handleGenerateNew();
-            }}
-            className={`w-full text-left px-4 py-3 rounded-lg mb-2 transition-colors ${
-              step === 'form' 
-                ? 'bg-brand-blue text-white font-semibold shadow-md' 
-                : 'text-brand-brown hover:bg-cream-100'
-            }`}
-          >
-            ✨ Generate New Story
-          </button>
-          
-          <button
-            onClick={() => navigate('/history')}
-            className="w-full text-left px-4 py-3 rounded-lg transition-colors text-brand-brown hover:bg-cream-100"
-          >
-            📚 Story History
-          </button>
-          
-          <button
-            onClick={() => navigate('/profile')}
-            className="w-full text-left px-4 py-3 rounded-lg transition-colors text-brand-brown hover:bg-cream-100"
-          >
-            👤 User Profile
-          </button>
-        </nav>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        <div className="flex-1 overflow-auto">
-          {renderCurrentView()}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 sticky top-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Navigation</h3>
+              <nav className="space-y-2">
+                <button
+                  onClick={() => navigate('/')}
+                  className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                >
+                  🏠 Home
+                </button>
+                
+                <button
+                  onClick={() => {
+                    handleGenerateNew();
+                  }}
+                  className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${
+                    step === 'form' 
+                      ? 'bg-blue-600 text-white font-semibold shadow-md' 
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
+                  ✨ Generate a Story
+                </button>
+                
+                <button
+                  onClick={() => navigate('/profile')}
+                  className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                >
+                  👤 User Info
+                </button>
+              </nav>
+            </div>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="lg:col-span-3">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 min-h-[600px]">
+              <div className="p-8">
+                {renderCurrentView()}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

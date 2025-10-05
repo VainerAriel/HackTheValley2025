@@ -147,7 +147,7 @@ const HomePage = () => {
         {/* Quick Actions */}
         <div className="mb-12">
           <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">What would you like to do today?</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Generate New Story */}
             <button
               onClick={() => navigate('/create')}
@@ -160,22 +160,6 @@ const HomePage = () => {
                 <h4 className="text-xl font-bold mb-2">Generate New Story</h4>
                 <p className="text-blue-100 text-sm">
                   Create a personalized story with new vocabulary words
-                </p>
-              </div>
-            </button>
-
-            {/* Story History */}
-            <button
-              onClick={() => navigate('/history')}
-              className="group bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <div className="text-center">
-                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <span className="text-3xl">📚</span>
-                </div>
-                <h4 className="text-xl font-bold mb-2">Story History</h4>
-                <p className="text-green-100 text-sm">
-                  View and revisit your previously created stories
                 </p>
               </div>
             </button>
