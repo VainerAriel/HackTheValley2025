@@ -162,16 +162,16 @@ const StoryHistory = () => {
                 </p>
               </div>
 
-              {/* Interests Tags */}
+              {/* Themes Tags */}
               {story.INTERESTS && story.INTERESTS.trim() && (
                 <div className="mb-4">
                   <div className="flex flex-wrap gap-2">
-                    {story.INTERESTS.split(',').filter(interest => interest.trim()).map((interest, idx) => (
+                    {story.INTERESTS.split(',').filter(theme => theme.trim()).map((theme, idx) => (
                       <span
                         key={idx}
                         className="px-2 py-1 bg-cream-200 text-brand-brown text-xs rounded-full"
                       >
-                        {interest.trim()}
+                        {theme.trim()}
                       </span>
                     ))}
                   </div>

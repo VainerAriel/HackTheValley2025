@@ -399,8 +399,8 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
       >
         {/* Vocabulary Loading Indicator */}
         {loadingDefinitions && vocabularyWords.length > 0 && (
-          <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg text-center">
-            <p className="text-sm text-purple-700">
+          <div className="mb-4 p-3 bg-cream-200 border border-brand-blue-light rounded-lg text-center">
+            <p className="text-sm text-brand-brown">
               Loading vocabulary definitions...
             </p>
           </div>
@@ -431,7 +431,7 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
               <div className="tooltip-arrow"></div>
               
               {/* Word */}
-              <div className="font-bold text-lg text-purple-800 mb-2">
+              <div className="font-bold text-lg text-brand-brown-dark mb-2">
                 {hoveredWord.word}
               </div>
               
@@ -449,7 +449,7 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
               
               {/* Example Sentence */}
               {hoveredWord.example_sentence && (
-                <div className="text-sm text-gray-600 italic mb-3 pl-3 border-l-2 border-purple-300">
+                <div className="text-sm text-gray-600 italic mb-3 pl-3 border-l-2 border-brand-blue-light">
                   "{hoveredWord.example_sentence}"
                 </div>
               )}
@@ -461,7 +461,7 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
                   {hoveredWord.synonyms.map((syn, idx) => (
                     <span 
                       key={idx}
-                      className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full"
+                      className="text-xs px-2 py-1 bg-cream-200 text-brand-brown rounded-full"
                     >
                       {syn}
                     </span>
@@ -481,8 +481,8 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
                 className={`px-8 py-4 min-h-[48px] text-lg font-bold rounded-lg transition-all transform ${
                   isPlaying
                     ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl'
-                } text-white focus:outline-none focus:ring-4 focus:ring-green-300`}
+                    : 'bg-brand-blue hover:bg-brand-blue-dark hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl'
+                } text-white focus:outline-none focus:ring-4 focus:ring-brand-blue-light`}
                 aria-label={isPlaying ? "Playing story..." : "Play story audio"}
               >
                 {isPlaying ? (
@@ -514,21 +514,21 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
           {/* Audio Status Indicators */}
           {!isPlaying && audioPreloadStatus === 'loaded' && preloadedAudio && (
             <div className="mt-4 text-center">
-              <span className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-full animate-pulse">
+              <span className="text-sm bg-cream-200 text-brand-blue px-3 py-1 rounded-full animate-pulse">
                 🎵 Audio preloaded - Ready for instant playback!
               </span>
             </div>
           )}
           {!isPlaying && audioPreloadStatus === 'loading' && (
             <div className="mt-4 text-center">
-              <span className="text-sm bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
+              <span className="text-sm bg-cream-200 text-gray-600 px-3 py-1 rounded-full">
                 ⏳ Loading audio...
               </span>
             </div>
           )}
           {audioStatus === 'ready' && audioSource === 'stored' && (
             <div className="mt-4 text-center">
-              <span className="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full">
+              <span className="text-sm bg-cream-200 text-brand-blue-dark px-3 py-1 rounded-full">
                 ✅ Audio loaded from storage (No credits used)
               </span>
             </div>
@@ -545,7 +545,7 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
           {isFromHistory && onBackToHistory && (
             <button
               onClick={onBackToHistory}
-              className="px-8 py-4 min-h-[48px] text-lg font-bold rounded-lg bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-gray-300"
+              className="px-8 py-4 min-h-[48px] text-lg font-bold rounded-lg bg-brand-brown hover:bg-brand-brown-dark text-white transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-brand-brown-light"
               aria-label="Back to story history"
             >
               ← Back to History
@@ -555,7 +555,7 @@ function StoryDisplay({ story, onGenerateNew, onBackToHistory, vocabularyWords =
           {/* Generate New Story Button */}
           <button
             onClick={onGenerateNew}
-            className="px-8 py-4 min-h-[48px] text-lg font-bold rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-purple-300"
+            className="px-8 py-4 min-h-[48px] text-lg font-bold rounded-lg bg-brand-blue hover:bg-brand-blue-dark text-white transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-brand-blue-light"
             aria-label="Generate a new story"
           >
             ✨ Generate New Story

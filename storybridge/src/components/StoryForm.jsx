@@ -3,9 +3,9 @@ import { useState } from 'react';
 function StoryForm({ onGenerateStory, loading }) {
   const [childName, setChildName] = useState('');
   const [age, setAge] = useState('');
-  const [interest1, setInterest1] = useState('');
-  const [interest2, setInterest2] = useState('');
-  const [interest3, setInterest3] = useState('');
+  const [theme1, setTheme1] = useState('');
+  const [theme2, setTheme2] = useState('');
+  const [theme3, setTheme3] = useState('');
   const [errors, setErrors] = useState({});
 
   const validateForm = () => {
@@ -19,16 +19,8 @@ function StoryForm({ onGenerateStory, loading }) {
       newErrors.age = "Please select an age";
     }
     
-    if (!interest1.trim()) {
-      newErrors.interest1 = "Interest 1 is required";
-    }
-    
-    if (!interest2.trim()) {
-      newErrors.interest2 = "Interest 2 is required";
-    }
-    
-    if (!interest3.trim()) {
-      newErrors.interest3 = "Interest 3 is required";
+    if (!theme1.trim()) {
+      newErrors.theme1 = "At least one theme is required";
     }
     
     setErrors(newErrors);
@@ -39,21 +31,23 @@ function StoryForm({ onGenerateStory, loading }) {
     e.preventDefault();
     
     if (validateForm()) {
+      const themes = [theme1.trim(), theme2.trim(), theme3.trim()].filter(t => t !== '');
+      
       onGenerateStory({
         childName: childName.trim(),
         age,
-        interest1: interest1.trim(),
-        interest2: interest2.trim(),
-        interest3: interest3.trim(),
+        interest1: themes[0] || '',
+        interest2: themes[1] || '',
+        interest3: themes[2] || '',
       });
     }
   };
 
   return (
     <div className="w-full max-w-2xl mx-auto px-4">
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
-          Create a Special Story
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8 border border-cream-300">
+        <h2 className="text-3xl font-bold text-center text-brand-brown-dark mb-8">
+          Create a Personalized Story
         </h2>
 
         {/* Child's Name */}
@@ -71,10 +65,10 @@ function StoryForm({ onGenerateStory, loading }) {
             value={childName}
             onChange={(e) => setChildName(e.target.value)}
             disabled={loading}
-            className={`w-full px-4 py-3 min-h-[48px] text-lg border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all ${
+            className={`w-full px-4 py-3 min-h-[48px] text-lg border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue transition-all ${
               errors.childName 
                 ? 'border-red-400 bg-red-50' 
-                : 'border-gray-300 focus:border-purple-500'
+                : 'border-cream-300 focus:border-brand-blue'
             } ${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
             placeholder="Enter child's name"
             aria-required="true"
@@ -102,10 +96,10 @@ function StoryForm({ onGenerateStory, loading }) {
             value={age}
             onChange={(e) => setAge(e.target.value)}
             disabled={loading}
-            className={`w-full px-4 py-3 min-h-[48px] text-lg border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all ${
+            className={`w-full px-4 py-3 min-h-[48px] text-lg border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue transition-all ${
               errors.age 
                 ? 'border-red-400 bg-red-50' 
-                : 'border-gray-300 focus:border-purple-500'
+                : 'border-cream-300 focus:border-brand-blue'
             } ${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
             aria-required="true"
             aria-invalid={errors.age ? 'true' : 'false'}
@@ -125,107 +119,107 @@ function StoryForm({ onGenerateStory, loading }) {
           )}
         </div>
 
-        {/* Interests Section */}
+        {/* Themes Section */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-700 mb-4">
-            Three Favorite Interests *
+            Story Themes (1-3 themes) *
           </h3>
           <p className="text-sm text-gray-600 mb-4">
-            These will be woven into the story to make it extra special!
+            Choose themes that will shape the story's adventure and setting!
           </p>
 
-          {/* Interest 1 */}
+          {/* Theme 1 */}
           <div className="mb-4">
             <label 
-              htmlFor="interest1" 
+              htmlFor="theme1" 
               className="block text-base font-medium text-gray-700 mb-2"
             >
-              Interest 1
+              Theme 1 <span className="text-red-600">*</span>
             </label>
             <input
               type="text"
-              id="interest1"
-              name="interest1"
-              value={interest1}
-              onChange={(e) => setInterest1(e.target.value)}
+              id="theme1"
+              name="theme1"
+              value={theme1}
+              onChange={(e) => setTheme1(e.target.value)}
               disabled={loading}
-              className={`w-full px-4 py-3 min-h-[48px] text-lg border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all ${
-                errors.interest1 
+              className={`w-full px-4 py-3 min-h-[48px] text-lg border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue transition-all ${
+                errors.theme1 
                   ? 'border-red-400 bg-red-50' 
-                  : 'border-gray-300 focus:border-purple-500'
+                  : 'border-cream-300 focus:border-brand-blue'
               } ${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-              placeholder="e.g., dinosaurs, space, soccer"
+              placeholder="e.g., adventure, friendship, courage, exploration"
               aria-required="true"
-              aria-invalid={errors.interest1 ? 'true' : 'false'}
-              aria-describedby={errors.interest1 ? 'interest1-error' : undefined}
+              aria-invalid={errors.theme1 ? 'true' : 'false'}
+              aria-describedby={errors.theme1 ? 'theme1-error' : undefined}
             />
-            {errors.interest1 && (
-              <p id="interest1-error" className="mt-2 text-sm text-red-600" role="alert">
-                {errors.interest1}
+            {errors.theme1 && (
+              <p id="theme1-error" className="mt-2 text-sm text-red-600" role="alert">
+                {errors.theme1}
               </p>
             )}
           </div>
 
-          {/* Interest 2 */}
+          {/* Theme 2 */}
           <div className="mb-4">
             <label 
-              htmlFor="interest2" 
+              htmlFor="theme2" 
               className="block text-base font-medium text-gray-700 mb-2"
             >
-              Interest 2
+              Theme 2 <span className="text-sm text-gray-500">(optional)</span>
             </label>
             <input
               type="text"
-              id="interest2"
-              name="interest2"
-              value={interest2}
-              onChange={(e) => setInterest2(e.target.value)}
+              id="theme2"
+              name="theme2"
+              value={theme2}
+              onChange={(e) => setTheme2(e.target.value)}
               disabled={loading}
-              className={`w-full px-4 py-3 min-h-[48px] text-lg border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all ${
-                errors.interest2 
+              className={`w-full px-4 py-3 min-h-[48px] text-lg border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue transition-all ${
+                errors.theme2 
                   ? 'border-red-400 bg-red-50' 
-                  : 'border-gray-300 focus:border-purple-500'
+                  : 'border-cream-300 focus:border-brand-blue'
               } ${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-              placeholder="e.g., dinosaurs, space, soccer"
-              aria-required="true"
-              aria-invalid={errors.interest2 ? 'true' : 'false'}
-              aria-describedby={errors.interest2 ? 'interest2-error' : undefined}
+              placeholder="e.g., mystery, nature, teamwork, discovery"
+              aria-required="false"
+              aria-invalid={errors.theme2 ? 'true' : 'false'}
+              aria-describedby={errors.theme2 ? 'theme2-error' : undefined}
             />
-            {errors.interest2 && (
-              <p id="interest2-error" className="mt-2 text-sm text-red-600" role="alert">
-                {errors.interest2}
+            {errors.theme2 && (
+              <p id="theme2-error" className="mt-2 text-sm text-red-600" role="alert">
+                {errors.theme2}
               </p>
             )}
           </div>
 
-          {/* Interest 3 */}
+          {/* Theme 3 */}
           <div className="mb-4">
             <label 
-              htmlFor="interest3" 
+              htmlFor="theme3" 
               className="block text-base font-medium text-gray-700 mb-2"
             >
-              Interest 3
+              Theme 3 <span className="text-sm text-gray-500">(optional)</span>
             </label>
             <input
               type="text"
-              id="interest3"
-              name="interest3"
-              value={interest3}
-              onChange={(e) => setInterest3(e.target.value)}
+              id="theme3"
+              name="theme3"
+              value={theme3}
+              onChange={(e) => setTheme3(e.target.value)}
               disabled={loading}
-              className={`w-full px-4 py-3 min-h-[48px] text-lg border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all ${
-                errors.interest3 
+              className={`w-full px-4 py-3 min-h-[48px] text-lg border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue transition-all ${
+                errors.theme3 
                   ? 'border-red-400 bg-red-50' 
-                  : 'border-gray-300 focus:border-purple-500'
+                  : 'border-cream-300 focus:border-brand-blue'
               } ${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-              placeholder="e.g., dinosaurs, space, soccer"
-              aria-required="true"
-              aria-invalid={errors.interest3 ? 'true' : 'false'}
-              aria-describedby={errors.interest3 ? 'interest3-error' : undefined}
+              placeholder="e.g., magic, science, creativity, kindness"
+              aria-required="false"
+              aria-invalid={errors.theme3 ? 'true' : 'false'}
+              aria-describedby={errors.theme3 ? 'theme3-error' : undefined}
             />
-            {errors.interest3 && (
-              <p id="interest3-error" className="mt-2 text-sm text-red-600" role="alert">
-                {errors.interest3}
+            {errors.theme3 && (
+              <p id="theme3-error" className="mt-2 text-sm text-red-600" role="alert">
+                {errors.theme3}
               </p>
             )}
           </div>
@@ -238,7 +232,7 @@ function StoryForm({ onGenerateStory, loading }) {
           className={`w-full py-4 min-h-[48px] text-lg font-bold rounded-lg transition-all transform ${
             loading
               ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl'
+              : 'bg-brand-blue hover:bg-brand-blue-dark hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl'
           } text-white`}
           aria-busy={loading}
         >
