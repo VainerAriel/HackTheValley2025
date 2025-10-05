@@ -169,8 +169,9 @@ const StoryReader = ({
   // Load sentence audio data
   const loadSentenceAudioData = async (storyId) => {
     try {
+      const API_BASE_URL = process.env.REACT_APP_API_URL || '';
       console.log('Loading sentence audio data for story:', storyId);
-      const response = await fetch(`http://localhost:5000/api/story/${storyId}/sentence-audio?t=${Date.now()}`, {
+      const response = await fetch(`${API_BASE_URL}/api/story/${storyId}/sentence-audio?t=${Date.now()}`, {
         cache: 'no-cache',
         headers: {
           'Cache-Control': 'no-cache',
@@ -878,8 +879,9 @@ const StoryReader = ({
       setAudioStatus('generating');
       if (storyId) {
         try {
+          const API_BASE_URL = process.env.REACT_APP_API_URL || '';
           console.log('Attempting to load stored audio for story ID:', storyId);
-          const response = await fetch(`http://localhost:5000/api/story/${storyId}/audio?t=${Date.now()}`, {
+          const response = await fetch(`${API_BASE_URL}/api/story/${storyId}/audio?t=${Date.now()}`, {
             cache: 'no-cache',
             headers: {
               'Cache-Control': 'no-cache',
@@ -905,7 +907,7 @@ const StoryReader = ({
           console.log('Generating and storing sentence audio in database - THIS WILL USE API CREDITS');
           console.log('Using Flash model for cost savings (0.5 credits per character)');
           
-          const generateResponse = await fetch(`http://localhost:5000/api/story/${storyId}/generate-audio`, {
+          const generateResponse = await fetch(`${API_BASE_URL}/api/story/${storyId}/generate-audio`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

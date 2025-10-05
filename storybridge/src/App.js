@@ -27,8 +27,9 @@ function App() {
           scope: "openid profile email"
         }
       });
+      const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 
-      const response = await fetch('http://localhost:5000/api/user/profile', {
+      const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'

@@ -32,8 +32,9 @@ function StoryForm({ onGenerateStory, loading }) {
           scope: "openid profile email"
         }
       });
-
-      const response = await fetch('http://localhost:5000/api/user/profile', {
+      
+      const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+      const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'

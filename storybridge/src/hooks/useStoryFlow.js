@@ -72,7 +72,8 @@ export const useStoryFlow = () => {
             setStoryId(saveResult.storyId);
             console.log('Generating and storing audio immediately for storyId:', saveResult.storyId);
             try {
-              const audioResponse = await fetch(`http://localhost:5000/api/story/${saveResult.storyId}/generate-audio`, {
+              const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+              const audioResponse = await fetch(`${API_BASE_URL}/api/story/${saveResult.storyId}/generate-audio`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',

@@ -48,7 +48,7 @@ const StoryView = () => {
         console.log('Preloading audio for story...');
         setAudioPreloadStatus('loading');
         try {
-          const audioResponse = await fetch(`http://localhost:5000/api/story/${storyId}/audio?t=${Date.now()}`, {
+          const audioResponse = await fetch(`${API_BASE_URL}/api/story/${storyId}/audio?t=${Date.now()}`, {
             cache: 'no-cache',
             headers: {
               'Cache-Control': 'no-cache',
