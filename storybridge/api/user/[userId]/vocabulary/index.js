@@ -32,7 +32,7 @@ export default async function handler(req, res) {
 
     // Get user vocabulary
     const selectQuery = `
-      SELECT WORD, DEFINITION, STORY_ID, CREATED_AT
+      SELECT VOCAB_ID, WORD, STORY_ID, CREATED_AT
       FROM USER_VOCABULARY 
       WHERE USER_ID = ? 
       ORDER BY CREATED_AT DESC
@@ -48,8 +48,8 @@ export default async function handler(req, res) {
             reject(err);
           } else {
             const formattedVocabulary = rows.map(row => ({
+              vocabId: row.VOCAB_ID,
               word: row.WORD,
-              definition: row.DEFINITION,
               storyId: row.STORY_ID,
               createdAt: row.CREATED_AT
             }));

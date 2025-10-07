@@ -32,7 +32,7 @@ export default async function handler(req, res) {
 
     // Get user stories
     const selectQuery = `
-      SELECT ID, TITLE, CONTENT, VOCABULARY_WORDS, CREATED_AT, UPDATED_AT, AUDIO_URL, SENTENCE_AUDIO_URLS
+      SELECT STORY_ID, STORY_TITLE, STORY_TEXT, VOCAB_WORDS, CREATED_AT, AUDIO_URL, SENTENCE_AUDIO_DATA
       FROM STORIES 
       WHERE USER_ID = ? 
       ORDER BY CREATED_AT DESC
@@ -50,33 +50,32 @@ export default async function handler(req, res) {
             const formattedStories = rows.map(row => {
               // Handle vocabulary words - could be JSON array or comma-separated string
               let vocabularyWords = [];
-              if (row.VOCABULARY_WORDS) {
+              if (row.VOCAB_WORDS) {
                 try {
-                  vocabularyWords = JSON.parse(row.VOCABULARY_WORDS);
+                  vocabularyWords = JSON.parse(row.VOCAB_WORDS);
                 } catch (e) {
-                  vocabularyWords = row.VOCABULARY_WORDS.split(',').map(item => item.trim()).filter(item => item);
+                  vocabularyWords = row.VOCAB_WORDS.split(',').map(item => item.trim()).filter(item => item);
                 }
               }
 
-              // Handle sentence audio URLs
-              let sentenceAudioUrls = {};
-              if (row.SENTENCE_AUDIO_URLS) {
+              // Handle sentence audio data
+              let sentenceAudioData = {};
+              if (row.SENTENCE_AUDIO_DATA) {
                 try {
-                  sentenceAudioUrls = JSON.parse(row.SENTENCE_AUDIO_URLS);
+                  sentenceAudioData = JSON.parse(row.SENTENCE_AUDIO_DATA);
                 } catch (e) {
-                  sentenceAudioUrls = {};
+                  sentenceAudioData = {};
                 }
               }
 
               return {
-                id: row.ID,
-                title: row.TITLE,
-                content: row.CONTENT,
+                id: row.STORY_ID,
+                title: row.STORY_TITLE,
+                content: row.STORY_TEXT,
                 vocabularyWords: vocabularyWords,
                 createdAt: row.CREATED_AT,
-                updatedAt: row.UPDATED_AT,
                 audioUrl: row.AUDIO_URL,
-                sentenceAudioUrls: sentenceAudioUrls
+                sentenceAudioData: sentenceAudioData
               };
             });
             resolve(formattedStories);

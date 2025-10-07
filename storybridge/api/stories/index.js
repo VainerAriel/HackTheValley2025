@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { storyData } = req.body;
+    const storyData = req.body;
     console.log('💾 Saving story:', storyData.title, 'for user:', storyData.userId);
     
     // Connect to Snowflake (only if not already connected)
@@ -33,9 +33,9 @@ export default async function handler(req, res) {
     // Insert story into database
     const insertQuery = `
       INSERT INTO STORIES (
-        ID, USER_ID, TITLE, CONTENT, VOCABULARY_WORDS, 
-        CREATED_AT, UPDATED_AT, AUDIO_URL, SENTENCE_AUDIO_URLS
-      ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), ?, ?)
+        STORY_ID, USER_ID, STORY_TITLE, STORY_TEXT, VOCAB_WORDS, 
+        CREATED_AT, AUDIO_URL, SENTENCE_AUDIO_DATA
+      ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP(), ?, ?)
     `;
 
     const storyId = `story_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -47,10 +47,10 @@ export default async function handler(req, res) {
           storyId,
           storyData.userId,
           storyData.title,
-          storyData.content,
-          JSON.stringify(storyData.vocabularyWords || []),
+          storyData.storyText || storyData.content,
+          JSON.stringify(storyData.vocabWords || storyData.vocabularyWords || []),
           storyData.audioUrl || null,
-          JSON.stringify(storyData.sentenceAudioUrls || {})
+          JSON.stringify(storyData.sentenceAudioData || storyData.sentenceAudioUrls || {})
         ],
         complete: (err, stmt, rows) => {
           if (err) {
