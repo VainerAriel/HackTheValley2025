@@ -1,6 +1,6 @@
 const { connection, setCorsHeaders } = require('../../_utils');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   setCorsHeaders(res);
 
   if (req.method === 'OPTIONS') {
@@ -29,7 +29,26 @@ export default async function handler(req, res) {
       });
     }
 
-    // Delete story
+    // First, delete related vocabulary words
+    const deleteVocabQuery = `DELETE FROM user_vocabulary WHERE STORY_ID = ?`;
+    
+    await new Promise((resolve, reject) => {
+      connection.execute({
+        sqlText: deleteVocabQuery,
+        binds: [storyId],
+        complete: (err, stmt, rows) => {
+          if (err) {
+            console.error('Error deleting vocabulary words:', err);
+            reject(err);
+          } else {
+            console.log('✅ Deleted vocabulary words for story:', storyId);
+            resolve(rows);
+          }
+        }
+      });
+    });
+
+    // Then delete the story
     const deleteQuery = `DELETE FROM STORIES WHERE STORY_ID = ?`;
 
     await new Promise((resolve, reject) => {
@@ -41,6 +60,7 @@ export default async function handler(req, res) {
             console.error('Error deleting story:', err);
             reject(err);
           } else {
+            console.log('✅ Deleted story:', storyId);
             resolve(rows);
           }
         }
@@ -49,7 +69,7 @@ export default async function handler(req, res) {
 
     res.status(200).json({ 
       success: true, 
-      message: 'Story deleted successfully' 
+      message: 'Story and related vocabulary words deleted successfully' 
     });
 
   } catch (error) {
