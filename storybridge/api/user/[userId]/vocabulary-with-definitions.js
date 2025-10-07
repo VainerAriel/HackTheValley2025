@@ -30,13 +30,12 @@ export default async function handler(req, res) {
         });
       }
 
-      // Get ALL vocabulary words from STORIES table where they have definitions
+      // Get ALL vocabulary words from STORIES table (with or without definitions)
       const vocabularyQuery = `
         SELECT DISTINCT s.VOCAB_WORDS, s.VOCAB_DEFINITIONS, s.CREATED_AT, s.STORY_ID
         FROM STORIES s
         WHERE s.USER_ID = ? 
         AND s.VOCAB_WORDS IS NOT NULL
-        AND s.VOCAB_DEFINITIONS IS NOT NULL
         ORDER BY s.CREATED_AT DESC
       `;
 
@@ -76,12 +75,24 @@ export default async function handler(req, res) {
                     }
                   }
                   
-                  // Add words with their definitions
+                  // Add words with their definitions (or basic definition if none exists)
                   vocabWords.forEach(word => {
-                    if (word && vocabDefinitions[word]) {
+                    if (word) {
+                      let definitions = {
+                        definition: `A vocabulary word from your stories`,
+                        pronunciation: '',
+                        partOfSpeech: '',
+                        example: ''
+                      };
+                      
+                      // Use the actual definition if it exists
+                      if (vocabDefinitions[word]) {
+                        definitions = vocabDefinitions[word];
+                      }
+                      
                       allVocabulary.push({
                         word: word,
-                        definitions: vocabDefinitions[word],
+                        definitions: definitions,
                         learnedDate: row.CREATED_AT,
                         storyId: row.STORY_ID
                       });
