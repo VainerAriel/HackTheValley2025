@@ -38,8 +38,19 @@ function App() {
       
       if (response.ok) {
         const result = await response.json();
-        setProfileCompleted(result.data.profileCompleted === true);
+        console.log('🔍 Profile check result:', result.data);
+        console.log('🔍 Profile completed status:', result.data.profileCompleted);
+        
+        // Check if profile is complete (either explicitly marked as completed or has all required fields)
+        const hasRequiredFields = result.data.childName && result.data.childAge && result.data.interests && result.data.interests.length > 0;
+        const isExplicitlyCompleted = result.data.profileCompleted === true;
+        
+        console.log('🔍 Has required fields:', hasRequiredFields);
+        console.log('🔍 Is explicitly completed:', isExplicitlyCompleted);
+        
+        setProfileCompleted(isExplicitlyCompleted || hasRequiredFields);
       } else {
+        console.log('🔍 Profile not found, showing setup');
         // If profile doesn't exist, show setup
         setProfileCompleted(false);
       }

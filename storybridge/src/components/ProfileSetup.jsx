@@ -187,8 +187,10 @@ const ProfileSetup = ({ onComplete }) => {
         
         // Call the onComplete callback to trigger app reload
         if (onComplete) {
+          console.log('🔄 Calling onComplete callback');
           onComplete();
         } else {
+          console.log('🔄 No onComplete callback, using fallback redirect');
           // Fallback: redirect to home page
           setTimeout(() => {
             window.location.href = '/';
