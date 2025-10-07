@@ -54,15 +54,15 @@ const StoriesModal = ({ isOpen, onClose }) => {
 
   const filteredAndSortedStories = () => {
     let filtered = stories.filter(story => 
-      story.STORY_TITLE?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      story.STORY_TEXT?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      story.INTERESTS?.toLowerCase().includes(searchTerm.toLowerCase())
+      story.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      story.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      story.interests?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     if (sortBy === 'alphabetical') {
-      filtered.sort((a, b) => (a.STORY_TITLE || '').localeCompare(b.STORY_TITLE || ''));
+      filtered.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
     } else {
-      filtered.sort((a, b) => new Date(b.CREATED_AT) - new Date(a.CREATED_AT));
+      filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
 
     return filtered;
@@ -84,11 +84,13 @@ const StoriesModal = ({ isOpen, onClose }) => {
 
   const getStoryInterests = (interests) => {
     if (!interests) return [];
+    if (Array.isArray(interests)) return interests.slice(0, 3);
     return interests.split(',').filter(interest => interest.trim()).slice(0, 3);
   };
 
   const getStoryVocabWords = (vocabWords) => {
     if (!vocabWords) return [];
+    if (Array.isArray(vocabWords)) return vocabWords.slice(0, 5);
     return vocabWords.split(',').filter(word => word.trim()).slice(0, 5);
   };
 
@@ -103,7 +105,7 @@ const StoriesModal = ({ isOpen, onClose }) => {
       await deleteStory(storyId);
       
       // Remove the story from the local state
-      setStories(prevStories => prevStories.filter(story => story.STORY_ID !== storyId));
+      setStories(prevStories => prevStories.filter(story => story.id !== storyId));
       setShowDeleteConfirm(null);
       
       console.log('Story deleted successfully');
@@ -209,18 +211,18 @@ const StoriesModal = ({ isOpen, onClose }) => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {filteredAndSortedStories().map((story, index) => (
-                <div key={`${story.STORY_ID}-${index}`} className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-200 hover:shadow-md transition-shadow">
+                <div key={`${story.id}-${index}`} className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-200 hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
-                        {story.STORY_TITLE || 'Untitled Story'}
+                        {story.title || 'Untitled Story'}
                       </h3>
                       <div className="text-xs text-gray-500 bg-white px-2 py-1 rounded-full inline-block">
-                        {formatDate(story.CREATED_AT)}
+                        {formatDate(story.createdAt)}
                       </div>
                     </div>
                     <button
-                      onClick={() => handleViewStory(story.STORY_ID)}
+                      onClick={() => handleViewStory(story.id)}
                       className="ml-4 px-4 py-2 bg-gradient-to-r from-yellow-700 to-amber-800 text-white rounded-lg hover:from-yellow-800 hover:to-amber-900 transition-colors text-sm font-medium"
                     >
                       Read
@@ -231,15 +233,15 @@ const StoriesModal = ({ isOpen, onClose }) => {
                     <div>
                       <h4 className="text-sm font-semibold text-gray-700 mb-2">Preview</h4>
                       <p className="text-gray-800 text-sm leading-relaxed">
-                        {getStoryPreview(story.STORY_TEXT)}
+                        {getStoryPreview(story.content)}
                       </p>
                     </div>
 
-                    {getStoryInterests(story.INTERESTS).length > 0 && (
+                    {getStoryInterests(story.interests).length > 0 && (
                       <div>
                         <h4 className="text-sm font-semibold text-gray-700 mb-2">Interests</h4>
                         <div className="flex flex-wrap gap-2">
-                          {getStoryInterests(story.INTERESTS).map((interest, idx) => (
+                          {getStoryInterests(story.interests).map((interest, idx) => (
                             <span
                               key={idx}
                               className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full"
@@ -251,11 +253,11 @@ const StoriesModal = ({ isOpen, onClose }) => {
                       </div>
                     )}
 
-                    {getStoryVocabWords(story.VOCAB_WORDS).length > 0 && (
+                    {getStoryVocabWords(story.vocabularyWords).length > 0 && (
                       <div>
                         <h4 className="text-sm font-semibold text-gray-700 mb-2">Vocabulary Words</h4>
                         <div className="flex flex-wrap gap-2">
-                          {getStoryVocabWords(story.VOCAB_WORDS).map((word, idx) => (
+                          {getStoryVocabWords(story.vocabularyWords).map((word, idx) => (
                             <span
                               key={idx}
                               className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full"
@@ -263,9 +265,9 @@ const StoriesModal = ({ isOpen, onClose }) => {
                               {word.trim()}
                             </span>
                           ))}
-                          {getStoryVocabWords(story.VOCAB_WORDS).length > 5 && (
+                          {getStoryVocabWords(story.vocabularyWords).length > 5 && (
                             <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
-                              +{getStoryVocabWords(story.VOCAB_WORDS).length - 5} more
+                              +{getStoryVocabWords(story.vocabularyWords).length - 5} more
                             </span>
                           )}
                         </div>
@@ -274,14 +276,14 @@ const StoriesModal = ({ isOpen, onClose }) => {
 
                     <div className="flex items-center justify-between pt-3 border-t border-amber-200">
                       <div className="text-xs text-gray-500">
-                        ID: {story.STORY_ID?.substring(0, 8)}...
+                        ID: {story.id?.substring(0, 8)}...
                       </div>
                       <button
-                        onClick={(e) => handleDeleteClick(story.STORY_ID, e)}
-                        disabled={deletingStoryId === story.STORY_ID}
+                        onClick={(e) => handleDeleteClick(story.id, e)}
+                        disabled={deletingStoryId === story.id}
                         className="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 text-sm font-medium rounded-lg border border-red-200 hover:border-red-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {deletingStoryId === story.STORY_ID ? 'Deleting...' : 'Delete Story'}
+                        {deletingStoryId === story.id ? 'Deleting...' : 'Delete Story'}
                       </button>
                     </div>
                   </div>
