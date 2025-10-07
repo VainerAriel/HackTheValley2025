@@ -30,14 +30,12 @@ export default async function handler(req, res) {
         });
       }
 
-      // Get user vocabulary with definitions from stories
+      // Get user vocabulary from USER_VOCABULARY table
       const vocabularyQuery = `
-        SELECT DISTINCT s.VOCAB_WORDS, s.VOCAB_DEFINITIONS, s.CREATED_AT
-        FROM STORIES s
-        WHERE s.USER_ID = ? 
-        AND s.VOCAB_WORDS IS NOT NULL
-        AND s.VOCAB_DEFINITIONS IS NOT NULL
-        ORDER BY s.CREATED_AT DESC
+        SELECT DISTINCT uv.WORD, uv.CREATED_AT, uv.STORY_ID
+        FROM USER_VOCABULARY uv
+        WHERE uv.USER_ID = ? 
+        ORDER BY uv.CREATED_AT DESC
       `;
 
       const vocabulary = await new Promise((resolve, reject) => {
@@ -49,47 +47,27 @@ export default async function handler(req, res) {
               console.error('Error fetching vocabulary:', err);
               reject(err);
             } else {
-              console.log('📚 Vocabulary with definitions query result:', rows.length, 'stories found');
+              console.log('📚 Vocabulary with definitions query result:', rows.length, 'words found');
               
-              // Combine all vocabulary words and definitions from all stories
+              // Process vocabulary words from USER_VOCABULARY table
               const allVocabulary = [];
               
               rows.forEach(row => {
                 try {
-                  // Handle both JSON and comma-separated formats
-                  let vocabWords = [];
-                  let vocabDefinitions = {};
-                  
-                  // Parse VOCAB_WORDS
-                  if (row.VOCAB_WORDS) {
-                    try {
-                      vocabWords = JSON.parse(row.VOCAB_WORDS);
-                    } catch (e) {
-                      vocabWords = row.VOCAB_WORDS.split(',').map(word => word.trim()).filter(word => word);
-                    }
+                  if (row.WORD) {
+                    allVocabulary.push({
+                      word: row.WORD,
+                      definitions: {
+                        // Basic definition structure - you might want to enhance this
+                        definition: `A vocabulary word from your stories`,
+                        pronunciation: '',
+                        partOfSpeech: '',
+                        example: ''
+                      },
+                      learnedDate: row.CREATED_AT,
+                      storyId: row.STORY_ID
+                    });
                   }
-                  
-                  // Parse VOCAB_DEFINITIONS
-                  if (row.VOCAB_DEFINITIONS) {
-                    try {
-                      vocabDefinitions = JSON.parse(row.VOCAB_DEFINITIONS);
-                    } catch (e) {
-                      // If it's not JSON, skip this row
-                      console.log('Skipping row with non-JSON definitions');
-                      return;
-                    }
-                  }
-                  
-                  vocabWords.forEach(word => {
-                    const definition = vocabDefinitions[word.toLowerCase()];
-                    if (definition) {
-                      allVocabulary.push({
-                        word: word,
-                        definitions: definition,
-                        learnedDate: row.CREATED_AT
-                      });
-                    }
-                  });
                 } catch (e) {
                   console.error('Error parsing vocabulary data:', e);
                 }
