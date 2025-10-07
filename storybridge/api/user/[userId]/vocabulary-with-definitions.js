@@ -30,30 +30,20 @@ export default async function handler(req, res) {
         });
       }
 
-      // Get vocabulary words from STORIES table (where definitions exist) and also from USER_VOCABULARY
+      // Get ALL vocabulary words from STORIES table where they have definitions
       const vocabularyQuery = `
-        (
-          SELECT DISTINCT s.VOCAB_WORDS, s.VOCAB_DEFINITIONS, s.CREATED_AT, s.STORY_ID, 'story' as source
-          FROM STORIES s
-          WHERE s.USER_ID = ? 
-          AND s.VOCAB_WORDS IS NOT NULL
-          AND s.VOCAB_DEFINITIONS IS NOT NULL
-        )
-        UNION ALL
-        (
-          SELECT DISTINCT uv.WORD as VOCAB_WORDS, s.VOCAB_DEFINITIONS, uv.CREATED_AT, uv.STORY_ID, 'vocab' as source
-          FROM USER_VOCABULARY uv
-          LEFT JOIN STORIES s ON uv.STORY_ID = s.STORY_ID
-          WHERE uv.USER_ID = ? 
-          AND s.VOCAB_DEFINITIONS IS NOT NULL
-        )
-        ORDER BY CREATED_AT DESC
+        SELECT DISTINCT s.VOCAB_WORDS, s.VOCAB_DEFINITIONS, s.CREATED_AT, s.STORY_ID
+        FROM STORIES s
+        WHERE s.USER_ID = ? 
+        AND s.VOCAB_WORDS IS NOT NULL
+        AND s.VOCAB_DEFINITIONS IS NOT NULL
+        ORDER BY s.CREATED_AT DESC
       `;
 
       const vocabulary = await new Promise((resolve, reject) => {
         connection.execute({
           sqlText: vocabularyQuery,
-          binds: [userId, userId],
+          binds: [userId],
           complete: (err, stmt, rows) => {
             if (err) {
               console.error('Error fetching vocabulary:', err);
