@@ -123,6 +123,27 @@ const StoryReader = ({
     }
   };
 
+  // Ensure proper scrolling in fullscreen mode on mobile
+  useEffect(() => {
+    if (isFullscreen) {
+      // Force enable touch scrolling on mobile
+      const contentArea = document.querySelector('.story-content-area');
+      if (contentArea) {
+        contentArea.style.overflowY = 'auto';
+        contentArea.style.webkitOverflowScrolling = 'touch';
+        contentArea.style.touchAction = 'pan-y';
+        
+        // Ensure the container allows scrolling
+        const container = document.querySelector('.story-reader-container.fullscreen');
+        if (container) {
+          container.style.overflow = 'hidden';
+          container.style.webkitOverflowScrolling = 'touch';
+          container.style.touchAction = 'pan-y';
+        }
+      }
+    }
+  }, [isFullscreen]);
+
 
   // Handle word hover for vocabulary
   const handleWordHover = (cleanWord, event) => {
