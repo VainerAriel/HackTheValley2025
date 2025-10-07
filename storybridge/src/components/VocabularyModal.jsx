@@ -43,15 +43,27 @@ const VocabularyModal = ({ isOpen, onClose }) => {
   };
 
   const filteredAndSortedVocabulary = () => {
-    let filtered = vocabulary.filter(item => 
-      item.word.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.definitions.simple_definition.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    let filtered = vocabulary.filter(item => {
+      if (!item || !item.word) return false;
+      
+      const wordMatch = item.word.toLowerCase().includes(searchTerm.toLowerCase());
+      const definitionMatch = item.definitions && 
+                             item.definitions.definition && 
+                             item.definitions.definition.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      return wordMatch || definitionMatch;
+    });
 
     if (sortBy === 'alphabetical') {
-      filtered.sort((a, b) => a.word.localeCompare(b.word));
+      filtered.sort((a, b) => {
+        if (!a.word || !b.word) return 0;
+        return a.word.localeCompare(b.word);
+      });
     } else {
-      filtered.sort((a, b) => new Date(b.learnedDate) - new Date(a.learnedDate));
+      filtered.sort((a, b) => {
+        if (!a.learnedDate || !b.learnedDate) return 0;
+        return new Date(b.learnedDate) - new Date(a.learnedDate);
+      });
     }
 
     return filtered;
