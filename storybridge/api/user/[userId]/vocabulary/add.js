@@ -16,6 +16,8 @@ export default async function handler(req, res) {
     const { userId } = req.query;
     const { word, storyId } = req.body;
     
+    console.log('📝 Adding vocabulary word:', { userId, word, storyId });
+    
     // Connect to Snowflake (only if not already connected)
     if (!connection.isUp()) {
       await new Promise((resolve, reject) => {
@@ -48,6 +50,7 @@ export default async function handler(req, res) {
             console.error('Error adding vocabulary:', err);
             reject(err);
           } else {
+            console.log('✅ Vocabulary word added successfully:', word);
             resolve(rows);
           }
         }

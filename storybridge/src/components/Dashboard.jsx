@@ -27,14 +27,23 @@ const Dashboard = () => {
     handleGenerateNew
   } = useStoryFlow();
 
+  const [isGenerating, setIsGenerating] = useState(false);
+
   const handleVocabularyGenerateWithSave = async (words) => {
     console.log('Generating story with save...', { words, userId: user.sub });
-    const result = await handleVocabularyGenerate(words, user.sub);
+    setIsGenerating(true);
     
-    // Redirect to story viewer after generation
-    if (result && result.storyId) {
-      console.log('Redirecting to story viewer:', result.storyId);
-      navigate(`/story/${result.storyId}`);
+    try {
+      const result = await handleVocabularyGenerate(words, user.sub);
+      
+      // Redirect to story viewer after generation
+      if (result && result.storyId) {
+        console.log('Redirecting to story viewer:', result.storyId);
+        navigate(`/story/${result.storyId}`);
+      }
+    } catch (error) {
+      console.error('Error generating story:', error);
+      setIsGenerating(false);
     }
   };
 
@@ -43,6 +52,19 @@ const Dashboard = () => {
   };
 
   const renderCurrentView = () => {
+    // Show loading animation while generating story
+    if (isGenerating) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-600 mb-4"></div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Generating Your Story</h3>
+          <p className="text-gray-600 text-center max-w-md">
+            Creating your personalized story with vocabulary words and definitions. This may take a few moments...
+          </p>
+        </div>
+      );
+    }
+
     switch (step) {
       case 'form':
         return (
