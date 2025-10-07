@@ -33,15 +33,14 @@ const StoryView = () => {
         }
 
         // Verify the story belongs to the current user
-        if (storyData.USER_ID !== user.sub) {
+        if (storyData.userId !== user.sub) {
           setError('You do not have permission to view this story');
           return;
         }
 
         console.log('StoryView - Full story data from database:', storyData);
-        console.log('StoryView - VOCAB_WORDS field:', storyData.VOCAB_WORDS);
-        console.log('StoryView - INTERESTS field:', storyData.INTERESTS);
-        console.log('StoryView - VOCAB_DEFINITIONS field:', storyData.VOCAB_DEFINITIONS);
+        console.log('StoryView - vocabularyWords field:', storyData.vocabularyWords);
+        console.log('StoryView - vocabularyDefinitions field:', storyData.vocabularyDefinitions);
         setStory(storyData);
         
         // Preload audio if it exists
@@ -147,21 +146,21 @@ const StoryView = () => {
   }
 
   console.log('StoryView - story data:', story);
-  console.log('StoryView - vocabulary words:', story.VOCAB_WORDS);
-  console.log('StoryView - processed vocab words:', story.VOCAB_WORDS ? story.VOCAB_WORDS.split(',').filter(word => word.trim()) : []);
+  console.log('StoryView - vocabulary words:', story.vocabularyWords);
+  console.log('StoryView - processed vocab words:', story.vocabularyWords);
 
       return (
         <div className="min-h-screen bg-cream-100">
           <StoryReader
-            story={story.STORY_TEXT}
-            storyTitle={story.STORY_TITLE}
+            story={story.content}
+            storyTitle={story.title}
             onGenerateNew={handleGenerateNew}
             onBackToHistory={handleBackToHistory}
-            vocabularyWords={story.VOCAB_WORDS ? story.VOCAB_WORDS.split(',').filter(word => word.trim()) : []}
+            vocabularyWords={story.vocabularyWords || []}
             age={story.age || '8'}
             isFromHistory={true}
-            storedVocabDefinitions={story.VOCAB_DEFINITIONS ? JSON.parse(story.VOCAB_DEFINITIONS) : {}}
-            storyId={story.STORY_ID}
+            storedVocabDefinitions={story.vocabularyDefinitions || {}}
+            storyId={story.id}
             preloadedAudio={preloadedAudio}
             audioPreloadStatus={audioPreloadStatus}
           />
