@@ -67,6 +67,31 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+// Auth0 token verification function (for direct use)
+const verifyToken = async (req) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    throw new Error('Access token required');
+  }
+
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, getKey, {
+      audience: `https://api.storybites.vip`,
+      issuer: `https://${auth0Domain}/`,
+      algorithms: ['RS256']
+    }, (err, decoded) => {
+      if (err) {
+        console.error('JWT verification failed:', err);
+        reject(err);
+      } else {
+        resolve(decoded);
+      }
+    });
+  });
+};
+
 // CORS headers helper
 const setCorsHeaders = (res) => {
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -78,5 +103,6 @@ const setCorsHeaders = (res) => {
 module.exports = {
   connection,
   authenticateToken,
+  verifyToken,
   setCorsHeaders
 };

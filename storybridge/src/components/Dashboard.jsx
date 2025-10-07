@@ -34,15 +34,7 @@ const Dashboard = () => {
     setIsGenerating(true);
     
     try {
-      // Get fresh token for vocabulary requests
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: `https://api.storybites.vip`,
-          scope: "openid profile email"
-        }
-      });
-      
-      const result = await handleVocabularyGenerate(words, user.sub, token);
+      const result = await handleVocabularyGenerate(words, user.sub);
       
       // Redirect to story viewer after generation
       if (result && result.storyId) {

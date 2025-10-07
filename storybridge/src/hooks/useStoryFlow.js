@@ -24,7 +24,7 @@ export const useStoryFlow = () => {
     setStep('form');
   };
 
-  const handleVocabularyGenerate = async (words, userId = null, token = null) => {
+  const handleVocabularyGenerate = async (words, userId = null) => {
     setVocabularyWords(words);
     setLoading(true);
     let savedStoryId = null;
@@ -75,11 +75,7 @@ export const useStoryFlow = () => {
               console.log('Adding vocabulary words to user vocabulary list...', words);
               const API_BASE_URL = process.env.REACT_APP_API_URL || '';
               
-              // Use provided token or skip vocabulary addition if no token
-              if (!token) {
-                console.log('No token provided, skipping vocabulary word addition');
-                return;
-              }
+              // Add vocabulary words to user's vocabulary list
 
               // Add each vocabulary word to the user's vocabulary list
               for (const word of words) {
@@ -87,8 +83,7 @@ export const useStoryFlow = () => {
                 const response = await fetch(`${API_BASE_URL}/api/user/${userId}/vocabulary/add`, {
                   method: 'POST',
                   headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json'
                   },
                   body: JSON.stringify({
                     word: word,

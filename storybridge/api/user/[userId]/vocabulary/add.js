@@ -1,4 +1,4 @@
-const { connection, setCorsHeaders, authenticateToken } = require('../../../_utils');
+const { connection, setCorsHeaders } = require('../../../_utils');
 
 export default async function handler(req, res) {
   setCorsHeaders(res);
@@ -13,19 +13,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Authenticate the user
-    const user = await authenticateToken(req);
-    if (!user) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
     const { userId } = req.query;
     const { word, storyId } = req.body;
-    
-    // Verify the user is adding vocabulary for themselves
-    if (userId !== user.sub) {
-      return res.status(403).json({ error: 'Forbidden' });
-    }
     
     console.log('📝 Adding vocabulary word:', { userId, word, storyId });
     
