@@ -67,13 +67,13 @@ export const useStoryFlow = () => {
           console.log('Story auto-saved successfully with vocabulary definitions!', saveResult);
           
           // Store storyId for use in StoryDisplay
-          if (saveResult && saveResult.storyId) {
-            savedStoryId = saveResult.storyId;
-            setStoryId(saveResult.storyId);
-            console.log('Generating and storing audio immediately for storyId:', saveResult.storyId);
+          if (saveResult && saveResult.data && saveResult.data.id) {
+            savedStoryId = saveResult.data.id;
+            setStoryId(saveResult.data.id);
+            console.log('Generating and storing audio immediately for storyId:', saveResult.data.id);
             try {
               const API_BASE_URL = process.env.REACT_APP_API_URL || '';
-              const audioResponse = await fetch(`${API_BASE_URL}/api/story/${saveResult.storyId}/generate-audio`, {
+              const audioResponse = await fetch(`${API_BASE_URL}/api/story/${saveResult.data.id}/generate-audio`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
