@@ -10,6 +10,7 @@ export const useStoryFlow = () => {
   const [story, setStory] = useState(null);
   const [storyTitle, setStoryTitle] = useState(null);
   const [vocabularyWords, setVocabularyWords] = useState([]);
+  const [vocabularyDefinitions, setVocabularyDefinitions] = useState({});
   const [loading, setLoading] = useState(false);
   const [storyId, setStoryId] = useState(null);
 
@@ -51,6 +52,7 @@ export const useStoryFlow = () => {
           console.log('Fetching vocabulary definitions in batch...');
           const vocabDefinitions = await getBatchWordDefinitions(words, formData.age);
           console.log('Vocabulary definitions fetched:', vocabDefinitions);
+          setVocabularyDefinitions(vocabDefinitions);
           
           // Save story first to get storyId
           console.log('Saving story to database...');
@@ -114,6 +116,7 @@ export const useStoryFlow = () => {
     setStory(null);
     setStoryTitle(null);
     setVocabularyWords([]);
+    setVocabularyDefinitions({});
     setStoryId(null);
   };
 
@@ -123,6 +126,7 @@ export const useStoryFlow = () => {
     story,
     storyTitle,
     vocabularyWords,
+    vocabularyDefinitions,
     loading,
     storyId,
     handleFormSubmit,

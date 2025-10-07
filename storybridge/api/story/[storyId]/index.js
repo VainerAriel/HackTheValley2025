@@ -14,24 +14,27 @@ export default async function handler(req, res) {
 
   try {
     const { storyId } = req.query;
+    console.log('📖 Fetching story:', storyId);
     
-    // Connect to Snowflake
-    await new Promise((resolve, reject) => {
-      connection.connect((err, conn) => {
-        if (err) {
-          console.error('Snowflake connection failed:', err);
-          reject(err);
-        } else {
-          resolve(conn);
-        }
+    // Connect to Snowflake (only if not already connected)
+    if (!connection.isUp()) {
+      await new Promise((resolve, reject) => {
+        connection.connect((err, conn) => {
+          if (err) {
+            console.error('Snowflake connection failed:', err);
+            reject(err);
+          } else {
+            resolve(conn);
+          }
+        });
       });
-    });
+    }
 
     // Get story by ID
     const selectQuery = `
-      SELECT ID, USER_ID, TITLE, CONTENT, VOCABULARY_WORDS, CREATED_AT, UPDATED_AT, AUDIO_URL, SENTENCE_AUDIO_URLS
+      SELECT STORY_ID, USER_ID, STORY_TITLE, STORY_TEXT, VOCAB_WORDS, VOCAB_DEFINITIONS, CREATED_AT, AUDIO_URL, SENTENCE_AUDIO_DATA
       FROM STORIES 
-      WHERE ID = ?
+      WHERE STORY_ID = ?
     `;
 
     const result = await new Promise((resolve, reject) => {
@@ -47,16 +50,37 @@ export default async function handler(req, res) {
               resolve(null);
             } else {
               const row = rows[0];
+              
+              // Parse vocabulary words and definitions
+              let vocabularyWords = [];
+              let vocabularyDefinitions = {};
+              
+              if (row.VOCAB_WORDS) {
+                try {
+                  vocabularyWords = JSON.parse(row.VOCAB_WORDS);
+                } catch (e) {
+                  vocabularyWords = row.VOCAB_WORDS.split(',').map(word => word.trim()).filter(word => word);
+                }
+              }
+              
+              if (row.VOCAB_DEFINITIONS) {
+                try {
+                  vocabularyDefinitions = JSON.parse(row.VOCAB_DEFINITIONS);
+                } catch (e) {
+                  console.error('Error parsing vocabulary definitions:', e);
+                }
+              }
+              
               const story = {
-                id: row.ID,
+                id: row.STORY_ID,
                 userId: row.USER_ID,
-                title: row.TITLE,
-                content: row.CONTENT,
-                vocabularyWords: JSON.parse(row.VOCABULARY_WORDS || '[]'),
+                title: row.STORY_TITLE,
+                content: row.STORY_TEXT,
+                vocabularyWords: vocabularyWords,
+                vocabularyDefinitions: vocabularyDefinitions,
                 createdAt: row.CREATED_AT,
-                updatedAt: row.UPDATED_AT,
                 audioUrl: row.AUDIO_URL,
-                sentenceAudioUrls: JSON.parse(row.SENTENCE_AUDIO_URLS || '{}')
+                sentenceAudioData: row.SENTENCE_AUDIO_DATA ? JSON.parse(row.SENTENCE_AUDIO_DATA) : {}
               };
               resolve(story);
             }

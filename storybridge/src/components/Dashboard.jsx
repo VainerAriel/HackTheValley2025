@@ -18,6 +18,7 @@ const Dashboard = () => {
     story,
     storyTitle,
     vocabularyWords,
+    vocabularyDefinitions,
     loading,
     storyId,
     handleFormSubmit,
@@ -67,6 +68,7 @@ const Dashboard = () => {
             story={story}
             title={storyTitle}
             vocabularyWords={vocabularyWords}
+            storedVocabDefinitions={vocabularyDefinitions}
             onGenerateNew={handleBackToForm}
             storyId={storyId}
           />
