@@ -15,10 +15,6 @@
   height: 100vh;
   z-index: 9999;
   background: #fff;
-  overflow: hidden;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  touch-action: pan-y;
 }
 
 /* Header */
@@ -369,17 +365,6 @@
   overflow-y: auto;
   max-height: calc(100vh - 200px);
   position: relative;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  touch-action: pan-y;
-}
-
-/* Fullscreen mode adjustments */
-.story-reader-container.fullscreen .story-content-area {
-  max-height: calc(100vh - 120px);
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: auto;
-  touch-action: pan-y;
 }
 
 .story-content-area::before {
@@ -806,52 +791,16 @@
 
 /* Mobile-specific touch improvements */
 @media (max-width: 768px) {
-  .story-reader-container.fullscreen {
-    overflow: hidden;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    touch-action: pan-y;
+  .control-button {
+    -webkit-tap-highlight-color: transparent;
   }
   
-  .story-reader-container.fullscreen .story-reader-main {
-    overflow: hidden;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+  .font-option {
+    -webkit-tap-highlight-color: transparent;
   }
   
   .story-content-area {
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior: auto;
-    touch-action: pan-y;
-    flex: 1;
-    overflow-y: auto;
-  }
-  
-  .control-button {
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-  }
-  
-  .font-option {
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-  }
-  
-  /* Ensure proper touch scrolling in fullscreen */
-  .story-reader-container.fullscreen .story-content-area {
-    position: relative;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: auto;
-    touch-action: pan-y;
-    height: calc(100vh - 120px);
   }
 }
 
