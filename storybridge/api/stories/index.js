@@ -14,6 +14,7 @@ export default async function handler(req, res) {
 
   try {
     const { storyData } = req.body;
+    console.log('💾 Saving story:', storyData.title, 'for user:', storyData.userId);
     
     // Connect to Snowflake (only if not already connected)
     if (!connection.isUp()) {

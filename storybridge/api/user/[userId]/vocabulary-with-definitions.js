@@ -12,10 +12,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Authenticate token
-  authenticateToken(req, res, async () => {
-    try {
-      const userId = req.user.sub;
+  try {
+    const { userId } = req.query;
+    console.log('📚 Fetching vocabulary with definitions for user:', userId);
       
       // Connect to Snowflake (only if not already connected)
       if (!connection.isUp()) {
@@ -65,9 +64,8 @@ export default async function handler(req, res) {
         data: vocabulary 
       });
 
-    } catch (error) {
-      console.error('Error fetching vocabulary with definitions:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
+  } catch (error) {
+    console.error('Error fetching vocabulary with definitions:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 }
