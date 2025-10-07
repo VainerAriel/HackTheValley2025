@@ -30,13 +30,14 @@ export default async function handler(req, res) {
         });
       }
 
-      // Get user vocabulary from USER_VOCABULARY table with definitions from STORIES
+      // Get vocabulary words directly from STORIES table where they have rich definitions
       const vocabularyQuery = `
-        SELECT DISTINCT uv.WORD, uv.CREATED_AT, uv.STORY_ID, s.VOCAB_DEFINITIONS
-        FROM USER_VOCABULARY uv
-        LEFT JOIN STORIES s ON uv.STORY_ID = s.STORY_ID
-        WHERE uv.USER_ID = ? 
-        ORDER BY uv.CREATED_AT DESC
+        SELECT DISTINCT s.VOCAB_WORDS, s.VOCAB_DEFINITIONS, s.CREATED_AT, s.STORY_ID
+        FROM STORIES s
+        WHERE s.USER_ID = ? 
+        AND s.VOCAB_WORDS IS NOT NULL
+        AND s.VOCAB_DEFINITIONS IS NOT NULL
+        ORDER BY s.CREATED_AT DESC
       `;
 
       const vocabulary = await new Promise((resolve, reject) => {
@@ -48,47 +49,44 @@ export default async function handler(req, res) {
               console.error('Error fetching vocabulary:', err);
               reject(err);
             } else {
-              console.log('📚 Vocabulary with definitions query result:', rows.length, 'words found');
+              console.log('📚 Vocabulary with definitions query result:', rows.length, 'stories found');
               
-              // Process vocabulary words from USER_VOCABULARY table
+              // Process vocabulary words from STORIES table
               const allVocabulary = [];
               
               rows.forEach(row => {
                 try {
-                  if (row.WORD) {
-                    let definitions = {
-                      definition: `A vocabulary word from your stories`,
-                      pronunciation: '',
-                      partOfSpeech: '',
-                      example: ''
-                    };
-                    
-                    // Try to get the actual definition from the story
-                    if (row.VOCAB_DEFINITIONS) {
-                      try {
-                        const storyDefinitions = JSON.parse(row.VOCAB_DEFINITIONS);
-                        const wordKey = row.WORD.toLowerCase();
-                        
-                        // Look for the word in the definitions (try different case variations)
-                        const wordDefinition = storyDefinitions[wordKey] || 
-                                             storyDefinitions[row.WORD] ||
-                                             storyDefinitions[wordKey.charAt(0).toUpperCase() + wordKey.slice(1)];
-                        
-                        if (wordDefinition) {
-                          definitions = wordDefinition;
-                        }
-                      } catch (e) {
-                        console.log('Could not parse definitions for word:', row.WORD);
-                      }
+                  // Parse VOCAB_WORDS (handle both JSON and comma-separated formats)
+                  let vocabWords = [];
+                  if (row.VOCAB_WORDS) {
+                    try {
+                      vocabWords = JSON.parse(row.VOCAB_WORDS);
+                    } catch (e) {
+                      vocabWords = row.VOCAB_WORDS.split(',').map(word => word.trim()).filter(word => word);
                     }
-                    
-                    allVocabulary.push({
-                      word: row.WORD,
-                      definitions: definitions,
-                      learnedDate: row.CREATED_AT,
-                      storyId: row.STORY_ID
-                    });
                   }
+                  
+                  // Parse VOCAB_DEFINITIONS
+                  let vocabDefinitions = {};
+                  if (row.VOCAB_DEFINITIONS) {
+                    try {
+                      vocabDefinitions = JSON.parse(row.VOCAB_DEFINITIONS);
+                    } catch (e) {
+                      console.log('Could not parse definitions for story');
+                    }
+                  }
+                  
+                  // Add words with their definitions
+                  vocabWords.forEach(word => {
+                    if (word && vocabDefinitions[word]) {
+                      allVocabulary.push({
+                        word: word,
+                        definitions: vocabDefinitions[word],
+                        learnedDate: row.CREATED_AT,
+                        storyId: row.STORY_ID
+                      });
+                    }
+                  });
                 } catch (e) {
                   console.error('Error parsing vocabulary data:', e);
                 }
