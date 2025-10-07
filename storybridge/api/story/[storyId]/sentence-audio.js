@@ -62,8 +62,18 @@ export default async function handler(req, res) {
     
     // Decode base64 JSON and parse the sentence audio data
     const decodedJson = Buffer.from(result[0].SENTENCE_AUDIO_DATA, 'base64').toString('utf8');
-    const sentenceAudioData = JSON.parse(decodedJson);
-    console.log('✅ Decoded and parsed sentence audio data successfully');
+    console.log('📄 Decoded JSON length:', decodedJson.length, 'characters');
+    console.log('📄 Decoded JSON preview:', decodedJson.substring(0, 100));
+    
+    let sentenceAudioData;
+    try {
+      sentenceAudioData = JSON.parse(decodedJson);
+      console.log('✅ Decoded and parsed sentence audio data successfully');
+    } catch (parseError) {
+      console.error('❌ JSON parsing error:', parseError.message);
+      console.error('❌ Invalid JSON content:', decodedJson);
+      return res.status(500).json({ error: 'Invalid sentence audio data format' });
+    }
     
     res.json({
       success: true,

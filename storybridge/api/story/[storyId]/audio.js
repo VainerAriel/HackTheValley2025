@@ -50,19 +50,33 @@ export default async function handler(req, res) {
     if (sentenceResult[0] && sentenceResult[0].SENTENCE_AUDIO_DATA) {
       // Extract combined audio from sentence data
       const decodedJson = Buffer.from(sentenceResult[0].SENTENCE_AUDIO_DATA, 'base64').toString('utf8');
-      const sentenceAudioData = JSON.parse(decodedJson);
-      const audioBuffer = Buffer.from(sentenceAudioData.combinedAudio, 'base64');
+      console.log('📄 Audio endpoint - Decoded JSON length:', decodedJson.length, 'characters');
+      console.log('📄 Audio endpoint - Decoded JSON preview:', decodedJson.substring(0, 100));
       
-      res.set({
-        'Content-Type': 'audio/mpeg',
-        'Content-Length': audioBuffer.length,
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      });
+      let sentenceAudioData;
+      try {
+        sentenceAudioData = JSON.parse(decodedJson);
+        console.log('✅ Audio endpoint - Parsed sentence audio data successfully');
+      } catch (parseError) {
+        console.error('❌ Audio endpoint - JSON parsing error:', parseError.message);
+        console.error('❌ Audio endpoint - Invalid JSON content:', decodedJson);
+        // Fall through to old audio data
+      }
       
-      res.send(audioBuffer);
-      return;
+      if (sentenceAudioData && sentenceAudioData.combinedAudio) {
+        const audioBuffer = Buffer.from(sentenceAudioData.combinedAudio, 'base64');
+        
+        res.set({
+          'Content-Type': 'audio/mpeg',
+          'Content-Length': audioBuffer.length,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        });
+        
+        res.send(audioBuffer);
+        return;
+      }
     }
     
     // Fallback to old AUDIO_DATA column
