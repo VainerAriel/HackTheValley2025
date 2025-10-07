@@ -2,7 +2,7 @@ const https = require('https');
 
 const convertTextToSpeech = async (text) => {
   return new Promise((resolve, reject) => {
-    const apiKey = process.env.ELEVENLABS_API_KEY;
+    const apiKey = process.env.REACT_APP_ELEVENLABS_API_KEY || process.env.ELEVENLABS_API_KEY;
     
     if (!apiKey) {
       reject(new Error('ElevenLabs API key not found'));
