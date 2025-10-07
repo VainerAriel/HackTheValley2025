@@ -17,6 +17,8 @@
   background: #fff;
   overflow: hidden;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 
 /* Header */
@@ -369,6 +371,15 @@
   position: relative;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+
+/* Fullscreen mode adjustments */
+.story-reader-container.fullscreen .story-content-area {
+  max-height: calc(100vh - 120px);
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: auto;
+  touch-action: pan-y;
 }
 
 .story-content-area::before {
@@ -799,12 +810,22 @@
     overflow: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
+    touch-action: pan-y;
+  }
+  
+  .story-reader-container.fullscreen .story-reader-main {
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
   }
   
   .story-content-area {
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+    overscroll-behavior: auto;
     touch-action: pan-y;
+    flex: 1;
+    overflow-y: auto;
   }
   
   .control-button {
@@ -812,6 +833,7 @@
     -webkit-tap-highlight-color: transparent;
     user-select: none;
     -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
   
   .font-option {
@@ -819,6 +841,17 @@
     -webkit-tap-highlight-color: transparent;
     user-select: none;
     -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  
+  /* Ensure proper touch scrolling in fullscreen */
+  .story-reader-container.fullscreen .story-content-area {
+    position: relative;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: auto;
+    touch-action: pan-y;
+    height: calc(100vh - 120px);
   }
 }
 

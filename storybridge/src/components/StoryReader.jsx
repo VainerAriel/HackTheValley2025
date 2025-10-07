@@ -123,6 +123,72 @@ const StoryReader = ({
     }
   };
 
+  // Mobile touch handling with proper event delegation
+  useEffect(() => {
+    const handleMobileTouch = (e) => {
+      const target = e.target;
+      const button = target.closest('button');
+      
+      if (button && button.classList.contains('control-button')) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Handle font size buttons
+        if (button.title === 'Decrease font size') {
+          setFontSize(fontSize === 'xlarge' ? 'large' : fontSize === 'large' ? 'medium' : fontSize === 'medium' ? 'small' : 'small');
+        } else if (button.title === 'Increase font size') {
+          setFontSize(fontSize === 'small' ? 'medium' : fontSize === 'medium' ? 'large' : fontSize === 'large' ? 'xlarge' : 'xlarge');
+        } else if (button.title === 'Change font') {
+          setShowFontSelector(!showFontSelector);
+        }
+      }
+      
+      if (button && button.classList.contains('font-option')) {
+        e.preventDefault();
+        e.stopPropagation();
+        const fontValue = button.getAttribute('data-font');
+        if (fontValue) {
+          setSelectedFont(fontValue);
+          setShowFontSelector(false);
+        }
+      }
+    };
+
+    // Add touch event listeners with proper options
+    const touchOptions = { passive: false, capture: true };
+    
+    document.addEventListener('touchstart', handleMobileTouch, touchOptions);
+    document.addEventListener('touchend', handleMobileTouch, touchOptions);
+    document.addEventListener('touchmove', (e) => {
+      // Allow scrolling but prevent other touch conflicts
+      const target = e.target;
+      const button = target.closest('button');
+      if (button && (button.classList.contains('control-button') || button.classList.contains('font-option'))) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, { passive: false, capture: true });
+
+    return () => {
+      document.removeEventListener('touchstart', handleMobileTouch, touchOptions);
+      document.removeEventListener('touchend', handleMobileTouch, touchOptions);
+      document.removeEventListener('touchmove', handleMobileTouch, touchOptions);
+    };
+  }, [fontSize, showFontSelector, selectedFont]);
+
+  // Ensure proper scrolling in fullscreen mode
+  useEffect(() => {
+    if (isFullscreen) {
+      // Force enable touch scrolling
+      const contentArea = document.querySelector('.story-content-area');
+      if (contentArea) {
+        contentArea.style.overflowY = 'auto';
+        contentArea.style.webkitOverflowScrolling = 'touch';
+        contentArea.style.touchAction = 'pan-y';
+      }
+    }
+  }, [isFullscreen]);
+
   // Handle word hover for vocabulary
   const handleWordHover = (cleanWord, event) => {
     let definition = wordDefinitions[cleanWord];
@@ -1086,29 +1152,29 @@ const StoryReader = ({
               </span>
             </button>
             <button
-              onClick={(e) => {
+              onMouseDown={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 setFontSize(fontSize === 'xlarge' ? 'large' : fontSize === 'large' ? 'medium' : fontSize === 'medium' ? 'small' : 'small');
               }}
               onTouchStart={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              onTouchEnd={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 setFontSize(fontSize === 'xlarge' ? 'large' : fontSize === 'large' ? 'medium' : fontSize === 'medium' ? 'small' : 'small');
               }}
               className="control-button"
               title="Decrease font size"
-              style={{ background: 'linear-gradient(135deg, #c4a57b, #d4b896)' }}
+              style={{ 
+                background: 'linear-gradient(135deg, #c4a57b, #d4b896)',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent'
+              }}
             >
               a
             </button>
             
             <button
-              onClick={(e) => {
+              onMouseDown={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 setFontSize(fontSize === 'small' ? 'medium' : fontSize === 'medium' ? 'large' : fontSize === 'large' ? 'xlarge' : 'xlarge');
@@ -1116,15 +1182,15 @@ const StoryReader = ({
               onTouchStart={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-              }}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
                 setFontSize(fontSize === 'small' ? 'medium' : fontSize === 'medium' ? 'large' : fontSize === 'large' ? 'xlarge' : 'xlarge');
               }}
               className="control-button"
               title="Increase font size"
-              style={{ background: 'linear-gradient(135deg, #a88f6c, #b89968)' }}
+              style={{ 
+                background: 'linear-gradient(135deg, #a88f6c, #b89968)',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent'
+              }}
             >
               A
             </button>
@@ -1132,7 +1198,7 @@ const StoryReader = ({
 
           
             <button
-              onClick={(e) => {
+              onMouseDown={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 setShowFontSelector(!showFontSelector);
@@ -1140,15 +1206,16 @@ const StoryReader = ({
               onTouchStart={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-              }}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
                 setShowFontSelector(!showFontSelector);
               }}
               className="control-button"
               title="Change font"
-              style={{ fontFamily: getFontFamily(), background: 'linear-gradient(135deg, #8b7355, #6b543e)' }}
+              style={{ 
+                fontFamily: getFontFamily(), 
+                background: 'linear-gradient(135deg, #8b7355, #6b543e)',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent'
+              }}
             >
               Font: {selectedFont}
             </button>
@@ -1164,7 +1231,7 @@ const StoryReader = ({
             <div className="font-selector-header">
               <h4>Choose Font</h4>
               <button 
-                onClick={(e) => {
+                onMouseDown={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   setShowFontSelector(false);
@@ -1172,11 +1239,11 @@ const StoryReader = ({
                 onTouchStart={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                }}
-                onTouchEnd={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
                   setShowFontSelector(false);
+                }}
+                style={{
+                  touchAction: 'manipulation',
+                  WebkitTapHighlightColor: 'transparent'
                 }}
               >×</button>
             </div>
@@ -1184,7 +1251,8 @@ const StoryReader = ({
               {fontOptions.map((font) => (
                 <button
                   key={font.value}
-                  onClick={(e) => {
+                  data-font={font.value}
+                  onMouseDown={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     setSelectedFont(font.value);
@@ -1193,15 +1261,15 @@ const StoryReader = ({
                   onTouchStart={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                  }}
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
                     setSelectedFont(font.value);
                     setShowFontSelector(false);
                   }}
                   className={`font-option ${selectedFont === font.value ? 'selected' : ''}`}
-                  style={{ fontFamily: font.value === 'OpenDyslexic' ? `'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif` : `'${font.value}', sans-serif` }}
+                  style={{ 
+                    fontFamily: font.value === 'OpenDyslexic' ? `'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif` : `'${font.value}', sans-serif`,
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent'
+                  }}
                 >
                   <div className="font-name">{font.name}</div>
                   <div className="font-description">{font.description}</div>
