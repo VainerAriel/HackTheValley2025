@@ -180,7 +180,8 @@ const ProfileSetup = ({ onComplete }) => {
       });
 
       if (response.ok) {
-        // Profile saved successfully
+        const result = await response.json();
+        console.log('✅ Profile saved successfully:', result);
         setError('');
         setSaving(false);
         
@@ -190,7 +191,7 @@ const ProfileSetup = ({ onComplete }) => {
         }, 1000);
       } else {
         const errorData = await response.json();
-        console.error('Error response:', errorData);
+        console.error('❌ Error response:', errorData);
         setError('Error saving profile. Please try again.');
       }
     } catch (error) {

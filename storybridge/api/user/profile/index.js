@@ -52,12 +52,24 @@ export default async function handler(req, res) {
                   resolve(null);
                 } else {
                   const row = rows[0];
+                  // Handle interests field - could be JSON array or comma-separated string
+                  let interests = [];
+                  if (row.INTERESTS) {
+                    try {
+                      // Try to parse as JSON first
+                      interests = JSON.parse(row.INTERESTS);
+                    } catch (e) {
+                      // If JSON parsing fails, treat as comma-separated string
+                      interests = row.INTERESTS.split(',').map(item => item.trim()).filter(item => item);
+                    }
+                  }
+
                   const profile = {
                     userId: row.USER_ID,
                     childName: row.CHILD_NAME,
                     childAge: row.CHILD_AGE,
                     childPronouns: row.CHILD_PRONOUNS,
-                    interests: JSON.parse(row.INTERESTS || '[]'),
+                    interests: interests,
                     createdAt: row.CREATED_AT,
                     updatedAt: row.UPDATED_AT
                   };
@@ -117,6 +129,7 @@ export default async function handler(req, res) {
           });
         });
 
+        console.log('✅ Profile updated successfully for user:', userId);
         res.status(200).json({ 
           success: true, 
           message: 'Profile updated successfully' 
