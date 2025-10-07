@@ -17,22 +17,24 @@ export default async function handler(req, res) {
     try {
       const userId = req.user.sub;
       
-      // Connect to Snowflake
-      await new Promise((resolve, reject) => {
-        connection.connect((err, conn) => {
-          if (err) {
-            console.error('Snowflake connection failed:', err);
-            reject(err);
-          } else {
-            resolve(conn);
-          }
+      // Connect to Snowflake (only if not already connected)
+      if (!connection.isUp()) {
+        await new Promise((resolve, reject) => {
+          connection.connect((err, conn) => {
+            if (err) {
+              console.error('Snowflake connection failed:', err);
+              reject(err);
+            } else {
+              resolve(conn);
+            }
+          });
         });
-      });
+      }
 
       if (req.method === 'GET') {
         // Get user profile
         const selectQuery = `
-          SELECT USER_ID, CHILD_NAME, AGE, INTERESTS, CREATED_AT, UPDATED_AT
+          SELECT USER_ID, CHILD_NAME, CHILD_AGE, CHILD_PRONOUNS, INTERESTS, CREATED_AT, UPDATED_AT
           FROM USER_PROFILES 
           WHERE USER_ID = ?
         `;
@@ -53,7 +55,8 @@ export default async function handler(req, res) {
                   const profile = {
                     userId: row.USER_ID,
                     childName: row.CHILD_NAME,
-                    age: row.AGE,
+                    childAge: row.CHILD_AGE,
+                    childPronouns: row.CHILD_PRONOUNS,
                     interests: JSON.parse(row.INTERESTS || '[]'),
                     createdAt: row.CREATED_AT,
                     updatedAt: row.UPDATED_AT
@@ -72,28 +75,37 @@ export default async function handler(req, res) {
 
       } else if (req.method === 'PUT') {
         // Update user profile
-        const { childName, age, interests } = req.body;
+        const { childName, childAge, childPronouns, interests } = req.body;
+        
+        console.log('Profile update data:', { childName, childAge, childPronouns, interests });
         
         // Update or insert user profile
         const upsertQuery = `
           MERGE INTO USER_PROFILES AS target
-          USING (SELECT ? AS USER_ID, ? AS CHILD_NAME, ? AS AGE, ? AS INTERESTS, CURRENT_TIMESTAMP() AS UPDATED_AT) AS source
+          USING (SELECT ? AS USER_ID, ? AS CHILD_NAME, ? AS CHILD_AGE, ? AS CHILD_PRONOUNS, ? AS INTERESTS, CURRENT_TIMESTAMP() AS UPDATED_AT) AS source
           ON target.USER_ID = source.USER_ID
           WHEN MATCHED THEN
             UPDATE SET 
               CHILD_NAME = source.CHILD_NAME,
-              AGE = source.AGE,
+              CHILD_AGE = source.CHILD_AGE,
+              CHILD_PRONOUNS = source.CHILD_PRONOUNS,
               INTERESTS = source.INTERESTS,
               UPDATED_AT = source.UPDATED_AT
           WHEN NOT MATCHED THEN
-            INSERT (USER_ID, CHILD_NAME, AGE, INTERESTS, CREATED_AT, UPDATED_AT)
-            VALUES (source.USER_ID, source.CHILD_NAME, source.AGE, source.INTERESTS, source.UPDATED_AT, source.UPDATED_AT)
+            INSERT (USER_ID, CHILD_NAME, CHILD_AGE, CHILD_PRONOUNS, INTERESTS, CREATED_AT, UPDATED_AT)
+            VALUES (source.USER_ID, source.CHILD_NAME, source.CHILD_AGE, source.CHILD_PRONOUNS, source.INTERESTS, source.UPDATED_AT, source.UPDATED_AT)
         `;
 
         await new Promise((resolve, reject) => {
           connection.execute({
             sqlText: upsertQuery,
-            binds: [userId, childName, age, JSON.stringify(interests || [])],
+            binds: [
+              userId, 
+              childName || '', 
+              childAge || '', 
+              childPronouns || '', 
+              JSON.stringify(interests || [])
+            ],
             complete: (err, stmt, rows) => {
               if (err) {
                 console.error('Error updating profile:', err);
