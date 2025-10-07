@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 
 const ProfileSetup = ({ onComplete }) => {
-  const { user, getAccessTokenSilently } = useAuth0();
+  const { user, getAccessTokenSilently, logout } = useAuth0();
   const [profileData, setProfileData] = useState({
     childName: '',
     childAge: '',
@@ -74,8 +74,12 @@ const ProfileSetup = ({ onComplete }) => {
       
       // Handle Auth0 token errors
       if (error.message && error.message.includes('Missing Refresh Token')) {
-        console.log('🔄 Auth0 token error in ProfileSetup, redirecting to login...');
-        window.location.href = '/';
+        console.log('🔄 Auth0 token error in ProfileSetup, logging out user...');
+        logout({ 
+          logoutParams: { 
+            returnTo: window.location.origin 
+          } 
+        });
         return;
       }
     }

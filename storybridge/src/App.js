@@ -10,7 +10,7 @@ import UserProfile from './components/UserProfile.jsx';
 import ProfileSetup from './components/ProfileSetup.jsx';
 
 function App() {
-  const { isAuthenticated, isLoading, user, getAccessTokenSilently } = useAuth0();
+  const { isAuthenticated, isLoading, user, getAccessTokenSilently, logout } = useAuth0();
   const [profileCompleted, setProfileCompleted] = useState(null);
 
   useEffect(() => {
@@ -57,11 +57,14 @@ function App() {
     } catch (error) {
       console.error('Error checking profile completion:', error);
       
-      // Handle Auth0 token errors by redirecting to login
+      // Handle Auth0 token errors by logging out the user
       if (error.message && error.message.includes('Missing Refresh Token')) {
-        console.log('🔄 Auth0 token error detected, redirecting to login...');
-        // Clear any cached auth data and redirect to login
-        window.location.href = '/';
+        console.log('🔄 Auth0 token error detected, logging out user...');
+        logout({ 
+          logoutParams: { 
+            returnTo: window.location.origin 
+          } 
+        });
         return;
       }
       
