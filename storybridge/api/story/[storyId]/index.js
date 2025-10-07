@@ -1,4 +1,4 @@
-const { connection, setCorsHeaders, authenticateToken } = require('../../_utils');
+const { connection, setCorsHeaders } = require('../../_utils');
 
 export default async function handler(req, res) {
   setCorsHeaders(res);
@@ -11,13 +11,6 @@ export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
-
-  // Authenticate the request
-  const authResult = await authenticateToken(req, res);
-  if (!authResult.success) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-  const userId = authResult.userId;
 
   try {
     const { storyId } = req.query;
@@ -37,17 +30,17 @@ export default async function handler(req, res) {
       });
     }
 
-    // Get story by ID (only if it belongs to the authenticated user)
+    // Get story by ID
     const selectQuery = `
       SELECT STORY_ID, USER_ID, STORY_TITLE, STORY_TEXT, VOCAB_WORDS, VOCAB_DEFINITIONS, CREATED_AT, AUDIO_URL, SENTENCE_AUDIO_DATA
       FROM STORIES 
-      WHERE STORY_ID = ? AND USER_ID = ?
+      WHERE STORY_ID = ?
     `;
 
     const result = await new Promise((resolve, reject) => {
       connection.execute({
         sqlText: selectQuery,
-        binds: [storyId, userId],
+        binds: [storyId],
         complete: (err, stmt, rows) => {
           if (err) {
             console.error('Error fetching story:', err);
@@ -97,7 +90,7 @@ export default async function handler(req, res) {
     });
 
     if (!result) {
-      return res.status(404).json({ error: 'Story not found or you do not have permission to view this story' });
+      return res.status(404).json({ error: 'Story not found' });
     }
 
     res.status(200).json({ 
