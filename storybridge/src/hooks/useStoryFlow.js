@@ -68,6 +68,31 @@ export const useStoryFlow = () => {
           });
           console.log('Story auto-saved successfully with vocabulary definitions!', saveResult);
           
+          // Add vocabulary words to user's vocabulary list
+          if (saveResult && saveResult.data && saveResult.data.id) {
+            try {
+              console.log('Adding vocabulary words to user vocabulary list...');
+              const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+              
+              // Add each vocabulary word to the user's vocabulary list
+              for (const word of words) {
+                await fetch(`${API_BASE_URL}/api/user/${userId}/vocabulary/add`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    word: word,
+                    storyId: saveResult.data.id
+                  })
+                });
+              }
+              console.log('✅ Vocabulary words added to user vocabulary list');
+            } catch (error) {
+              console.error('Error adding vocabulary words to user list:', error);
+            }
+          }
+          
           // Store storyId for use in StoryDisplay
           if (saveResult && saveResult.data && saveResult.data.id) {
             savedStoryId = saveResult.data.id;

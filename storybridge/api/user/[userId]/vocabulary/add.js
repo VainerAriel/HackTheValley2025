@@ -14,30 +14,35 @@ export default async function handler(req, res) {
 
   try {
     const { userId } = req.query;
-    const { word, definition, storyId } = req.body;
+    const { word, storyId } = req.body;
     
-    // Connect to Snowflake
-    await new Promise((resolve, reject) => {
-      connection.connect((err, conn) => {
-        if (err) {
-          console.error('Snowflake connection failed:', err);
-          reject(err);
-        } else {
-          resolve(conn);
-        }
+    // Connect to Snowflake (only if not already connected)
+    if (!connection.isUp()) {
+      await new Promise((resolve, reject) => {
+        connection.connect((err, conn) => {
+          if (err) {
+            console.error('Snowflake connection failed:', err);
+            reject(err);
+          } else {
+            resolve(conn);
+          }
+        });
       });
-    });
+    }
 
     // Add vocabulary word
     const insertQuery = `
-      INSERT INTO USER_VOCABULARY (USER_ID, WORD, DEFINITION, STORY_ID, CREATED_AT)
+      INSERT INTO USER_VOCABULARY (VOCAB_ID, USER_ID, WORD, STORY_ID, CREATED_AT)
       VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP())
     `;
+
+    // Generate a unique vocab ID
+    const vocabId = `vocab_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     await new Promise((resolve, reject) => {
       connection.execute({
         sqlText: insertQuery,
-        binds: [userId, word, definition, storyId],
+        binds: [vocabId, userId, word, storyId],
         complete: (err, stmt, rows) => {
           if (err) {
             console.error('Error adding vocabulary:', err);

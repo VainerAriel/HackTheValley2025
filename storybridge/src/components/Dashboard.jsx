@@ -31,8 +31,11 @@ const Dashboard = () => {
     console.log('Generating story with save...', { words, userId: user.sub });
     const result = await handleVocabularyGenerate(words, user.sub);
     
-    // Story will be displayed in the Dashboard via the 'story' step
-    console.log('Story generation result:', result);
+    // Redirect to story viewer after generation
+    if (result && result.storyId) {
+      console.log('Redirecting to story viewer:', result.storyId);
+      navigate(`/story/${result.storyId}`);
+    }
   };
 
   const handleBackToForm = () => {
@@ -59,18 +62,6 @@ const Dashboard = () => {
             onGenerate={handleVocabularyGenerateWithSave}
             loading={loading}
             userId={user?.sub}
-          />
-        );
-      
-      case 'story':
-        return (
-          <StoryReader
-            story={story}
-            title={storyTitle}
-            vocabularyWords={vocabularyWords}
-            storedVocabDefinitions={vocabularyDefinitions}
-            onGenerateNew={handleBackToForm}
-            storyId={storyId}
           />
         );
       
