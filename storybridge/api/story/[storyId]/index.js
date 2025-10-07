@@ -80,7 +80,15 @@ export default async function handler(req, res) {
                 vocabularyDefinitions: vocabularyDefinitions,
                 createdAt: row.CREATED_AT,
                 audioUrl: row.AUDIO_URL,
-                sentenceAudioData: row.SENTENCE_AUDIO_DATA ? JSON.parse(row.SENTENCE_AUDIO_DATA) : {}
+                sentenceAudioData: row.SENTENCE_AUDIO_DATA ? (() => {
+                  try {
+                    const decodedJson = Buffer.from(row.SENTENCE_AUDIO_DATA, 'base64').toString('utf8');
+                    return JSON.parse(decodedJson);
+                  } catch (e) {
+                    console.error('Error parsing sentence audio data:', e);
+                    return {};
+                  }
+                })() : {}
               };
               resolve(story);
             }
