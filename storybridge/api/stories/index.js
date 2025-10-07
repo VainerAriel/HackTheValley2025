@@ -15,17 +15,19 @@ export default async function handler(req, res) {
   try {
     const { storyData } = req.body;
     
-    // Connect to Snowflake
-    await new Promise((resolve, reject) => {
-      connection.connect((err, conn) => {
-        if (err) {
-          console.error('Snowflake connection failed:', err);
-          reject(err);
-        } else {
-          resolve(conn);
-        }
+    // Connect to Snowflake (only if not already connected)
+    if (!connection.isUp()) {
+      await new Promise((resolve, reject) => {
+        connection.connect((err, conn) => {
+          if (err) {
+            console.error('Snowflake connection failed:', err);
+            reject(err);
+          } else {
+            resolve(conn);
+          }
+        });
       });
-    });
+    }
 
     // Insert story into database
     const insertQuery = `
