@@ -1,6 +1,6 @@
 const { connection, setCorsHeaders, authenticateToken } = require('../../_utils');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   setCorsHeaders(res);
 
   if (req.method === 'OPTIONS') {
@@ -30,7 +30,7 @@ export default async function handler(req, res) {
         });
       }
 
-      // Get vocabulary from user_vocabulary table and try to find definitions from any story
+      // Get vocabulary words from user_vocabulary table with definitions from STORIES
       let vocabularyQuery = `
         SELECT DISTINCT uv.WORD, uv.STORY_ID, uv.CREATED_AT, s.VOCAB_DEFINITIONS
         FROM user_vocabulary uv
@@ -73,13 +73,9 @@ export default async function handler(req, res) {
                     example: ''
                   };
                   
-                  // Use the actual definition if it exists in the linked story
+                  // Use the actual definition if it exists
                   if (vocabDefinitions[row.WORD]) {
                     definitions = vocabDefinitions[row.WORD];
-                  } else {
-                    // If no definition in linked story, try to find it in any other story
-                    // This will be handled by a separate query if needed
-                    console.log('No definition found for word:', row.WORD, 'in story:', row.STORY_ID);
                   }
                   
                   allVocabulary.push({
@@ -92,73 +88,6 @@ export default async function handler(req, res) {
                   console.error('Error parsing vocabulary data:', e);
                 }
               });
-              
-              // For words without definitions, try to find them in other stories
-              const wordsWithoutDefinitions = allVocabulary.filter(item => 
-                item.definitions.definition === 'A vocabulary word from your stories'
-              );
-              
-              if (wordsWithoutDefinitions.length > 0) {
-                console.log('🔍 Searching for definitions for', wordsWithoutDefinitions.length, 'words without definitions');
-                
-                // Get all stories with definitions for this user
-                const definitionsQuery = `
-                  SELECT VOCAB_WORDS, VOCAB_DEFINITIONS, STORY_ID
-                  FROM STORIES 
-                  WHERE USER_ID = ? 
-                  AND VOCAB_DEFINITIONS IS NOT NULL
-                `;
-                
-                const definitionRows = await new Promise((resolveDefs, rejectDefs) => {
-                  connection.execute({
-                    sqlText: definitionsQuery,
-                    binds: [userId],
-                    complete: (err, stmt, defRows) => {
-                      if (err) {
-                        console.error('Error fetching definitions:', err);
-                        rejectDefs(err);
-                      } else {
-                        resolveDefs(defRows);
-                      }
-                    }
-                  });
-                });
-                
-                // Try to find definitions for words without them
-                wordsWithoutDefinitions.forEach(vocabItem => {
-                  for (const defRow of definitionRows) {
-                    try {
-                      let vocabWords = [];
-                      if (defRow.VOCAB_WORDS) {
-                        try {
-                          vocabWords = JSON.parse(defRow.VOCAB_WORDS);
-                        } catch (e) {
-                          vocabWords = defRow.VOCAB_WORDS.split(',').map(word => word.trim()).filter(word => word);
-                        }
-                      }
-                      
-                      if (vocabWords.includes(vocabItem.word)) {
-                        let vocabDefinitions = {};
-                        if (defRow.VOCAB_DEFINITIONS) {
-                          try {
-                            vocabDefinitions = JSON.parse(defRow.VOCAB_DEFINITIONS);
-                            if (vocabDefinitions[vocabItem.word]) {
-                              vocabItem.definitions = vocabDefinitions[vocabItem.word];
-                              console.log('✅ Found definition for:', vocabItem.word);
-                              break;
-                            }
-                          } catch (e) {
-                            console.log('Could not parse definitions for story');
-                          }
-                        }
-                      }
-                    } catch (e) {
-                      console.error('Error processing definition row:', e);
-                    }
-                  }
-                });
-              }
-
               // Remove duplicates based on word
               const uniqueVocabulary = allVocabulary.filter((item, index, self) => 
                 index === self.findIndex(t => t.word.toLowerCase() === item.word.toLowerCase())

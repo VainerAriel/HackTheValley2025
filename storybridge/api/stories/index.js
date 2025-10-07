@@ -1,6 +1,6 @@
 const { connection, setCorsHeaders } = require('../_utils');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   setCorsHeaders(res);
 
   if (req.method === 'OPTIONS') {
@@ -33,9 +33,9 @@ export default async function handler(req, res) {
     // Insert story into database
     const insertQuery = `
       INSERT INTO STORIES (
-        STORY_ID, USER_ID, STORY_TITLE, STORY_TEXT, VOCAB_WORDS, 
+        STORY_ID, USER_ID, STORY_TITLE, STORY_TEXT, VOCAB_WORDS, VOCAB_DEFINITIONS,
         CREATED_AT, AUDIO_URL, SENTENCE_AUDIO_DATA
-      ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP(), ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP(), ?, ?)
     `;
 
     const storyId = `story_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -49,6 +49,7 @@ export default async function handler(req, res) {
           storyData.title,
           storyData.storyText || storyData.content,
           JSON.stringify(storyData.vocabWords || storyData.vocabularyWords || []),
+          JSON.stringify(storyData.vocabDefinitions || {}),
           storyData.audioUrl || null,
           JSON.stringify(storyData.sentenceAudioData || storyData.sentenceAudioUrls || {})
         ],
