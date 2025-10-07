@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  if (req.method !== 'GET') {
+  if (req.method !== 'GET' && req.method !== 'PUT') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
@@ -29,48 +29,90 @@ export default async function handler(req, res) {
         });
       });
 
-      // Get user profile
-      const selectQuery = `
-        SELECT USER_ID, CHILD_NAME, AGE, INTERESTS, CREATED_AT, UPDATED_AT
-        FROM USER_PROFILES 
-        WHERE USER_ID = ?
-      `;
+      if (req.method === 'GET') {
+        // Get user profile
+        const selectQuery = `
+          SELECT USER_ID, CHILD_NAME, AGE, INTERESTS, CREATED_AT, UPDATED_AT
+          FROM USER_PROFILES 
+          WHERE USER_ID = ?
+        `;
 
-      const result = await new Promise((resolve, reject) => {
-        connection.execute({
-          sqlText: selectQuery,
-          binds: [userId],
-          complete: (err, stmt, rows) => {
-            if (err) {
-              console.error('Error fetching profile:', err);
-              reject(err);
-            } else {
-              if (rows.length === 0) {
-                resolve(null);
+        const result = await new Promise((resolve, reject) => {
+          connection.execute({
+            sqlText: selectQuery,
+            binds: [userId],
+            complete: (err, stmt, rows) => {
+              if (err) {
+                console.error('Error fetching profile:', err);
+                reject(err);
               } else {
-                const row = rows[0];
-                const profile = {
-                  userId: row.USER_ID,
-                  childName: row.CHILD_NAME,
-                  age: row.AGE,
-                  interests: JSON.parse(row.INTERESTS || '[]'),
-                  createdAt: row.CREATED_AT,
-                  updatedAt: row.UPDATED_AT
-                };
-                resolve(profile);
+                if (rows.length === 0) {
+                  resolve(null);
+                } else {
+                  const row = rows[0];
+                  const profile = {
+                    userId: row.USER_ID,
+                    childName: row.CHILD_NAME,
+                    age: row.AGE,
+                    interests: JSON.parse(row.INTERESTS || '[]'),
+                    createdAt: row.CREATED_AT,
+                    updatedAt: row.UPDATED_AT
+                  };
+                  resolve(profile);
+                }
               }
             }
-          }
+          });
         });
-      });
 
-      res.status(200).json({ 
-        success: true, 
-        data: result 
-      });
+        res.status(200).json({ 
+          success: true, 
+          data: result 
+        });
+
+      } else if (req.method === 'PUT') {
+        // Update user profile
+        const { childName, age, interests } = req.body;
+        
+        // Update or insert user profile
+        const upsertQuery = `
+          MERGE INTO USER_PROFILES AS target
+          USING (SELECT ? AS USER_ID, ? AS CHILD_NAME, ? AS AGE, ? AS INTERESTS, CURRENT_TIMESTAMP() AS UPDATED_AT) AS source
+          ON target.USER_ID = source.USER_ID
+          WHEN MATCHED THEN
+            UPDATE SET 
+              CHILD_NAME = source.CHILD_NAME,
+              AGE = source.AGE,
+              INTERESTS = source.INTERESTS,
+              UPDATED_AT = source.UPDATED_AT
+          WHEN NOT MATCHED THEN
+            INSERT (USER_ID, CHILD_NAME, AGE, INTERESTS, CREATED_AT, UPDATED_AT)
+            VALUES (source.USER_ID, source.CHILD_NAME, source.AGE, source.INTERESTS, source.UPDATED_AT, source.UPDATED_AT)
+        `;
+
+        await new Promise((resolve, reject) => {
+          connection.execute({
+            sqlText: upsertQuery,
+            binds: [userId, childName, age, JSON.stringify(interests || [])],
+            complete: (err, stmt, rows) => {
+              if (err) {
+                console.error('Error updating profile:', err);
+                reject(err);
+              } else {
+                resolve(rows);
+              }
+            }
+          });
+        });
+
+        res.status(200).json({ 
+          success: true, 
+          message: 'Profile updated successfully' 
+        });
+      }
 
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Error with profile operation:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });

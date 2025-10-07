@@ -18,6 +18,7 @@ console.log('Auth0 Domain:', auth0Domain);
 
 if (!auth0Domain) {
   console.error('AUTH0_DOMAIN or REACT_APP_AUTH0_DOMAIN environment variable is not set');
+  throw new Error('Auth0 domain is required for JWT verification');
 }
 
 const client = jwksClient({
