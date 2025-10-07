@@ -80,7 +80,7 @@ export const useStoryFlow = () => {
               // Add each vocabulary word to the user's vocabulary list
               for (const word of words) {
                 console.log('Adding word to vocabulary:', word);
-                const response = await fetch(`${API_BASE_URL}/api/user/${userId}/vocabulary/add`, {
+                const response = await fetch(`${API_BASE_URL}/api/user/${userId}/vocabulary`, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json'
