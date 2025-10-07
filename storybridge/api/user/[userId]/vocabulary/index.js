@@ -47,6 +47,7 @@ export default async function handler(req, res) {
             console.error('Error fetching vocabulary:', err);
             reject(err);
           } else {
+            console.log('📖 Vocabulary query result:', rows.length, 'words found');
             const formattedVocabulary = rows.map(row => ({
               vocabId: row.VOCAB_ID,
               word: row.WORD,

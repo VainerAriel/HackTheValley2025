@@ -30,12 +30,14 @@ export default async function handler(req, res) {
         });
       }
 
-      // Get user vocabulary with definitions
+      // Get user vocabulary with definitions from stories
       const vocabularyQuery = `
-        SELECT VOCAB_ID, WORD, STORY_ID, CREATED_AT
-        FROM USER_VOCABULARY 
-        WHERE USER_ID = ? 
-        ORDER BY CREATED_AT DESC
+        SELECT DISTINCT s.VOCAB_WORDS, s.VOCAB_DEFINITIONS, s.CREATED_AT
+        FROM STORIES s
+        WHERE s.USER_ID = ? 
+        AND s.VOCAB_WORDS IS NOT NULL
+        AND s.VOCAB_DEFINITIONS IS NOT NULL
+        ORDER BY s.CREATED_AT DESC
       `;
 
       const vocabulary = await new Promise((resolve, reject) => {
@@ -47,13 +49,37 @@ export default async function handler(req, res) {
               console.error('Error fetching vocabulary:', err);
               reject(err);
             } else {
-              const formattedVocabulary = rows.map(row => ({
-                vocabId: row.VOCAB_ID,
-                word: row.WORD,
-                storyId: row.STORY_ID,
-                createdAt: row.CREATED_AT
-              }));
-              resolve(formattedVocabulary);
+              console.log('📚 Vocabulary with definitions query result:', rows.length, 'stories found');
+              
+              // Combine all vocabulary words and definitions from all stories
+              const allVocabulary = [];
+              
+              rows.forEach(row => {
+                try {
+                  const vocabWords = JSON.parse(row.VOCAB_WORDS);
+                  const vocabDefinitions = JSON.parse(row.VOCAB_DEFINITIONS);
+                  
+                  vocabWords.forEach(word => {
+                    const definition = vocabDefinitions[word.toLowerCase()];
+                    if (definition) {
+                      allVocabulary.push({
+                        word: word,
+                        definitions: definition,
+                        learnedDate: row.CREATED_AT
+                      });
+                    }
+                  });
+                } catch (e) {
+                  console.error('Error parsing vocabulary data:', e);
+                }
+              });
+              
+              // Remove duplicates based on word
+              const uniqueVocabulary = allVocabulary.filter((item, index, self) => 
+                index === self.findIndex(t => t.word.toLowerCase() === item.word.toLowerCase())
+              );
+              
+              resolve(uniqueVocabulary);
             }
           }
         });
