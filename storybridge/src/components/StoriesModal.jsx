@@ -39,7 +39,11 @@ const StoriesModal = ({ isOpen, onClose }) => {
 
       if (response.ok) {
         const result = await response.json();
+        console.log('📚 Stories fetched:', result.data?.length, 'stories');
+        console.log('📚 Stories data:', result.data);
         setStories(result.data || []);
+      } else {
+        console.error('❌ Stories fetch failed:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error fetching stories:', error);

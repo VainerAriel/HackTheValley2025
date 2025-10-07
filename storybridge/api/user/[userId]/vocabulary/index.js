@@ -1,4 +1,4 @@
-const { connection, setCorsHeaders } = require('../../_utils');
+const { connection, setCorsHeaders } = require('../../../_utils');
 
 export default async function handler(req, res) {
   setCorsHeaders(res);

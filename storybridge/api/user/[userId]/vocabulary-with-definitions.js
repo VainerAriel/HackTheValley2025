@@ -56,8 +56,29 @@ export default async function handler(req, res) {
               
               rows.forEach(row => {
                 try {
-                  const vocabWords = JSON.parse(row.VOCAB_WORDS);
-                  const vocabDefinitions = JSON.parse(row.VOCAB_DEFINITIONS);
+                  // Handle both JSON and comma-separated formats
+                  let vocabWords = [];
+                  let vocabDefinitions = {};
+                  
+                  // Parse VOCAB_WORDS
+                  if (row.VOCAB_WORDS) {
+                    try {
+                      vocabWords = JSON.parse(row.VOCAB_WORDS);
+                    } catch (e) {
+                      vocabWords = row.VOCAB_WORDS.split(',').map(word => word.trim()).filter(word => word);
+                    }
+                  }
+                  
+                  // Parse VOCAB_DEFINITIONS
+                  if (row.VOCAB_DEFINITIONS) {
+                    try {
+                      vocabDefinitions = JSON.parse(row.VOCAB_DEFINITIONS);
+                    } catch (e) {
+                      // If it's not JSON, skip this row
+                      console.log('Skipping row with non-JSON definitions');
+                      return;
+                    }
+                  }
                   
                   vocabWords.forEach(word => {
                     const definition = vocabDefinitions[word.toLowerCase()];
