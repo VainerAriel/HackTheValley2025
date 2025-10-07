@@ -28,7 +28,7 @@ export default async function handler(req, res) {
     });
 
     // Delete story
-    const deleteQuery = `DELETE FROM STORIES WHERE ID = ?`;
+    const deleteQuery = `DELETE FROM STORIES WHERE STORY_ID = ?`;
 
     await new Promise((resolve, reject) => {
       connection.execute({

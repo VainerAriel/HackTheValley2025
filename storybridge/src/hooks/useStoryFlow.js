@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 import { generateStory, generateStoryTitle } from '../services/gemini.js';
 import { getBatchWordDefinitions } from '../services/gemini.js';
 import { convertTextToSpeech } from '../services/elevenLabsService.js';
 import { saveStory } from '../services/storyService';
 
 export const useStoryFlow = () => {
+  const { getAccessTokenSilently } = useAuth0();
   const [step, setStep] = useState('form');
   const [formData, setFormData] = useState(null);
   const [story, setStory] = useState(null);
@@ -74,6 +76,14 @@ export const useStoryFlow = () => {
               console.log('Adding vocabulary words to user vocabulary list...', words);
               const API_BASE_URL = process.env.REACT_APP_API_URL || '';
               
+              // Get fresh token for vocabulary requests
+              const token = await getAccessTokenSilently({
+                authorizationParams: {
+                  audience: `https://api.storybites.vip`,
+                  scope: "openid profile email"
+                }
+              });
+
               // Add each vocabulary word to the user's vocabulary list
               for (const word of words) {
                 console.log('Adding word to vocabulary:', word);
@@ -81,7 +91,7 @@ export const useStoryFlow = () => {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    'Authorization': `Bearer ${token}`
                   },
                   body: JSON.stringify({
                     word: word,
