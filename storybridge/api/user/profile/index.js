@@ -70,6 +70,7 @@ export default async function handler(req, res) {
                     childAge: row.CHILD_AGE,
                     childPronouns: row.CHILD_PRONOUNS,
                     interests: interests,
+                    profileCompleted: row.PROFILE_COMPLETED || false,
                     createdAt: row.CREATED_AT,
                     updatedAt: row.UPDATED_AT
                   };
@@ -87,14 +88,14 @@ export default async function handler(req, res) {
 
       } else if (req.method === 'PUT') {
         // Update user profile
-        const { childName, childAge, childPronouns, interests } = req.body;
+        const { childName, childAge, childPronouns, interests, profileCompleted } = req.body;
         
-        console.log('Profile update data:', { childName, childAge, childPronouns, interests });
+        console.log('Profile update data:', { childName, childAge, childPronouns, interests, profileCompleted });
         
         // Update or insert user profile
         const upsertQuery = `
           MERGE INTO USER_PROFILES AS target
-          USING (SELECT ? AS USER_ID, ? AS CHILD_NAME, ? AS CHILD_AGE, ? AS CHILD_PRONOUNS, ? AS INTERESTS, CURRENT_TIMESTAMP() AS UPDATED_AT) AS source
+          USING (SELECT ? AS USER_ID, ? AS CHILD_NAME, ? AS CHILD_AGE, ? AS CHILD_PRONOUNS, ? AS INTERESTS, ? AS PROFILE_COMPLETED, CURRENT_TIMESTAMP() AS UPDATED_AT) AS source
           ON target.USER_ID = source.USER_ID
           WHEN MATCHED THEN
             UPDATE SET 
@@ -102,10 +103,11 @@ export default async function handler(req, res) {
               CHILD_AGE = source.CHILD_AGE,
               CHILD_PRONOUNS = source.CHILD_PRONOUNS,
               INTERESTS = source.INTERESTS,
+              PROFILE_COMPLETED = source.PROFILE_COMPLETED,
               UPDATED_AT = source.UPDATED_AT
           WHEN NOT MATCHED THEN
-            INSERT (USER_ID, CHILD_NAME, CHILD_AGE, CHILD_PRONOUNS, INTERESTS, CREATED_AT, UPDATED_AT)
-            VALUES (source.USER_ID, source.CHILD_NAME, source.CHILD_AGE, source.CHILD_PRONOUNS, source.INTERESTS, source.UPDATED_AT, source.UPDATED_AT)
+            INSERT (USER_ID, CHILD_NAME, CHILD_AGE, CHILD_PRONOUNS, INTERESTS, PROFILE_COMPLETED, CREATED_AT, UPDATED_AT)
+            VALUES (source.USER_ID, source.CHILD_NAME, source.CHILD_AGE, source.CHILD_PRONOUNS, source.INTERESTS, source.PROFILE_COMPLETED, source.UPDATED_AT, source.UPDATED_AT)
         `;
 
         await new Promise((resolve, reject) => {
@@ -116,7 +118,8 @@ export default async function handler(req, res) {
               childName || '', 
               childAge || '', 
               childPronouns || '', 
-              JSON.stringify(interests || [])
+              JSON.stringify(interests || []),
+              profileCompleted || false
             ],
             complete: (err, stmt, rows) => {
               if (err) {

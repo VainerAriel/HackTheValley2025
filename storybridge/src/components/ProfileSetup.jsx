@@ -185,10 +185,15 @@ const ProfileSetup = ({ onComplete }) => {
         setError('');
         setSaving(false);
         
-        // Redirect to home page after successful profile setup
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 1000);
+        // Call the onComplete callback to trigger app reload
+        if (onComplete) {
+          onComplete();
+        } else {
+          // Fallback: redirect to home page
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1000);
+        }
       } else {
         const errorData = await response.json();
         console.error('❌ Error response:', errorData);
