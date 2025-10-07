@@ -71,6 +71,13 @@ const ProfileSetup = ({ onComplete }) => {
       }
     } catch (error) {
       console.error('Error loading existing profile:', error);
+      
+      // Handle Auth0 token errors
+      if (error.message && error.message.includes('Missing Refresh Token')) {
+        console.log('🔄 Auth0 token error in ProfileSetup, redirecting to login...');
+        window.location.href = '/';
+        return;
+      }
     }
   };
 

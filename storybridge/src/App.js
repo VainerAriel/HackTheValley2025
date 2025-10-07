@@ -56,6 +56,15 @@ function App() {
       }
     } catch (error) {
       console.error('Error checking profile completion:', error);
+      
+      // Handle Auth0 token errors by redirecting to login
+      if (error.message && error.message.includes('Missing Refresh Token')) {
+        console.log('🔄 Auth0 token error detected, redirecting to login...');
+        // Clear any cached auth data and redirect to login
+        window.location.href = '/';
+        return;
+      }
+      
       setProfileCompleted(false);
     }
   };
