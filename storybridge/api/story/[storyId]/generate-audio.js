@@ -57,32 +57,26 @@ export default async function handler(req, res) {
     const storyText = storyResult[0].STORY_TEXT;
     console.log('Story text length:', storyText.length, 'characters');
     
-    // Check if sentence audio already exists (allow force regeneration with ?force=true)
-    const forceRegenerate = req.query.force === 'true';
-    if (!forceRegenerate) {
-      const audioCheckSql = `SELECT SENTENCE_AUDIO_DATA FROM stories WHERE STORY_ID = ? AND SENTENCE_AUDIO_DATA IS NOT NULL`;
-      const audioResult = await new Promise((resolve, reject) => {
-        connection.execute({
-          sqlText: audioCheckSql,
-          binds: [storyId],
-          complete: (err, stmt, rows) => {
-            if (err) {
-              console.error('Error checking audio:', err);
-              reject(err);
-            } else {
-              resolve(rows);
-            }
+    // Always regenerate to fix any corrupted data
+    console.log('🔄 Regenerating sentence audio (clearing any existing data)...');
+    
+    // Clear any existing sentence audio data first
+    const clearSql = `UPDATE stories SET SENTENCE_AUDIO_DATA = NULL WHERE STORY_ID = ?`;
+    await new Promise((resolve, reject) => {
+      connection.execute({
+        sqlText: clearSql,
+        binds: [storyId],
+        complete: (err, stmt, rows) => {
+          if (err) {
+            console.error('Error clearing existing audio:', err);
+            reject(err);
+          } else {
+            console.log('✅ Cleared existing sentence audio data');
+            resolve(rows);
           }
-        });
+        }
       });
-      
-      if (audioResult[0] && audioResult[0].SENTENCE_AUDIO_DATA) {
-        console.log('✅ Sentence audio already exists for this story');
-        return res.json({ success: true, message: 'Sentence audio already exists' });
-      }
-    } else {
-      console.log('🔄 Force regenerating sentence audio...');
-    }
+    });
     
     // Split story into sentences
     const sentences = splitIntoSentences(storyText);

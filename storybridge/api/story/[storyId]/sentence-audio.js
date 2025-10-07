@@ -53,8 +53,8 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Story not found' });
     }
     
-    if (!result[0].SENTENCE_AUDIO_DATA) {
-      console.log('❌ No sentence audio data found for story:', storyId);
+    if (!result[0].SENTENCE_AUDIO_DATA || result[0].SENTENCE_AUDIO_DATA.length < 10) {
+      console.log('❌ No valid sentence audio data found for story:', storyId);
       return res.status(404).json({ error: 'Sentence audio not found' });
     }
     
@@ -65,6 +65,12 @@ export default async function handler(req, res) {
     console.log('📄 Decoded JSON length:', decodedJson.length, 'characters');
     console.log('📄 Decoded JSON preview:', decodedJson.substring(0, 100));
     
+    // Check if decoded JSON is empty or too short
+    if (decodedJson.length < 10) {
+      console.log('❌ Decoded JSON is too short, treating as no data');
+      return res.status(404).json({ error: 'Sentence audio not found' });
+    }
+    
     let sentenceAudioData;
     try {
       sentenceAudioData = JSON.parse(decodedJson);
@@ -72,7 +78,7 @@ export default async function handler(req, res) {
     } catch (parseError) {
       console.error('❌ JSON parsing error:', parseError.message);
       console.error('❌ Invalid JSON content:', decodedJson);
-      return res.status(500).json({ error: 'Invalid sentence audio data format' });
+      return res.status(404).json({ error: 'Sentence audio not found' });
     }
     
     res.json({
