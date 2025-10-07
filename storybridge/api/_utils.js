@@ -13,19 +13,32 @@ const connection = snowflake.createConnection({
 });
 
 // Auth0 JWT verification setup
+const auth0Domain = process.env.AUTH0_DOMAIN || process.env.REACT_APP_AUTH0_DOMAIN;
+console.log('Auth0 Domain:', auth0Domain);
+
+if (!auth0Domain) {
+  console.error('AUTH0_DOMAIN or REACT_APP_AUTH0_DOMAIN environment variable is not set');
+}
+
 const client = jwksClient({
-  jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`
+  jwksUri: `https://${auth0Domain}/.well-known/jwks.json`
 });
 
 function getKey(header, callback) {
   client.getSigningKey(header.kid, (err, key) => {
     if (err) {
+      console.error('JWKS client error:', err);
       return callback(err);
     }
     if (!key) {
+      console.error('No signing key found for kid:', header.kid);
       return callback(new Error('No signing key found'));
     }
     const signingKey = key.publicKey || key.rsaPublicKey;
+    if (!signingKey) {
+      console.error('No public key found in signing key');
+      return callback(new Error('No public key found'));
+    }
     callback(null, signingKey);
   });
 }
@@ -41,7 +54,7 @@ const authenticateToken = (req, res, next) => {
 
   jwt.verify(token, getKey, {
     audience: `https://api.storybites.vip`,
-    issuer: `https://${process.env.REACT_APP_AUTH0_DOMAIN}/`,
+    issuer: `https://${auth0Domain}/`,
     algorithms: ['RS256']
   }, (err, decoded) => {
     if (err) {
