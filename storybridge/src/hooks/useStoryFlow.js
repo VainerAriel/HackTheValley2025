@@ -6,7 +6,6 @@ import { convertTextToSpeech } from '../services/elevenLabsService.js';
 import { saveStory } from '../services/storyService';
 
 export const useStoryFlow = () => {
-  const { getAccessTokenSilently } = useAuth0();
   const [step, setStep] = useState('form');
   const [formData, setFormData] = useState(null);
   const [story, setStory] = useState(null);
@@ -25,7 +24,7 @@ export const useStoryFlow = () => {
     setStep('form');
   };
 
-  const handleVocabularyGenerate = async (words, userId = null) => {
+  const handleVocabularyGenerate = async (words, userId = null, token = null) => {
     setVocabularyWords(words);
     setLoading(true);
     let savedStoryId = null;
@@ -76,13 +75,11 @@ export const useStoryFlow = () => {
               console.log('Adding vocabulary words to user vocabulary list...', words);
               const API_BASE_URL = process.env.REACT_APP_API_URL || '';
               
-              // Get fresh token for vocabulary requests
-              const token = await getAccessTokenSilently({
-                authorizationParams: {
-                  audience: `https://api.storybites.vip`,
-                  scope: "openid profile email"
-                }
-              });
+              // Use provided token or skip vocabulary addition if no token
+              if (!token) {
+                console.log('No token provided, skipping vocabulary word addition');
+                return;
+              }
 
               // Add each vocabulary word to the user's vocabulary list
               for (const word of words) {
@@ -115,27 +112,9 @@ export const useStoryFlow = () => {
           if (saveResult && saveResult.data && saveResult.data.id) {
             savedStoryId = saveResult.data.id;
             setStoryId(saveResult.data.id);
-            console.log('Generating and storing audio immediately for storyId:', saveResult.data.id);
-            try {
-              const API_BASE_URL = process.env.REACT_APP_API_URL || '';
-              const audioResponse = await fetch(`${API_BASE_URL}/api/story/${saveResult.data.id}/generate-audio`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-              });
-              
-              if (audioResponse.ok) {
-                console.log('Audio generated and stored immediately - ready for instant playback!');
-              } else {
-                console.log('Audio generation failed, will generate on-demand');
-              }
-            } catch (error) {
-              console.error('Error generating audio immediately:', error);
-              console.log('Will generate on-demand when user clicks play');
-            }
+            console.log('Story saved with ID:', saveResult.data.id);
           } else {
-            console.log('No storyId returned, audio will be generated on-demand');
+            console.log('No storyId returned from save operation');
           }
         } catch (error) {
           console.error('Error auto-saving story:', error);

@@ -15,17 +15,19 @@ export default async function handler(req, res) {
   try {
     const { storyId } = req.query;
     
-    // Connect to Snowflake
-    await new Promise((resolve, reject) => {
-      connection.connect((err, conn) => {
-        if (err) {
-          console.error('Snowflake connection failed:', err);
-          reject(err);
-        } else {
-          resolve(conn);
-        }
+    // Connect to Snowflake (only if not already connected)
+    if (!connection.isUp()) {
+      await new Promise((resolve, reject) => {
+        connection.connect((err, conn) => {
+          if (err) {
+            console.error('Snowflake connection failed:', err);
+            reject(err);
+          } else {
+            resolve(conn);
+          }
+        });
       });
-    });
+    }
 
     // Delete story
     const deleteQuery = `DELETE FROM STORIES WHERE STORY_ID = ?`;

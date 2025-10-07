@@ -9,7 +9,7 @@ import { useStoryFlow } from '../hooks/useStoryFlow';
 import storybitesLogo from '../images/storybites.png';
 
 const Dashboard = () => {
-  const { user } = useAuth0();
+  const { user, getAccessTokenSilently } = useAuth0();
   const navigate = useNavigate();
 
   const {
@@ -34,7 +34,15 @@ const Dashboard = () => {
     setIsGenerating(true);
     
     try {
-      const result = await handleVocabularyGenerate(words, user.sub);
+      // Get fresh token for vocabulary requests
+      const token = await getAccessTokenSilently({
+        authorizationParams: {
+          audience: `https://api.storybites.vip`,
+          scope: "openid profile email"
+        }
+      });
+      
+      const result = await handleVocabularyGenerate(words, user.sub, token);
       
       // Redirect to story viewer after generation
       if (result && result.storyId) {
