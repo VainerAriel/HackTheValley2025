@@ -24,7 +24,6 @@ const StoryView = () => {
       }
 
       try {
-        console.log('Loading story with ID:', storyId);
         const storyData = await getStoryById(storyId);
         
         if (!storyData) {
@@ -38,13 +37,9 @@ const StoryView = () => {
           return;
         }
 
-        console.log('StoryView - Full story data from database:', storyData);
-        console.log('StoryView - vocabularyWords field:', storyData.vocabularyWords);
-        console.log('StoryView - vocabularyDefinitions field:', storyData.vocabularyDefinitions);
         setStory(storyData);
         
         // Preload audio if it exists
-        console.log('Preloading audio for story...');
         setAudioPreloadStatus('loading');
         try {
           const API_BASE_URL = process.env.REACT_APP_API_URL || '';
@@ -58,16 +53,12 @@ const StoryView = () => {
           
           if (audioResponse.ok) {
             const audioBlob = await audioResponse.blob();
-            console.log('Audio preloaded from database - ready for instant playback!');
-            console.log('Audio size:', audioBlob.size, 'bytes');
             setPreloadedAudio(audioBlob);
             setAudioPreloadStatus('loaded');
           } else {
-            console.log('No audio found in database - will generate on-demand');
             setAudioPreloadStatus('not-found');
           }
         } catch (audioError) {
-          console.log('Audio preload failed - will generate on-demand:', audioError.message);
           setAudioPreloadStatus('not-found');
         }
       } catch (error) {
@@ -145,9 +136,6 @@ const StoryView = () => {
     );
   }
 
-  console.log('StoryView - story data:', story);
-  console.log('StoryView - vocabulary words:', story.vocabularyWords);
-  console.log('StoryView - processed vocab words:', story.vocabularyWords);
 
       return (
         <div className="min-h-screen bg-cream-100">

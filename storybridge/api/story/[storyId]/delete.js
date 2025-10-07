@@ -41,7 +41,6 @@ module.exports = async function handler(req, res) {
             console.error('Error deleting vocabulary words:', err);
             reject(err);
           } else {
-            console.log('✅ Deleted vocabulary words for story:', storyId);
             resolve(rows);
           }
         }
@@ -60,7 +59,6 @@ module.exports = async function handler(req, res) {
             console.error('Error deleting story:', err);
             reject(err);
           } else {
-            console.log('✅ Deleted story:', storyId);
             resolve(rows);
           }
         }

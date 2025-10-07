@@ -33,8 +33,6 @@ const convertTextToSpeech = async (text) => {
       }
     };
 
-    console.log('Generating new audio for text (length:', text.length, 'chars) using Flash model for cost savings');
-    console.log('Estimated credits needed:', Math.ceil(text.length * 0.5), 'credits (Flash model: 0.5 per character)');
 
     const req = https.request(options, (res) => {
       if (res.statusCode !== 200) {
@@ -50,7 +48,6 @@ const convertTextToSpeech = async (text) => {
       res.on('end', () => {
         const audioBuffer = Buffer.concat(chunks);
         const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
-        console.log('Audio generated successfully');
         resolve(audioBlob);
       });
     });

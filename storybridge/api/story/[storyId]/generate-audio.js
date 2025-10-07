@@ -17,7 +17,6 @@ export default async function handler(req, res) {
 
   try {
     const { storyId } = req.query;
-    console.log('🎵 Generating sentence-based audio for story:', storyId);
     
     // Connect to Snowflake (only if not already connected)
     if (!connection.isUp()) {
@@ -55,10 +54,8 @@ export default async function handler(req, res) {
     }
     
     const storyText = storyResult[0].STORY_TEXT;
-    console.log('Story text length:', storyText.length, 'characters');
     
     // Always regenerate to fix any corrupted data
-    console.log('🔄 Regenerating sentence audio (clearing any existing data)...');
     
     // Clear any existing sentence audio data first
     const clearSql = `UPDATE stories SET SENTENCE_AUDIO_DATA = NULL WHERE STORY_ID = ?`;
@@ -71,7 +68,6 @@ export default async function handler(req, res) {
             console.error('Error clearing existing audio:', err);
             reject(err);
           } else {
-            console.log('✅ Cleared existing sentence audio data');
             resolve(rows);
           }
         }
@@ -80,7 +76,6 @@ export default async function handler(req, res) {
     
     // Split story into sentences
     const sentences = splitIntoSentences(storyText);
-    console.log('Split into', sentences.length, 'sentences');
     
     // Generate combined audio using ElevenLabs (this will use credits)
     const combinedAudioBlob = await convertTextToSpeech(storyText);
@@ -102,7 +97,6 @@ export default async function handler(req, res) {
     
     // Store sentence audio data as JSON string
     const jsonString = JSON.stringify(sentenceAudioData);
-    console.log('💾 Storing sentence audio data, JSON length:', jsonString.length);
     
     // Use a more robust approach - store as base64 encoded JSON to avoid SQL injection and character issues
     const base64Json = Buffer.from(jsonString, 'utf8').toString('base64');
@@ -123,8 +117,6 @@ export default async function handler(req, res) {
       });
     });
     
-    console.log('✅ Sentence audio data stored successfully');
-    console.log('✅ Sentence audio generated and stored successfully, combined size:', combinedAudioBuffer.length, 'bytes');
     
     res.json({ 
       success: true, 
@@ -133,7 +125,7 @@ export default async function handler(req, res) {
     });
     
   } catch (error) {
-    console.error('❌ Error generating sentence audio:', error);
+    console.error('Error generating sentence audio:', error);
     res.status(500).json({ error: error.message });
   }
 }

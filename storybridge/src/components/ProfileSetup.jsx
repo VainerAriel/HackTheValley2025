@@ -48,7 +48,6 @@ const ProfileSetup = ({ onComplete }) => {
       
       if (response.ok) {
         const result = await response.json();
-        console.log('📋 Loaded profile data:', result.data);
         
         const interests = result.data.interests || [];
         const commonInterestsList = ['Adventure', 'Animals', 'Magic', 'Superheroes', 'Friendship', 'Nature', 'Space', 'Art', 'Music'];
@@ -63,8 +62,6 @@ const ProfileSetup = ({ onComplete }) => {
           interests: interests
         };
         
-        console.log('📋 Setting profile data:', newProfileData);
-        console.log('📋 Setting custom interests:', customInterests);
         
         setProfileData(newProfileData);
         setCustomInterests(customInterests);
@@ -74,7 +71,6 @@ const ProfileSetup = ({ onComplete }) => {
       
       // Handle Auth0 token errors
       if (error.message && error.message.includes('Missing Refresh Token')) {
-        console.log('🔄 Auth0 token error in ProfileSetup, logging out user...');
         logout({ 
           logoutParams: { 
             returnTo: window.location.origin 
@@ -192,16 +188,13 @@ const ProfileSetup = ({ onComplete }) => {
 
       if (response.ok) {
         const result = await response.json();
-        console.log('✅ Profile saved successfully:', result);
         setError('');
         setSaving(false);
         
         // Call the onComplete callback to trigger app reload
         if (onComplete) {
-          console.log('🔄 Calling onComplete callback');
           onComplete();
         } else {
-          console.log('🔄 No onComplete callback, using fallback redirect');
           // Fallback: redirect to home page
           setTimeout(() => {
             window.location.href = '/';

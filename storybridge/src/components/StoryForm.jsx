@@ -43,7 +43,6 @@ function StoryForm({ onGenerateStory, loading }) {
       
       if (response.ok) {
         const result = await response.json();
-        console.log('StoryForm loaded profile data:', result.data);
         
         const newProfileData = {
           childName: result.data.childName || '',

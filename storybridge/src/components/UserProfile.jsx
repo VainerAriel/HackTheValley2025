@@ -51,7 +51,6 @@ const UserProfile = () => {
       
       if (response.ok) {
         const result = await response.json();
-        console.log('UserProfile loaded data:', result.data);
         
         const interests = result.data.interests || [];
         const commonInterestsList = ['Adventure', 'Animals', 'Magic', 'Superheroes', 'Friendship', 'Nature', 'Space', 'Art', 'Music'];
@@ -67,8 +66,6 @@ const UserProfile = () => {
           interests: interests
         };
         
-        console.log('UserProfile setting data:', newProfileData);
-        console.log('UserProfile custom interests:', customInterests);
         
         setProfileData(newProfileData);
         setCustomInterests(customInterests);

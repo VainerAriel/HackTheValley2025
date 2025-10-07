@@ -440,7 +440,6 @@ Provide ONLY valid JSON. No explanations, no markdown, no extra text.`;
     // Remove markdown code blocks if present
     responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
     
-    console.log('Raw response from Gemini:', responseText);
     
     let batchResult;
     try {
@@ -465,7 +464,6 @@ Provide ONLY valid JSON. No explanations, no markdown, no extra text.`;
             synonyms: Array.isArray(def.synonyms) ? def.synonyms : []
           };
           
-          console.log('Processed definition:', cleanDef);
           definitionsMap[def.word.toLowerCase()] = cleanDef;
         }
       });

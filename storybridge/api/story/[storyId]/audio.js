@@ -14,7 +14,6 @@ export default async function handler(req, res) {
 
   try {
     const { storyId } = req.query;
-    console.log('🔍 Retrieving audio for story:', storyId);
     
     // Connect to Snowflake (only if not already connected)
     if (!connection.isUp()) {
@@ -50,15 +49,12 @@ export default async function handler(req, res) {
     if (sentenceResult[0] && sentenceResult[0].SENTENCE_AUDIO_DATA && sentenceResult[0].SENTENCE_AUDIO_DATA.length > 10) {
       // Extract combined audio from sentence data
       const decodedJson = Buffer.from(sentenceResult[0].SENTENCE_AUDIO_DATA, 'base64').toString('utf8');
-      console.log('📄 Audio endpoint - Decoded JSON length:', decodedJson.length, 'characters');
-      console.log('📄 Audio endpoint - Decoded JSON preview:', decodedJson.substring(0, 100));
       
       // Check if decoded JSON is valid
       if (decodedJson.length > 10) {
         let sentenceAudioData;
         try {
           sentenceAudioData = JSON.parse(decodedJson);
-          console.log('✅ Audio endpoint - Parsed sentence audio data successfully');
           
           if (sentenceAudioData && sentenceAudioData.combinedAudio) {
             const audioBuffer = Buffer.from(sentenceAudioData.combinedAudio, 'base64');
@@ -80,7 +76,6 @@ export default async function handler(req, res) {
           // Fall through to old audio data
         }
       } else {
-        console.log('❌ Audio endpoint - Decoded JSON too short, skipping sentence audio');
       }
     }
     

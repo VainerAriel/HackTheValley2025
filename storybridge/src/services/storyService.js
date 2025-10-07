@@ -2,8 +2,6 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 
 export const saveStory = async (storyData) => {
   try {
-    console.log('Sending story data to API:', storyData);
-    console.log('API URL:', `${API_BASE_URL}/api/stories`);
     
     const response = await fetch(`${API_BASE_URL}/api/stories`, {
       method: 'POST',
@@ -13,8 +11,6 @@ export const saveStory = async (storyData) => {
       body: JSON.stringify(storyData),
     });
 
-    console.log('Response status:', response.status);
-    console.log('Response ok:', response.ok);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -23,7 +19,6 @@ export const saveStory = async (storyData) => {
     }
 
     const result = await response.json();
-    console.log('Save result:', result);
     return result;
   } catch (error) {
     console.error('Error saving story:', error);

@@ -90,7 +90,6 @@ export default async function handler(req, res) {
         // Update user profile
         const { childName, childAge, childPronouns, interests, profileCompleted } = req.body;
         
-        console.log('Profile update data:', { childName, childAge, childPronouns, interests, profileCompleted });
         
         // Update or insert user profile
         const upsertQuery = `
@@ -132,7 +131,6 @@ export default async function handler(req, res) {
           });
         });
 
-        console.log('✅ Profile updated successfully for user:', userId);
         res.status(200).json({ 
           success: true, 
           message: 'Profile updated successfully' 

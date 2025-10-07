@@ -14,7 +14,6 @@ module.exports = async function handler(req, res) {
 
   try {
     const { userId } = req.query;
-    console.log('📚 Fetching vocabulary with definitions for user:', userId);
       
       // Connect to Snowflake (only if not already connected)
       if (!connection.isUp()) {
@@ -48,7 +47,6 @@ module.exports = async function handler(req, res) {
               console.error('Error fetching vocabulary:', err);
               reject(err);
             } else {
-              console.log('📚 Vocabulary with definitions query result:', rows.length, 'entries found');
               
               // Process vocabulary words from user_vocabulary table
               const allVocabulary = [];
@@ -61,7 +59,6 @@ module.exports = async function handler(req, res) {
                     try {
                       vocabDefinitions = JSON.parse(row.VOCAB_DEFINITIONS);
                     } catch (e) {
-                      console.log('Could not parse definitions for story');
                     }
                   }
                   

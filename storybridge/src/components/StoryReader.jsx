@@ -85,18 +85,13 @@ const StoryReader = ({
   // Load vocabulary definitions
   useEffect(() => {
     const loadDefinitions = async () => {
-      console.log('Loading definitions for vocabulary words:', vocabularyWords);
-      console.log('Stored vocab definitions:', storedVocabDefinitions);
       
       setLoadingDefinitions(true);
       try {
         if (Object.keys(storedVocabDefinitions).length > 0) {
-          console.log('Using stored vocabulary definitions');
           setWordDefinitions(storedVocabDefinitions);
         } else if (vocabularyWords.length > 0 && age) {
-          console.log('Fetching definitions from API in batch...');
           const definitionsMap = await getBatchWordDefinitions(vocabularyWords, age);
-          console.log('Word definitions loaded from API:', definitionsMap);
           setWordDefinitions(definitionsMap);
         }
       } catch (error) {
@@ -192,7 +187,6 @@ const StoryReader = ({
   const loadSentenceAudioData = async (storyId) => {
     try {
       const API_BASE_URL = process.env.REACT_APP_API_URL || '';
-      console.log('Loading sentence audio data for story:', storyId);
       const response = await fetch(`${API_BASE_URL}/api/story/${storyId}/sentence-audio?t=${Date.now()}`, {
         cache: 'no-cache',
         headers: {
@@ -204,10 +198,8 @@ const StoryReader = ({
       if (response.ok) {
         const data = await response.json();
         setSentenceAudioData(data.data);
-        console.log('Sentence audio data loaded:', data.data.sentenceCount, 'sentences');
         return data.data;
       } else {
-        console.log('Sentence audio not found (404)');
         return null;
       }
     } catch (error) {
@@ -219,7 +211,6 @@ const StoryReader = ({
   // Generate sentence audio segments using word timing estimation
   const generateSentenceAudioSegments = async (sentenceData) => {
     try {
-      console.log('Generating precise sentence segments using word timing estimation');
       
       // Convert base64 combined audio to blob
       const combinedAudioBlob = new Blob([
@@ -236,7 +227,6 @@ const StoryReader = ({
           const totalDuration = audio.duration;
           URL.revokeObjectURL(audioUrl);
           
-          console.log(`Total audio duration: ${totalDuration.toFixed(2)}s`);
           
           // Calculate precise timing for each sentence using word estimation
           const segments = [];
@@ -246,7 +236,6 @@ const StoryReader = ({
           const totalCharacters = sentenceData.sentences.reduce((total, sentence) => total + sentence.length, 0);
           const timePerCharacter = totalDuration / totalCharacters;
           
-          console.log(`Total characters: ${totalCharacters}, Time per character: ${timePerCharacter.toFixed(3)}s`);
           
           sentenceData.sentences.forEach((sentence, index) => {
             // Use proportional duration based on character count
@@ -262,13 +251,11 @@ const StoryReader = ({
             segments.push(segment);
             currentTime += estimatedDuration;
             
-            console.log(`Sentence ${index}: "${sentence.substring(0, 30)}..." (${estimatedDuration.toFixed(2)}s at ${currentTime.toFixed(2)}s)`);
           });
           
           // No timing adjustment needed with proportional distribution
           
           setSentenceAudioSegments(segments);
-          console.log(`Generated ${segments.length} precise sentence segments`);
           resolve(segments);
         });
         
@@ -409,13 +396,11 @@ const StoryReader = ({
       URL.revokeObjectURL(audioRef.current.src);
     }
     
-    console.log('Audio stopped and state reset');
   };
 
   // Stop any currently playing audio before starting new audio
   const stopCurrentAudio = () => {
     if (audioRef.current && !audioRef.current.paused) {
-      console.log('Stopping current audio before starting new audio');
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
@@ -479,9 +464,7 @@ const StoryReader = ({
     await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
-      console.log('Attempting to play fallback audio...');
       await audio.play();
-      console.log('Fallback audio is now playing!');
     } catch (error) {
       console.error('Error playing audio:', error);
       setPlayError('Failed to play audio');
@@ -513,20 +496,17 @@ const StoryReader = ({
       currentSentenceIndex += sectionSentences.length;
     });
     
-    console.log('Total sections found:', sectionStarts.length);
     return sectionStarts;
   };
 
   // Play a specific sentence with provided segments - avoids state timing issues
   const playSentenceBasedAudioWithSegments = async (startSentenceIndex = 0, audioData, segments) => {
     if (!audioData || !segments.length) {
-      console.log('No sentence audio data or segments available');
       return;
     }
     
     stopCurrentAudio(); // Stop any currently playing audio
     
-    console.log(`Playing sentence ${startSentenceIndex} with provided segments`);
     
     try {
       setIsPlaying(true);
@@ -536,7 +516,6 @@ const StoryReader = ({
       // Use the same global sentence index as the rendering system
       setCurrentSentence(startSentenceIndex);
       setCurrentPlayingSentence(startSentenceIndex);
-      console.log(`Highlighting sentence ${startSentenceIndex}: "${segments[startSentenceIndex]?.sentence.substring(0, 50)}..."`);
       
       // Highlight all words in this sentence
       highlightWordsInSentenceWithSegments(startSentenceIndex, segments);
@@ -557,7 +536,6 @@ const StoryReader = ({
       if (startSegment) {
         // Add systematic offset to account for timing mismatch
         const offsetTime = Math.max(0, startSegment.startTime - 1.0);
-        console.log(`TIMING ISSUE: Playing sentence ${startSentenceIndex} at ${offsetTime.toFixed(2)}s (was ${startSegment.startTime.toFixed(2)}s): "${startSegment.sentence.substring(0, 50)}..."`);
         audio.currentTime = offsetTime;
         await new Promise(resolve => setTimeout(resolve, 50));
       }
@@ -589,44 +567,35 @@ const StoryReader = ({
       await new Promise(resolve => setTimeout(resolve, 100));
       
       // Play the audio
-      console.log('Attempting to play audio...');
       await audio.play();
-      console.log('Audio is now playing!');
       
       // Simple approach: just highlight the sentence we're playing and stay there
-      console.log(`Staying on sentence ${startSentenceIndex} until audio moves naturally`);
       
       // Set up simple highlighting that only updates when we actually move to a different sentence
       let lastHighlightedSentence = startSentenceIndex;
       const updateHighlighting = () => {
         const currentTime = audio.currentTime;
         
-        console.log(`⏰ Audio time: ${currentTime.toFixed(2)}s, Currently highlighting: ${lastHighlightedSentence}`);
         
         // Find which sentence should be highlighted based on audio time
         let currentSentenceIndex = -1;
         for (let i = 0; i < segments.length; i++) {
           const segment = segments[i];
-          console.log(`Sentence ${i}: ${segment.startTime.toFixed(2)}s - ${segment.endTime.toFixed(2)}s`);
           
           if (currentTime >= segment.startTime && currentTime < segment.endTime) {
             currentSentenceIndex = i;
-            console.log(`Audio time ${currentTime.toFixed(2)}s falls in sentence ${i}`);
             break;
           }
         }
         
         // Only update if we've actually moved to a different sentence
         if (currentSentenceIndex !== -1 && currentSentenceIndex !== lastHighlightedSentence) {
-          console.log(`Audio naturally moved to sentence ${currentSentenceIndex}: "${segments[currentSentenceIndex]?.sentence.substring(0, 50)}..."`);
           setCurrentSentence(currentSentenceIndex);
           setCurrentPlayingSentence(currentSentenceIndex);
           highlightWordsInSentenceWithSegments(currentSentenceIndex, segments);
           lastHighlightedSentence = currentSentenceIndex;
         } else if (currentSentenceIndex === -1) {
-          console.log(`No sentence found for audio time ${currentTime.toFixed(2)}s`);
         } else {
-          console.log(`Staying on sentence ${currentSentenceIndex} (no change)`);
         }
       };
       
@@ -643,7 +612,6 @@ const StoryReader = ({
         setCurrentPlayingSentence(-1);
         setCurrentSentence(-1);
         setHighlightedWords(new Set());
-        console.log(`Finished playing sentence ${startSentenceIndex}`);
       });
       
       audio.addEventListener('error', () => {
@@ -666,13 +634,11 @@ const StoryReader = ({
   // Play a specific sentence - simple approach (uses state)
   const playSentenceBasedAudio = async (startSentenceIndex = 0) => {
     if (!sentenceAudioData || !sentenceAudioSegments.length) {
-      console.log('No sentence audio data available');
       return;
     }
     
     stopCurrentAudio(); // Stop any currently playing audio
     
-    console.log(`Playing sentence ${startSentenceIndex}`);
     
     try {
       setIsPlaying(true);
@@ -682,7 +648,6 @@ const StoryReader = ({
       // Use the same global sentence index as the rendering system
       setCurrentSentence(startSentenceIndex);
       setCurrentPlayingSentence(startSentenceIndex);
-      console.log(`Highlighting sentence ${startSentenceIndex}: "${sentenceAudioSegments[startSentenceIndex]?.sentence.substring(0, 50)}..."`);
       
       // Highlight all words in this sentence
       highlightWordsInSentence(startSentenceIndex);
@@ -701,7 +666,6 @@ const StoryReader = ({
       // Set start time to the beginning of the specified sentence
       const startSegment = sentenceAudioSegments[startSentenceIndex];
       if (startSegment) {
-        console.log(`⏰ Starting at time ${startSegment.startTime}s for sentence: "${startSegment.sentence.substring(0, 50)}..."`);
         audio.currentTime = startSegment.startTime;
       }
       
@@ -732,44 +696,35 @@ const StoryReader = ({
       await new Promise(resolve => setTimeout(resolve, 100));
       
       // Play the audio
-      console.log('Attempting to play audio...');
       await audio.play();
-      console.log('Audio is now playing!');
       
       // Simple approach: just highlight the sentence we're playing and stay there
-      console.log(`Staying on sentence ${startSentenceIndex} until audio moves naturally`);
       
       // Set up simple highlighting that only updates when we actually move to a different sentence
       let lastHighlightedSentence = startSentenceIndex;
       const updateHighlighting = () => {
         const currentTime = audio.currentTime;
         
-        console.log(`⏰ Audio time: ${currentTime.toFixed(2)}s, Currently highlighting: ${lastHighlightedSentence}`);
         
         // Find which sentence should be highlighted based on audio time
         let currentSentenceIndex = -1;
         for (let i = 0; i < sentenceAudioSegments.length; i++) {
           const segment = sentenceAudioSegments[i];
-          console.log(`Sentence ${i}: ${segment.startTime.toFixed(2)}s - ${segment.endTime.toFixed(2)}s`);
           
           if (currentTime >= segment.startTime && currentTime < segment.endTime) {
             currentSentenceIndex = i;
-            console.log(`Audio time ${currentTime.toFixed(2)}s falls in sentence ${i}`);
             break;
           }
         }
         
         // Only update if we've actually moved to a different sentence
         if (currentSentenceIndex !== -1 && currentSentenceIndex !== lastHighlightedSentence) {
-          console.log(`Audio naturally moved to sentence ${currentSentenceIndex}: "${sentenceAudioSegments[currentSentenceIndex]?.sentence.substring(0, 50)}..."`);
           setCurrentSentence(currentSentenceIndex);
           setCurrentPlayingSentence(currentSentenceIndex);
           highlightWordsInSentence(currentSentenceIndex);
           lastHighlightedSentence = currentSentenceIndex;
         } else if (currentSentenceIndex === -1) {
-          console.log(`No sentence found for audio time ${currentTime.toFixed(2)}s`);
         } else {
-          console.log(`Staying on sentence ${currentSentenceIndex} (no change)`);
         }
       };
       
@@ -786,7 +741,6 @@ const StoryReader = ({
         setCurrentPlayingSentence(-1);
         setCurrentSentence(-1);
         setHighlightedWords(new Set());
-        console.log(`Finished playing sentence ${startSentenceIndex}`);
       });
       
       audio.addEventListener('error', () => {
@@ -809,7 +763,6 @@ const StoryReader = ({
   // Simple word highlighting - highlight all words in a sentence (uses state)
   const highlightWordsInSentence = (sentenceIndex) => {
     if (!sentenceAudioSegments[sentenceIndex]) {
-      console.log(`No audio segment found for sentence ${sentenceIndex}`);
       return;
     }
     
@@ -817,22 +770,17 @@ const StoryReader = ({
     const words = segment.sentence.trim().split(/\s+/);
     const newHighlightedWords = new Set();
     
-    console.log(`Highlighting words for sentence ${sentenceIndex}: "${segment.sentence.substring(0, 50)}..."`);
-    console.log(`Words: ${words.length} words`);
     
     words.forEach((word, wordIndex) => {
       newHighlightedWords.add(`${sentenceIndex}-${wordIndex}`);
-      console.log(`Word ${wordIndex}: "${word}" -> key: ${sentenceIndex}-${wordIndex}`);
     });
     
-    console.log(`Setting highlighted words:`, Array.from(newHighlightedWords));
     setHighlightedWords(newHighlightedWords);
   };
 
   // Simple word highlighting - highlight all words in a sentence (uses provided segments)
   const highlightWordsInSentenceWithSegments = (sentenceIndex, segments) => {
     if (!segments[sentenceIndex]) {
-      console.log(`No audio segment found for sentence ${sentenceIndex}`);
       return;
     }
     
@@ -840,21 +788,16 @@ const StoryReader = ({
     const words = segment.sentence.trim().split(/\s+/);
     const newHighlightedWords = new Set();
     
-    console.log(`Highlighting words for sentence ${sentenceIndex}: "${segment.sentence.substring(0, 50)}..."`);
-    console.log(`Words: ${words.length} words`);
     
     words.forEach((word, wordIndex) => {
       newHighlightedWords.add(`${sentenceIndex}-${wordIndex}`);
-      console.log(`Word ${wordIndex}: "${word}" -> key: ${sentenceIndex}-${wordIndex}`);
     });
     
-    console.log(`Setting highlighted words:`, Array.from(newHighlightedWords));
     setHighlightedWords(newHighlightedWords);
   };
 
   // Play audio from a specific sentence (for individual sentence replay)
   const playFromSentence = async (sentenceIndex) => {
-    console.log(`SECTION CLICK: Starting sentence ${sentenceIndex}`);
     
     // If we have sentence audio data and segments, use the segments-based function
     if (sentenceAudioData && sentenceAudioSegments.length > 0) {
@@ -878,12 +821,10 @@ const StoryReader = ({
       if (storyId) {
         const sentenceData = await loadSentenceAudioData(storyId);
         if (sentenceData) {
-          console.log('Using sentence audio data');
           setSentenceAudioStatus('ready');
           const segments = await generateSentenceAudioSegments(sentenceData);
           
           // Start sentence-based playback from the beginning (first sentence)
-          console.log('Starting story playback from first sentence (index 0)');
           await playSentenceBasedAudioWithSegments(0, sentenceData, segments);
           return;
         }
@@ -891,7 +832,6 @@ const StoryReader = ({
       
       // Fallback to old audio system
       if (preloadedAudio && audioPreloadStatus === 'loaded') {
-        console.log('Using preloaded audio - INSTANT PLAYBACK!');
         setAudioStatus('ready');
         setAudioSource('stored');
         await playAudioWithHighlighting(preloadedAudio);
@@ -902,7 +842,6 @@ const StoryReader = ({
       if (storyId) {
         try {
           const API_BASE_URL = process.env.REACT_APP_API_URL || '';
-          console.log('Attempting to load stored audio for story ID:', storyId);
           const response = await fetch(`${API_BASE_URL}/api/story/${storyId}/audio?t=${Date.now()}`, {
             cache: 'no-cache',
             headers: {
@@ -912,22 +851,16 @@ const StoryReader = ({
           });
           if (response.ok) {
             const audioBlob = await response.blob();
-            console.log('Stored audio loaded from database - NO API CREDITS USED!');
             setAudioStatus('ready');
             setAudioSource('stored');
             await playAudioWithHighlighting(audioBlob);
             return;
           } else {
-            console.log('Stored audio not found (404), will generate and store audio');
           }
         } catch (error) {
-          console.log('Error loading stored audio:', error.message);
-          console.log('Will generate and store audio as fallback');
         }
         
         try {
-          console.log('Generating and storing sentence audio in database - THIS WILL USE API CREDITS');
-          console.log('Using Flash model for cost savings (0.5 credits per character)');
           const API_BASE_URL = process.env.REACT_APP_API_URL || '';
           const generateResponse = await fetch(`${API_BASE_URL}/api/story/${storyId}/generate-audio`, {
             method: 'POST',
@@ -937,14 +870,12 @@ const StoryReader = ({
           });
           
           if (generateResponse.ok) {
-            console.log('Sentence audio generated and stored in database');
             
             // Load the newly generated sentence audio
             const sentenceData = await loadSentenceAudioData(storyId);
             if (sentenceData) {
               setSentenceAudioStatus('ready');
               const segments = await generateSentenceAudioSegments(sentenceData);
-              console.log('Starting newly generated audio from first sentence (index 0)');
               await playSentenceBasedAudioWithSegments(0, sentenceData, segments);
               return;
             }
@@ -954,8 +885,6 @@ const StoryReader = ({
         }
       }
       
-      console.log('Generating audio locally - THIS WILL USE API CREDITS');
-      console.log('Using Flash model for cost savings (0.5 credits per character)');
       const audioBlob = await convertTextToSpeech(story);
       setAudioStatus('ready');
       setAudioSource('generated');
@@ -992,9 +921,6 @@ const StoryReader = ({
         
         // Debug logging
         if (isSentenceActive || isCurrentlyPlaying) {
-          console.log(`RENDERING: Paragraph ${paragraphIndex}, Sentence ${sentenceIndex}, Global Index ${currentGlobalIndex}`);
-          console.log(`Sentence: "${sentence.substring(0, 50)}..."`);
-          console.log(`Current sentence state: ${currentSentence}, Playing: ${currentPlayingSentence}`);
         }
         
         const result = (

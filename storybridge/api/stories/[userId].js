@@ -14,7 +14,6 @@ export default async function handler(req, res) {
 
   try {
     const { userId } = req.query;
-    console.log('📚 Fetching stories for user:', userId);
     
     // Connect to Snowflake (only if not already connected)
     if (!connection.isUp()) {
@@ -47,7 +46,6 @@ export default async function handler(req, res) {
             console.error('Error fetching stories:', err);
             reject(err);
           } else {
-            console.log('📚 Stories query result:', rows.length, 'stories found for user:', userId);
             const formattedStories = rows.map(row => {
               // Handle vocabulary words - could be JSON array or comma-separated string
               let vocabularyWords = [];

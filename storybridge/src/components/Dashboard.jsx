@@ -30,7 +30,6 @@ const Dashboard = () => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleVocabularyGenerateWithSave = async (words) => {
-    console.log('Generating story with save...', { words, userId: user.sub });
     setIsGenerating(true);
     
     try {
@@ -38,7 +37,6 @@ const Dashboard = () => {
       
       // Redirect to story viewer after generation
       if (result && result.storyId) {
-        console.log('Redirecting to story viewer:', result.storyId);
         navigate(`/story/${result.storyId}`);
       }
     } catch (error) {

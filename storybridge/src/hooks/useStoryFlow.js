@@ -37,26 +37,20 @@ export const useStoryFlow = () => {
       setStory(generatedStory);
       
       // Generate a title for the story
-      console.log('Generating story title...');
       const title = await generateStoryTitle(generatedStory);
       setStoryTitle(title);
-      console.log('Generated title:', title);
       
       setStep('story');
       
       // Save the story if userId is provided
       if (userId && generatedStory && formData) {
         try {
-          console.log('Auto-saving story after generation...');
           
           // Fetch vocabulary definitions in a single batch call
-          console.log('Fetching vocabulary definitions in batch...');
           const vocabDefinitions = await getBatchWordDefinitions(words, formData.age);
-          console.log('Vocabulary definitions fetched:', vocabDefinitions);
           setVocabularyDefinitions(vocabDefinitions);
           
           // Save story first to get storyId
-          console.log('Saving story to database...');
           const saveResult = await saveStory({
             userId: userId,
             storyText: generatedStory,
@@ -67,19 +61,16 @@ export const useStoryFlow = () => {
             age: formData.age,
             vocabDefinitions: vocabDefinitions
           });
-          console.log('Story auto-saved successfully with vocabulary definitions!', saveResult);
           
           // Add vocabulary words to user's vocabulary list
           if (saveResult && saveResult.data && saveResult.data.id) {
             try {
-              console.log('Adding vocabulary words to user vocabulary list...', words);
               const API_BASE_URL = process.env.REACT_APP_API_URL || '';
               
               // Add vocabulary words to user's vocabulary list
 
               // Add each vocabulary word to the user's vocabulary list
               for (const word of words) {
-                console.log('Adding word to vocabulary:', word);
                 const response = await fetch(`${API_BASE_URL}/api/user/${userId}/vocabulary`, {
                   method: 'POST',
                   headers: {
@@ -94,10 +85,8 @@ export const useStoryFlow = () => {
                 if (!response.ok) {
                   console.error('Failed to add vocabulary word:', word, response.status, response.statusText);
                 } else {
-                  console.log('✅ Added vocabulary word:', word);
                 }
               }
-              console.log('✅ All vocabulary words processed');
             } catch (error) {
               console.error('Error adding vocabulary words to user list:', error);
             }
@@ -107,9 +96,7 @@ export const useStoryFlow = () => {
           if (saveResult && saveResult.data && saveResult.data.id) {
             savedStoryId = saveResult.data.id;
             setStoryId(saveResult.data.id);
-            console.log('Story saved with ID:', saveResult.data.id);
           } else {
-            console.log('No storyId returned from save operation');
           }
         } catch (error) {
           console.error('Error auto-saving story:', error);

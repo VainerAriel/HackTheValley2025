@@ -30,7 +30,6 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'GET') {
-      console.log('📖 Fetching vocabulary for user:', userId);
       
       // Get user vocabulary
       const selectQuery = `
@@ -49,7 +48,6 @@ export default async function handler(req, res) {
               console.error('Error fetching vocabulary:', err);
               reject(err);
             } else {
-              console.log('📖 Vocabulary query result:', rows.length, 'words found');
               const formattedVocabulary = rows.map(row => ({
                 vocabId: row.VOCAB_ID,
                 word: row.WORD,
@@ -69,7 +67,6 @@ export default async function handler(req, res) {
     } else if (req.method === 'POST') {
       const { word, storyId } = req.body;
       
-      console.log('📝 Adding vocabulary word:', { userId, word, storyId });
       
       // Add vocabulary word
       const insertQuery = `
@@ -89,7 +86,6 @@ export default async function handler(req, res) {
               console.error('Error adding vocabulary:', err);
               reject(err);
             } else {
-              console.log('✅ Vocabulary word added successfully:', word);
               resolve(rows);
             }
           }

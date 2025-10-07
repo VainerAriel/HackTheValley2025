@@ -25,7 +25,6 @@ function VocabularySelector({ childName, age, interests, onBack, onGenerate, loa
           try {
             excludeWords = await getUserVocabulary(userId);
             setUsedWords(excludeWords);
-            console.log('Found previously used vocabulary words:', excludeWords);
           } catch (vocabError) {
             console.warn('Could not fetch used vocabulary words:', vocabError);
             // Continue without excluding words if fetch fails
