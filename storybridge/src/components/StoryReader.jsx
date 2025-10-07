@@ -1086,7 +1086,20 @@ const StoryReader = ({
               </span>
             </button>
             <button
-              onClick={() => setFontSize(fontSize === 'xlarge' ? 'large' : fontSize === 'large' ? 'medium' : fontSize === 'medium' ? 'small' : 'small')}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setFontSize(fontSize === 'xlarge' ? 'large' : fontSize === 'large' ? 'medium' : fontSize === 'medium' ? 'small' : 'small');
+              }}
+              onTouchStart={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setFontSize(fontSize === 'xlarge' ? 'large' : fontSize === 'large' ? 'medium' : fontSize === 'medium' ? 'small' : 'small');
+              }}
               className="control-button"
               title="Decrease font size"
               style={{ background: 'linear-gradient(135deg, #c4a57b, #d4b896)' }}
@@ -1095,7 +1108,20 @@ const StoryReader = ({
             </button>
             
             <button
-              onClick={() => setFontSize(fontSize === 'small' ? 'medium' : fontSize === 'medium' ? 'large' : fontSize === 'large' ? 'xlarge' : 'xlarge')}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setFontSize(fontSize === 'small' ? 'medium' : fontSize === 'medium' ? 'large' : fontSize === 'large' ? 'xlarge' : 'xlarge');
+              }}
+              onTouchStart={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setFontSize(fontSize === 'small' ? 'medium' : fontSize === 'medium' ? 'large' : fontSize === 'large' ? 'xlarge' : 'xlarge');
+              }}
               className="control-button"
               title="Increase font size"
               style={{ background: 'linear-gradient(135deg, #a88f6c, #b89968)' }}
@@ -1106,7 +1132,20 @@ const StoryReader = ({
 
           
             <button
-              onClick={() => setShowFontSelector(!showFontSelector)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowFontSelector(!showFontSelector);
+              }}
+              onTouchStart={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowFontSelector(!showFontSelector);
+              }}
               className="control-button"
               title="Change font"
               style={{ fontFamily: getFontFamily(), background: 'linear-gradient(135deg, #8b7355, #6b543e)' }}
@@ -1124,13 +1163,40 @@ const StoryReader = ({
           <div className="font-selector-dropdown">
             <div className="font-selector-header">
               <h4>Choose Font</h4>
-              <button onClick={() => setShowFontSelector(false)}>×</button>
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowFontSelector(false);
+                }}
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowFontSelector(false);
+                }}
+              >×</button>
             </div>
             <div className="font-options">
               {fontOptions.map((font) => (
                 <button
                   key={font.value}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setSelectedFont(font.value);
+                    setShowFontSelector(false);
+                  }}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     setSelectedFont(font.value);
                     setShowFontSelector(false);
                   }}

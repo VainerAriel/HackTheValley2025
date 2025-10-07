@@ -15,6 +15,8 @@
   height: 100vh;
   z-index: 9999;
   background: #fff;
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Header */
@@ -365,6 +367,8 @@
   overflow-y: auto;
   max-height: calc(100vh - 200px);
   position: relative;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .story-content-area::before {
@@ -786,6 +790,35 @@
     left: 1rem;
     right: 1rem;
     width: auto;
+  }
+}
+
+/* Mobile-specific touch improvements */
+@media (max-width: 768px) {
+  .story-reader-container.fullscreen {
+    overflow: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  .story-content-area {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+  }
+  
+  .control-button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  
+  .font-option {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
   }
 }
 
