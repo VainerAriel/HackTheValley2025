@@ -30,10 +30,11 @@ export default async function handler(req, res) {
         });
       }
 
-      // Get user vocabulary from USER_VOCABULARY table
+      // Get user vocabulary from USER_VOCABULARY table with definitions from STORIES
       const vocabularyQuery = `
-        SELECT DISTINCT uv.WORD, uv.CREATED_AT, uv.STORY_ID
+        SELECT DISTINCT uv.WORD, uv.CREATED_AT, uv.STORY_ID, s.VOCAB_DEFINITIONS
         FROM USER_VOCABULARY uv
+        LEFT JOIN STORIES s ON uv.STORY_ID = s.STORY_ID
         WHERE uv.USER_ID = ? 
         ORDER BY uv.CREATED_AT DESC
       `;
@@ -55,15 +56,35 @@ export default async function handler(req, res) {
               rows.forEach(row => {
                 try {
                   if (row.WORD) {
+                    let definitions = {
+                      definition: `A vocabulary word from your stories`,
+                      pronunciation: '',
+                      partOfSpeech: '',
+                      example: ''
+                    };
+                    
+                    // Try to get the actual definition from the story
+                    if (row.VOCAB_DEFINITIONS) {
+                      try {
+                        const storyDefinitions = JSON.parse(row.VOCAB_DEFINITIONS);
+                        const wordKey = row.WORD.toLowerCase();
+                        
+                        // Look for the word in the definitions (try different case variations)
+                        const wordDefinition = storyDefinitions[wordKey] || 
+                                             storyDefinitions[row.WORD] ||
+                                             storyDefinitions[wordKey.charAt(0).toUpperCase() + wordKey.slice(1)];
+                        
+                        if (wordDefinition) {
+                          definitions = wordDefinition;
+                        }
+                      } catch (e) {
+                        console.log('Could not parse definitions for word:', row.WORD);
+                      }
+                    }
+                    
                     allVocabulary.push({
                       word: row.WORD,
-                      definitions: {
-                        // Basic definition structure - you might want to enhance this
-                        definition: `A vocabulary word from your stories`,
-                        pronunciation: '',
-                        partOfSpeech: '',
-                        example: ''
-                      },
+                      definitions: definitions,
                       learnedDate: row.CREATED_AT,
                       storyId: row.STORY_ID
                     });
