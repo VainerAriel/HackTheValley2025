@@ -6,10 +6,6 @@ import { Auth0Provider } from '@auth0/auth0-react';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
-// Debug: Log environment variables
-console.log('REACT_APP_AUTH0_DOMAIN:', process.env.REACT_APP_AUTH0_DOMAIN);
-console.log('REACT_APP_AUTH0_CLIENT_ID:', process.env.REACT_APP_AUTH0_CLIENT_ID);
-console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
 
 root.render(
   <React.StrictMode>

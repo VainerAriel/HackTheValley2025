@@ -73,7 +73,7 @@ const StoryView = () => {
   }, [storyId, user.sub]);
 
   const handleBackToHistory = () => {
-    navigate('/history');
+    navigate('/');
   };
 
   const handleGenerateNew = () => {
@@ -93,10 +93,10 @@ const StoryView = () => {
           <p className="text-gray-600 mb-6">{error}</p>
           <div className="flex gap-4 justify-center">
             <button
-              onClick={() => navigate('/history')}
+              onClick={() => navigate('/')}
               className="px-6 py-3 bg-brand-brown text-white font-semibold rounded-lg hover:bg-brand-brown-dark transition-colors"
             >
-              Back to History
+              Back to Home
             </button>
             <button
               onClick={() => navigate('/')}
@@ -119,10 +119,10 @@ const StoryView = () => {
           <p className="text-gray-600 mb-6">The story you're looking for doesn't exist.</p>
           <div className="flex gap-4 justify-center">
             <button
-              onClick={() => navigate('/history')}
+              onClick={() => navigate('/')}
               className="px-6 py-3 bg-brand-brown text-white font-semibold rounded-lg hover:bg-brand-brown-dark transition-colors"
             >
-              Back to History
+              Back to Home
             </button>
             <button
               onClick={() => navigate('/')}
@@ -136,24 +136,23 @@ const StoryView = () => {
     );
   }
 
-
-      return (
-        <div className="min-h-screen bg-cream-100">
-          <StoryReader
-            story={story.content}
-            storyTitle={story.title}
-            onGenerateNew={handleGenerateNew}
-            onBackToHistory={handleBackToHistory}
-            vocabularyWords={story.vocabularyWords || []}
-            age={story.age || '8'}
-            isFromHistory={true}
-            storedVocabDefinitions={story.vocabularyDefinitions || {}}
-            storyId={story.id}
-            preloadedAudio={preloadedAudio}
-            audioPreloadStatus={audioPreloadStatus}
-          />
-        </div>
-      );
+  return (
+    <div className="min-h-screen bg-cream-100">
+      <StoryReader
+        story={story.content}
+        storyTitle={story.title}
+        onGenerateNew={handleGenerateNew}
+        onBackToHistory={handleBackToHistory}
+        vocabularyWords={story.vocabularyWords || []}
+        age={story.age || '8'}
+        isFromHistory={true}
+        storedVocabDefinitions={story.vocabularyDefinitions || {}}
+        storyId={story.id}
+        preloadedAudio={preloadedAudio}
+        audioPreloadStatus={audioPreloadStatus}
+      />
+    </div>
+  );
 };
 
 export default StoryView;
