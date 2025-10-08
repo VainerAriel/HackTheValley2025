@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useNavigate } from 'react-router-dom';
-import LogoutButton from './LogoutButton.jsx';
-import storybitesLogo from '../images/storybites.png';
+import LogoutButton from '../ui/LogoutButton.jsx';
+import storybitesLogo from '../../assets/images/storybites.png';
 
 const UserProfile = () => {
   const { user, getAccessTokenSilently } = useAuth0();
@@ -25,11 +25,7 @@ const UserProfile = () => {
   const [customInterests, setCustomInterests] = useState([]);
   const [newCustomInterest, setNewCustomInterest] = useState('');
 
-  useEffect(() => {
-    loadProfileData();
-  }, [user]);
-
-  const loadProfileData = async () => {
+  const loadProfileData = useCallback(async () => {
     if (!user) return;
     
     setLoading(true);
@@ -77,7 +73,11 @@ const UserProfile = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, getAccessTokenSilently]);
+
+  useEffect(() => {
+    loadProfileData();
+  }, [user, loadProfileData]);
 
   const handleInputChange = (field, value) => {
     setProfileData(prev => ({

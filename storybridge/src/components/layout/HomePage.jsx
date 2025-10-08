@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useNavigate } from 'react-router-dom';
-import LogoutButton from './LogoutButton';
-import VocabularyModal from './VocabularyModal';
-import StoriesModal from './StoriesModal';
-import storybitesLogo from '../images/storybites.png';
-import bookImage from '../images/book.png';
+import LogoutButton from '../ui/LogoutButton';
+import VocabularyModal from '../features/VocabularyModal';
+import StoriesModal from '../features/StoriesModal';
+import storybitesLogo from '../../assets/images/storybites.png';
+import bookImage from '../../assets/images/book.png';
 
 const HomePage = () => {
   const { user, getAccessTokenSilently } = useAuth0();
@@ -15,13 +15,7 @@ const HomePage = () => {
   const [showVocabularyModal, setShowVocabularyModal] = useState(false);
   const [showStoriesModal, setShowStoriesModal] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      fetchUserStats();
-    }
-  }, [user]);
-
-  const fetchUserStats = async () => {
+  const fetchUserStats = useCallback(async () => {
     try {
       const token = await getAccessTokenSilently({
         authorizationParams: {
@@ -47,7 +41,13 @@ const HomePage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, getAccessTokenSilently]);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserStats();
+    }
+  }, [user, fetchUserStats]);
 
   const getGreeting = () => {
     const hour = new Date().getHours();

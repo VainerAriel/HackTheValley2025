@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { getBatchWordDefinitions } from '../services/gemini.js';
-import { convertTextToSpeech, playAudioFromBlob } from '../services/elevenLabsService.js';
-import './StoryReader.css';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { getBatchWordDefinitions } from '../../services/gemini.js';
+import { convertTextToSpeech, playAudioFromBlob } from '../../services/elevenLabsService.js';
+import '../../index.css';
 
 const StoryReader = ({ 
   story, 
@@ -67,12 +67,36 @@ const StoryReader = ({
     localStorage.setItem('storyFont', selectedFont);
   }, [selectedFont]);
 
+  const stopAudio = useCallback(() => {
+    // Stop any audio elements
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    
+    // Clear all timeouts and intervals
+    clearAllTimeouts();
+    
+    // Reset all audio and highlighting state
+    setIsPlaying(false);
+    setHighlightedWords(new Set());
+    setCurrentSentence(-1);
+    setCurrentPlayingSentence(-1);
+    setPlayError(null);
+    
+    // Clear any audio URLs to prevent memory leaks
+    if (audioRef.current && audioRef.current.src) {
+      URL.revokeObjectURL(audioRef.current.src);
+    }
+    
+  }, []);
+
   // Cleanup audio when component unmounts
   useEffect(() => {
     return () => {
       stopAudio();
     };
-  }, []);
+  }, [stopAudio]);
 
   // Get font family string
   const getFontFamily = () => {
@@ -104,7 +128,7 @@ const StoryReader = ({
     if (Object.keys(wordDefinitions).length === 0) {
       loadDefinitions();
     }
-  }, [vocabularyWords, age, storedVocabDefinitions]);
+  }, [vocabularyWords, age, storedVocabDefinitions, wordDefinitions]);
 
 
   // Handle fullscreen toggle
@@ -372,30 +396,6 @@ const StoryReader = ({
         timeoutsRef.current.push(clearTimeout);
       }
     });
-  };
-
-  const stopAudio = () => {
-    // Stop any audio elements
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-    
-    // Clear all timeouts and intervals
-    clearAllTimeouts();
-    
-    // Reset all audio and highlighting state
-    setIsPlaying(false);
-    setHighlightedWords(new Set());
-    setCurrentSentence(-1);
-    setCurrentPlayingSentence(-1);
-    setPlayError(null);
-    
-    // Clear any audio URLs to prevent memory leaks
-    if (audioRef.current && audioRef.current.src) {
-      URL.revokeObjectURL(audioRef.current.src);
-    }
-    
   };
 
   // Stop any currently playing audio before starting new audio

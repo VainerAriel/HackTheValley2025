@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 
 const VocabularyModal = ({ isOpen, onClose }) => {
@@ -8,13 +8,7 @@ const VocabularyModal = ({ isOpen, onClose }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('recent'); // 'recent', 'alphabetical'
 
-  useEffect(() => {
-    if (isOpen && user) {
-      fetchVocabulary();
-    }
-  }, [isOpen, user]);
-
-  const fetchVocabulary = async () => {
+  const fetchVocabulary = useCallback(async () => {
     setLoading(true);
     try {
       const token = await getAccessTokenSilently({
@@ -40,7 +34,13 @@ const VocabularyModal = ({ isOpen, onClose }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, getAccessTokenSilently]);
+
+  useEffect(() => {
+    if (isOpen && user) {
+      fetchVocabulary();
+    }
+  }, [isOpen, user, fetchVocabulary]);
 
   const filteredAndSortedVocabulary = () => {
     let filtered = vocabulary.filter(item => {

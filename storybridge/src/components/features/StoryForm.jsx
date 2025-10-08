@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 
 function StoryForm({ onGenerateStory, loading }) {
@@ -14,14 +14,7 @@ function StoryForm({ onGenerateStory, loading }) {
   const [errors, setErrors] = useState({});
   const [profileLoading, setProfileLoading] = useState(true);
 
-  // Load profile data on component mount
-  useEffect(() => {
-    if (user) {
-      loadProfileData();
-    }
-  }, [user]);
-
-  const loadProfileData = async () => {
+  const loadProfileData = useCallback(async () => {
     if (!user) return;
     
     setProfileLoading(true);
@@ -60,7 +53,14 @@ function StoryForm({ onGenerateStory, loading }) {
     } finally {
       setProfileLoading(false);
     }
-  };
+  }, [user, getAccessTokenSilently]);
+
+  // Load profile data on component mount
+  useEffect(() => {
+    if (user) {
+      loadProfileData();
+    }
+  }, [user, loadProfileData]);
 
   const validateForm = () => {
     const newErrors = {};

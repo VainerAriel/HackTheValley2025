@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { suggestVocabularyWords } from '../services/gemini.js';
-import { getUserVocabulary } from '../services/vocabularyService.js';
+import { suggestVocabularyWords } from '../../services/gemini.js';
+import { getUserVocabulary } from '../../services/vocabularyService.js';
 
 function VocabularySelector({ childName, age, interests, onBack, onGenerate, loading, userId }) {
   // Note: 'interests' param name kept for backward compatibility with existing code

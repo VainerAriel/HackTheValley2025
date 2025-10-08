@@ -1,26 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useNavigate } from 'react-router-dom';
 import StoryForm from './StoryForm';
 import VocabularySelector from './VocabularySelector';
-import StoryReader from './StoryReader';
-import LogoutButton from './LogoutButton';
-import { useStoryFlow } from '../hooks/useStoryFlow';
-import storybitesLogo from '../images/storybites.png';
+import LogoutButton from '../ui/LogoutButton';
+import { useStoryFlow } from '../../hooks/useStoryFlow';
+import storybitesLogo from '../../assets/images/storybites.png';
 
 const Dashboard = () => {
-  const { user, getAccessTokenSilently } = useAuth0();
+  const { user } = useAuth0();
   const navigate = useNavigate();
 
   const {
     step,
     formData,
-    story,
-    storyTitle,
-    vocabularyWords,
-    vocabularyDefinitions,
     loading,
-    storyId,
     handleFormSubmit,
     handleVocabularyBack,
     handleVocabularyGenerate,
@@ -45,9 +39,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleBackToForm = () => {
-    handleGenerateNew();
-  };
 
   const renderCurrentView = () => {
     // Show loading animation while generating story

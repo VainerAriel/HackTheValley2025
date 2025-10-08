@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import StoryReader from './StoryReader';
-import { getStoryById } from '../services/storyService';
-import LoadingSpinner from './LoadingSpinner';
+import { getStoryById } from '../../services/storyService';
+import LoadingSpinner from '../ui/LoadingSpinner';
 
 const StoryView = () => {
   const { storyId } = useParams();

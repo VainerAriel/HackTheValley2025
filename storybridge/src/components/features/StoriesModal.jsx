@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useNavigate } from 'react-router-dom';
-import { deleteStory } from '../services/storyService';
+import { deleteStory } from '../../services/storyService';
 
 const StoriesModal = ({ isOpen, onClose }) => {
   const { user, getAccessTokenSilently } = useAuth0();
@@ -13,13 +13,7 @@ const StoriesModal = ({ isOpen, onClose }) => {
   const [deletingStoryId, setDeletingStoryId] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
-  useEffect(() => {
-    if (isOpen && user) {
-      fetchStories();
-    }
-  }, [isOpen, user]);
-
-  const fetchStories = async () => {
+  const fetchStories = useCallback(async () => {
     setLoading(true);
     try {
       const token = await getAccessTokenSilently({
@@ -48,7 +42,13 @@ const StoriesModal = ({ isOpen, onClose }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, getAccessTokenSilently]);
+
+  useEffect(() => {
+    if (isOpen && user) {
+      fetchStories();
+    }
+  }, [isOpen, user, fetchStories]);
 
   const filteredAndSortedStories = () => {
     let filtered = stories.filter(story => 

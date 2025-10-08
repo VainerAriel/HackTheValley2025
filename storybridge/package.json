@@ -1,7 +1,11 @@
 {
   "name": "storybridge",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "AI-powered story generation platform for children with dyslexia-friendly features",
   "private": true,
+  "author": "StoryBites Team",
+  "license": "MIT",
+  "homepage": "https://www.storybites.vip",
   "dependencies": {
     "@auth0/auth0-react": "^2.5.0",
     "@elevenlabs/elevenlabs-js": "^2.17.0",
@@ -22,7 +26,10 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "dev:server": "node server-local.js",
+    "dev": "concurrently \"npm run dev:server\" \"npm start\"",
+    "dev:frontend": "REACT_APP_API_URL=http://localhost:3001 npm start"
   },
   "eslintConfig": {
     "extends": [
@@ -44,6 +51,8 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
+    "concurrently": "^9.2.1",
+    "http-proxy-middleware": "^3.0.5",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.18"
   }

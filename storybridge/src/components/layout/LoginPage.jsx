@@ -1,6 +1,6 @@
 import React from 'react';
-import LoginButton from './LoginButton.jsx';
-import storybitesLogo from '../images/storybites.png';
+import LoginButton from '../ui/LoginButton.jsx';
+import storybitesLogo from '../../assets/images/storybites.png';
 
 const LoginPage = () => {
   return (

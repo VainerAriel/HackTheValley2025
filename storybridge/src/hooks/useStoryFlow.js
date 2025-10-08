@@ -1,8 +1,6 @@
 import { useState } from 'react';
-import { useAuth0 } from '@auth0/auth0-react';
 import { generateStory, generateStoryTitle } from '../services/gemini.js';
 import { getBatchWordDefinitions } from '../services/gemini.js';
-import { convertTextToSpeech } from '../services/elevenLabsService.js';
 import { saveStory } from '../services/storyService';
 
 export const useStoryFlow = () => {

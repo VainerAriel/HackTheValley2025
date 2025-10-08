@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
-import LoadingSpinner from './components/LoadingSpinner.jsx';
-import LoginPage from './components/LoginPage.jsx';
-import HomePage from './components/HomePage.jsx';
-import Dashboard from './components/Dashboard.jsx';
-import StoryView from './components/StoryView.jsx';
-import UserProfile from './components/UserProfile.jsx';
-import ProfileSetup from './components/ProfileSetup.jsx';
+import LoadingSpinner from './components/ui/LoadingSpinner.jsx';
+import LoginPage from './components/layout/LoginPage.jsx';
+import HomePage from './components/layout/HomePage.jsx';
+import Dashboard from './components/features/Dashboard.jsx';
+import StoryView from './components/features/StoryView.jsx';
+import UserProfile from './components/features/UserProfile.jsx';
+import ProfileSetup from './components/features/ProfileSetup.jsx';
 
 function App() {
   const { isAuthenticated, isLoading, user, getAccessTokenSilently, logout } = useAuth0();
