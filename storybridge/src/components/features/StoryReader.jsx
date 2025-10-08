@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getBatchWordDefinitions } from '../../services/gemini.js';
 import { convertTextToSpeech, playAudioFromBlob } from '../../services/elevenLabsService.js';
-import '../../index.css';
+import './StoryReader.css';
 
 const StoryReader = ({ 
   story, 
